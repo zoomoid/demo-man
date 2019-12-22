@@ -17,7 +17,19 @@ export default {
 <style lang="scss" scoped>
 .breadcrump {
   a {
-    color: black;
+    color: #ffffff;
+    .material-icons-sharp {
+      vertical-align: middle;
+      line-height: 32px;
+      width: 32px;
+      height: 32px;
+      text-align: center;
+      &:hover, &:active, .muted {
+        background: #424242;
+        border-radius: 32px;
+      }
+    }
+
   }
 }
 </style>

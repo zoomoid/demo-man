@@ -10,6 +10,8 @@
 html {
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.03em;
+  background: #121212;
+  color: #ffffff;
 }
 body {
   margin: 0;

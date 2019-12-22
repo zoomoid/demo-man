@@ -29,7 +29,7 @@ div {
       list-style: square;
       font-size: 1.5em;
       a:link, a:visited {
-        color: black;
+        color: #ffffff;
       }
     }
   }

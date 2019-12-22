@@ -45,6 +45,13 @@
           volume_up
         </i>
       </div>
+      <div class="download">
+        <a :href="file" target="_blank">
+          <i class="material-icons-sharp">
+            get_app
+          </i>
+        </a>
+      </div>
     </div>
     <audio
       :src="file"
@@ -111,7 +118,14 @@ export default {
 
       const pos = tag.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
-      this.audio.currentTime = this.audio.duration * seekPos;
+      const { seekable } = this.audio;
+      let seekTarget = this.audio.duration * seekPos;
+      if (seekable.start(0) > seekTarget) {
+        seekTarget = seekable.start(0);
+      } else if (seekable.end(0) < seekTarget) {
+        seekTarget = seekable.end(0);
+      }
+      this.audio.currentTime = seekTarget;
     },
     stop() {
       this.$emit('paused');
@@ -252,7 +266,7 @@ export default {
         text-align: center;
         cursor: pointer;
         &:hover, &:active, .paused {
-          background: #eeeeee;
+          background: #424242;
           border-radius: 32px;
         }
       }
@@ -269,7 +283,7 @@ export default {
         text-align: center;
       }
       &:hover, &:active, .paused {
-        background: #dedede;
+        background: #424242;
         border-radius: 32px;
       }
     }
@@ -279,14 +293,14 @@ export default {
         background: transparent;
         position: relative;
         display: block;
-        background: #e0dcd7;
+        background: #424242;
         height: 8px;
         border-radius: 4px;
         width: 100%;
         cursor: pointer;
         font-size: 14px;
         .playback-time-indicator {
-          background: #5099ff;
+          background: #ff9e22;
           border-radius: 4px;
           position: absolute;
           top: 0;
@@ -320,7 +334,23 @@ export default {
         text-align: center;
       }
       &:hover, &:active, .muted {
-        background: #dedede;
+        background: #424242;
+        border-radius: 32px;
+      }
+    }
+    .download {
+      .material-icons-sharp {
+        vertical-align: middle;
+        line-height: 32px;
+        width: 32px;
+        height: 32px;
+        text-align: center;
+      }
+      a:link, a:visited {
+        color: #ffffff;
+      }
+      &:hover, &:active, .muted {
+        background: #424242;
         border-radius: 32px;
       }
     }
