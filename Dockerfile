@@ -1,8 +1,8 @@
 # 1st stage build client
-FROM node:latest as builder
+FROM node:alpine as builder
 # copy package-lock.json (mainly) and package.json
 COPY /client/package*.json ./
-
+COPY /client/yarn.lock ./
 # npm ci for better performance in dependency resolution
 RUN yarn install
 # bundle client
