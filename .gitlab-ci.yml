@@ -1,0 +1,44 @@
+stages:
+  - build
+  - bootup-staging
+  - deploy-staging
+  - after-staging
+  - deploy-prod
+
+.kubectl:
+  image:
+    name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:latest
+    entrypoint: ['/docker-entrypoint.sh']
+  before_script:
+    - echo $kube_config | base64 -d > /admin.conf
+  tags:
+    - kube
+
+variables:
+  NAMESPACE: "-n web"
+  SERVICE: 'staging-zoomoid-de'
+  HOSTS: '["staging.zoomo.id","staging.zoomoid.de"]'
+
+build-staging:
+  except:
+    - master
+  image: docker:latest
+  stage: build
+  script: 
+    - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
+    - docker build -t $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/nightly:latest
+    - docker push $CI_REGISTRY_IMAGE/nightly:latest
+  tags: 
+    - occloxium-docker
+
+build-prod:
+  image: docker:latest
+  stage: build
+  script: 
+    - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
+    - docker build -t $CI_REGISTRY_IMAGE/stable .
+    - docker push $CI_REGISTRY_IMAGE/stable:latest
+  tags: 
+    - occloxium-docker
