@@ -7,6 +7,9 @@
       <li>
         <router-link to="/schwerelos">Diode Eins - Schwerelos (Zoomoid Remix)</router-link>
       </li>
+      <li>
+        <router-link to="/301">Zoomoid - 301 Moved Permanently</router-link>
+      </li>
     </ul>
   </div>
 </template>
@@ -26,6 +29,7 @@ div {
   ul {
     padding-left: 2em;
     li {
+      padding: 1em 0;
       list-style: square;
       font-size: 1.5em;
       a:link, a:visited {

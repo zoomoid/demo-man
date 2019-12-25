@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import App from '@/App.vue';
 import Home from '@/views/Home.vue';
 import Schwerelos from '@/views/Schwerelos.vue';
-
+import MovedPermanently from '@/views/301.vue';
 
 Vue.use(VueRouter);
 
@@ -14,6 +14,9 @@ const routes = [
   },
   {
     path: '/schwerelos', component: Schwerelos,
+  },
+  {
+    path: '/301', component: MovedPermanently,
   },
 ];
 
