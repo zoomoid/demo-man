@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
     <Breadcrump></Breadcrump>
+    <div class="fill"></div>
     <div class="release">
       <h2 class="artist">Diode Eins</h2>
       <h1 class="title">Schwerelos (Zoomoid Remix)</h1>
@@ -23,23 +24,36 @@ export default {
       queue: [
         {
           id: 1,
-          name: 'Demo 01 (Premaster)',
+          name: 'Demo 01 <i>(pre master)</i>',
           url: 'https://cdn.occloxium.com/a/zoomoid/demo/demo_01.mp3',
+          tags: [],
         },
         {
           id: 2,
-          name: 'Demo 02 (Premaster)',
+          name: 'Demo 02 <i>(pre master)</i>',
           url: 'https://cdn.occloxium.com/a/zoomoid/demo/pre_master_demo_02.mp3',
+          tags: [],
+
         },
         {
           id: 3,
-          name: 'Demo 03 (Postmaster)',
+          name: 'Demo 03 <i>(post master)</i>',
           url: 'https://cdn.occloxium.com/a/zoomoid/demo/post_master_demo_03.mp3',
+          tags: [],
+
         },
         {
           id: 4,
-          name: 'Demo 04 (Postmaster)',
+          name: 'Demo 04 <i>(post master)</i>',
           url: 'https://cdn.occloxium.com/a/zoomoid/demo/post_master_demo_04.mp3',
+          tags: [],
+
+        },
+        {
+          id: 5,
+          name: 'Demo 05 <i>(post master)</i>',
+          url: 'https://cdn.occloxium.com/a/zoomoid/demo/post_master_demo_05.mp3',
+          tags: ['new'],
         },
       ],
     };
@@ -48,15 +62,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.wrapper {
-  padding: 2em 2em 2em 2em;
-}
+// .wrapper {
+//   padding: 2em 2em 2em 2em;
+// }
 
 .players {
-  padding-top: 2em;
+  padding: 2em 2em 2em 2em;
+}
+.fill {
+  height: 24em;
+  background: #ff9e22
 }
 .release {
-  padding-top: 12em;
+  padding: 2em 2em 2em 2em;
   .artist {
     letter-spacing: -0.02em;
     font-size: 2.5em;
