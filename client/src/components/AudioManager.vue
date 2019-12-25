@@ -7,6 +7,7 @@
         :file="player.url"
         :playStateOverrideBy="currentlyPlayingPlayer"
         v-on:playing="setPlayStateOverride"
+        :tags="player.tags || []"
       ></AudioPlayer>
     </div>
     <div v-if="!queue">

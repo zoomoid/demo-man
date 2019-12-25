@@ -1,7 +1,14 @@
 <template>
-  <div class="wrapper">
-    <div class="title" v-html="name">
+  <div class="player-wrapper">
+    <div class="title-wrapper">
+      <div class="title" v-html="name">
 
+      </div>
+      <div class="tags" v-if="tags.length > 0">
+        <span class="tag" v-for="tag in tags" v-bind:key="tag">
+          {{tag}}
+        </span>
+      </div>
     </div>
     <div class="player">
       <div class="skip">
@@ -39,10 +46,10 @@
       </div>
       <div class="volume-control">
         <i v-if="!this.isMuted" @click="mute" class="material-icons-sharp">
-          volume_off
+          volume_up
         </i>
         <i v-if="this.isMuted" @click="mute" class="material-icons-sharp muted">
-          volume_up
+          volume_off
         </i>
       </div>
       <div class="download">
@@ -64,18 +71,11 @@
 <script>
 export const baseVolumeValue = 10;
 
-/* eslint-disable */
-export const generateUUID = () => 'xxxxxxxx-xxxx-4xxx'.replace(/[xy]/g, (c) => {
-  const r = Math.random() * 16 | 0;
-  const v = c === 'x' ? r : (r & 0x3 | 0x8);
-  return v.toString(16);
-});
-
 export const convertTimeHHMMSS = (val) => {
   const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
   return (hhmmss.indexOf('00:') === 0) ? hhmmss.substr(3) : hhmmss;
 };
-/* eslint-enable */
+
 export default {
   name: 'AudioPlayer',
   props: {
@@ -102,6 +102,10 @@ export default {
     playStateOverrideBy: {
       type: Number,
       default: -1,
+    },
+    tags: {
+      type: Array,
+      default: undefined,
     },
   },
   watch: {
@@ -214,7 +218,6 @@ export default {
       isMuted: false,
       loaded: false,
       currentTime: '00:00',
-      uuid: '0',
       audio: undefined,
       totalDuration: 0,
       volumeValue: baseVolumeValue,
@@ -225,12 +228,8 @@ export default {
     duration() {
       return this.audio ? convertTimeHHMMSS(this.totalDuration) : '';
     },
-    playerId() {
-      return `player-${this.uuid}`;
-    },
   },
   mounted() {
-    this.uuid = generateUUID();
     this.audio = this.getAudio();
     this.init();
   },
@@ -243,15 +242,36 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.wrapper {
+<style lang="scss">
+.player-wrapper {
   padding: 1em 0;
-  .title {
-    b {
-      font-weight: 400;
+  .title-wrapper{
+    display: flex;
+    // align-items: center;
+    .title {
+      i {
+        font-style: normal;
+        font-weight: 200;
+      }
+      font-weight: 500;
+      margin-bottom: 8px;
     }
-    font-weight: 500;
-    margin-bottom: 8px;
+    .tags {
+      padding-left: 8px;
+      .tag {
+        background: #ff9e22;
+        color: #242424;
+        border-radius: 4px;
+        padding: 4px 8px;
+        line-height: 1;
+        text-align: middle;
+        font-weight: 700;
+        font-size: 10pt;
+        &::before {
+          content: '#'
+        }
+      }
+    }
   }
   .player {
     display: flex;

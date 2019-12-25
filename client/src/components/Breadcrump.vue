@@ -16,6 +16,7 @@ export default {
 
 <style lang="scss" scoped>
 .breadcrump {
+  padding: 1em 2em 1em 2em;
   a {
     color: #ffffff;
     .material-icons-sharp {
