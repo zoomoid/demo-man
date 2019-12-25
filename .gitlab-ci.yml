@@ -1,23 +1,20 @@
 stages:
   - build
-  - bootup-staging
-  - deploy-staging
-  - after-staging
-  - deploy-prod
+  - deploy
 
 .kubectl:
   image:
     name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:latest
     entrypoint: ['/docker-entrypoint.sh']
   before_script:
-    - echo $kube_config | base64 -d > /admin.conf
+    - echo $kube_config | base64 -d > /root/runner
+    - export KUBECONFIG="$KUBECONFIG:/root/runner"
+    - kubectl config use-context runner@kubernetes
   tags:
-    - kube
+    - kubernetes
 
 variables:
-  NAMESPACE: "-n web"
-  SERVICE: 'staging-zoomoid-de'
-  HOSTS: '["staging.zoomo.id","staging.zoomoid.de"]'
+  DEPLOYMENT: 'demo-zoomoid-de'
 
 build-staging:
   except:
@@ -42,3 +39,12 @@ build-prod:
     - docker push $CI_REGISTRY_IMAGE/stable:latest
   tags: 
     - occloxium-docker
+
+deploy-prod:
+  only:
+  - master
+  stage: deploy
+  extends: .kubectl
+  script:
+  - kubectl rollout restart deployment/$DEPLOYMENT
+  
