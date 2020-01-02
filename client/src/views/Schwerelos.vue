@@ -53,6 +53,12 @@ export default {
           id: 5,
           name: 'Demo 05 <i>(post master)</i>',
           url: 'https://cdn.occloxium.com/a/zoomoid/demo/post_master_demo_05.mp3',
+          tags: [],
+        },
+        {
+          id: 7,
+          name: 'Demo 07 <i>(post master)</i>',
+          url: 'https://cdn.occloxium.com/a/zoomoid/demo/post_master_demo_07.mp3',
           tags: ['new'],
         },
       ],
