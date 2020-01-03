@@ -4,9 +4,9 @@ import App from '@/App.vue';
 import Home from '@/views/Home.vue';
 import Schwerelos from '@/views/Schwerelos.vue';
 import MovedPermanently from '@/views/301.vue';
+import Bounces from '@/views/Bounces.vue';
 
 Vue.use(VueRouter);
-
 
 const routes = [
   {
@@ -14,6 +14,9 @@ const routes = [
   },
   {
     path: '/schwerelos', component: Schwerelos,
+  },
+  {
+    path: '/schwerelos/bounces', component: Bounces,
   },
   {
     path: '/301', component: MovedPermanently,

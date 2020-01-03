@@ -1,28 +1,39 @@
 <template>
   <div class="wrapper">
     <Breadcrump></Breadcrump>
-    <div class="fill"></div>
-    <div class="release">
-      <h2 class="artist">Bounces</h2>
+    <!-- <div class="fill"></div> -->
+
+    <div class="entry">
+      <div class="release">
+        <h2 class="artist">Bounces</h2>
+      </div>
+      <a href="https://cdn.occloxium.com/g/zoomoid/schwerelos_remix_bounces.zip" target="_blank">Download</a>
+      <p>
+        Hey, eben kurz ein Guide für die Struktur der Bounces:
+
+        Die Ordner visualisieren ungefähr die Struktur der Project File auf dem
+        obersten Level, d.h. die obersten Gruppen sind entsprechend einfach die
+        Ordner. Ich habe alle Effekte in die entsprechenden Spuren selbst
+        geschoben, also sollte nichts mehr fehlen. Die dB-Zahlen hinter den
+        Gruppen-Namen sind nur bei solchen Gruppen mit mehr als einer Spur von
+        Relevanz, e.g. die Drums. Alle Gruppen mit nur einer Spur sind
+        post-fader und damit weniger Aufwand.
+
+        Das Ganze wurde bisher aufm Master (vor Mastering Plugins) einfach nur
+        durch einen Brickwall FabFilter L2 abgerundet, der aber im Prinzip wegen
+        der vorherigen Lautstärke-Reduktion auf den Gruppen irrelevant geworden
+        ist.
+
+        Wenn ihr doch noch mehr Spuren für mehr Details haben wollt, lasst es
+        mich kurz wissen, dann bounce ich noch ne Runde!
+
+        Hier ist noch ein Screenshot, wie die Audiospuren in Live ungefähr
+        lagen, in ihrer gebouncten Version.
+      </p>
+      <img
+        src="https://cdn.occloxium.com/g/zoomoid/Audiotracks_screenshot.png"
+      />
     </div>
-    <a href="https://cdn.occloxium.com/g/zoomoid/schwerelos_remix_bounces.zip">Download</a>
-    <p>
-      Hey, eben kurz ein Guide für die Struktur der Bounces:
-      <br>
-      <br>
-      Die Ordner visualisieren ungefähr die Struktur der Project File auf dem obersten Level, d.h. die obersten Gruppen sind entsprechend einfach die Ordner.
-      Ich habe alle Effekte in die entsprechenden Spuren selbst geschoben, also sollte nichts mehr fehlen.
-      Die dB-Zahlen hinter den Gruppen-Namen sind nur bei solchen Gruppen mit mehr als einer Spur von Relevanz, e.g. die Drums. Alle Gruppen mit nur einer Spur sind post-fader und damit weniger Aufwand. <br>
-
-      Das Ganze wurde bisher aufm Master (vor Mastering Plugins) einfach nur durch einen Brickwall FabFilter L2 abgerundet, der aber im Prinzip wegen der vorherigen Lautstärke-Reduktion auf den Gruppen
-      irrelevant geworden ist.<br>
-
-      Wenn ihr doch noch mehr Spuren für mehr Details haben wollt, lasst es mich kurz wissen, dann bounce ich noch ne Runde!<br>
-
-      Hier ist noch ein Screenshot, wie die Audiospuren in Live ungefähr lagen, in ihrer gebouncten Version.
-
-      <img src="https://cdn.occloxium.com/g/zoomoid/Audiotracks_screenshot.png"/>
-    </p>
   </div>
 </template>
 
@@ -49,7 +60,7 @@ export default {
   background: #227aff;
 }
 .release {
-  padding: 2em 2em 2em 2em;
+  padding: 2em 0;
   .artist {
     letter-spacing: -0.02em;
     font-size: 2.5em;
@@ -64,5 +75,23 @@ export default {
     line-height: 1;
     margin: 0;
   }
+}
+.entry {
+  padding: 2em;
+  max-width: 1024px;
+  margin: 0 auto;
+}
+p {
+  font-size: 16pt;
+  line-height: 1.5;
+}
+img {
+  display: block;
+  width: 100%;
+}
+a {
+  font-size: 16pt;
+  color: #ffffff;
+  font-weight: bold;
 }
 </style>
