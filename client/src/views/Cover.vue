@@ -7,6 +7,9 @@
       <div class="release">
         <h2 class="artist">Cover</h2>
       </div>
+      <p><b>1st Proposition</b></p>
+      <p>Combines both the original cover and the signature "Zoomoid" quintuple of colours.</p>
+      <p>The amount of colour is yet to be discussed.</p>
       <img
         src="https://cdn.occloxium.com/i/zoomoid/demo/schwerelos/draft_01.png"
       />
