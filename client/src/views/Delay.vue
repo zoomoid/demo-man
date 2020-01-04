@@ -5,7 +5,7 @@
     <div class="release">
       <h2 class="artist">Zoomoid</h2>
       <h1 class="title">Delay (Long Version)</h1>
-      <p>Noone asked for this, here it is anyways!</p>
+      <p>No one asked for this, here it is anyways!</p>
     </div>
     <AudioManager class="players" :queue="queue"></AudioManager>
   </div>
