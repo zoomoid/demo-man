@@ -10,6 +10,9 @@
       <li>
         <router-link to="/301">Zoomoid - 301 Moved Permanently</router-link>
       </li>
+      <li>
+        <router-link to="/delay">Zoomoid - Delay (Long Version)</router-link>
+      </li>
     </ul>
   </div>
 </template>

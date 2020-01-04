@@ -6,6 +6,7 @@ import Schwerelos from '@/views/Schwerelos.vue';
 import MovedPermanently from '@/views/301.vue';
 import Bounces from '@/views/Bounces.vue';
 import Cover from '@/views/Cover.vue';
+import Delay from '@/views/Delay.vue';
 
 Vue.use(VueRouter);
 
@@ -24,6 +25,9 @@ const routes = [
   },
   {
     path: '/301', component: MovedPermanently,
+  },
+  {
+    path: '/delay', component: Delay,
   },
 ];
 
