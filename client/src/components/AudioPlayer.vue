@@ -1,5 +1,5 @@
 <template>
-  <div class="player-wrapper">
+  <div class="player-wrapper" :class="[this.loaded ? 'loaded' : '']">
     <div class="title-wrapper">
       <div class="title" v-html="name">
 
@@ -35,8 +35,11 @@
         </i>
       </div>
       <div class="playback-time-wrapper">
-        <div @click="setPosition" class="playback-time-bar">
-          <div v-bind:style="progressStyle" class="playback-time-indicator"></div>
+        <div class="playback-time-bar">
+          <div
+          v-bind:style="{ width: progress + '%', background: accentColor }"
+            class="playback-time-indicator"></div>
+          <div class="playback-time-scrobble-bar" @click="setPosition"></div>
         </div>
       </div>
       <div class="playback-time-marks">
@@ -107,6 +110,10 @@ export default {
       type: Array,
       default: undefined,
     },
+    accentColor: {
+      type: String,
+      default: '#FFD600',
+    },
   },
   watch: {
     playStateOverrideBy() {
@@ -123,6 +130,7 @@ export default {
       const pos = tag.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
       const { seekable } = this.audio;
+      console.log(pos.width, pos.left, e.clientX, seekPos);
       let seekTarget = this.audio.duration * seekPos;
       if (seekable.start(0) > seekTarget) {
         seekTarget = seekable.start(0);
@@ -182,9 +190,8 @@ export default {
     },
     handlePlayingUI() {
       const currTime = parseInt(this.audio.currentTime, 10);
-      const percentage = (currTime / this.totalDuration) * 100;
-      this.progressStyle = `width:${percentage}%;`;
-      this.currentTime = convertTimeHHMMSS(currTime);
+      this.progress = (currTime / this.totalDuration) * 100;
+      this.currentTime = convertTimeHHMMSS(parseInt(this.audio.currentTime, 10));
     },
     handlePlayPause(e) {
       if (e.type === 'pause' && this.playing === false) {
@@ -222,6 +229,7 @@ export default {
       totalDuration: 0,
       volumeValue: baseVolumeValue,
       progressStyle: '',
+      progress: 0,
     };
   },
   computed: {
@@ -242,29 +250,81 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+// @import '@/assets/app.sass';
+
+@keyframes loading {
+  0% {
+    background-position-x: 0%
+  }
+  100% {
+    background-position-x: 200%
+  }
+}
+
+$base-color: rgb(86,86,86);
+$color1: #efefef;
+$color2: #dadada;
+$loading-fade: linear-gradient(135deg,
+  $color1 0%, $color1 10%, $color2 30%, $color1 50%,
+  $color2 70%, $color1  90%, $color1 100%);
+
 .player-wrapper {
-  padding: 1em 0;
-  .title-wrapper{
+  &:not(.loaded) {
+    position: relative;
+    &::after {
+      border-radius: 8px;
+      z-index: 100;
+      position: absolute;
+      content: '';
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: $loading-fade repeat scroll 0% 0% / 200% 100%;
+      animation: 2s ease 0s infinite none running loading;
+    }
+    &::before {
+      border-radius: 8px;
+      z-index: 99;
+      position: absolute;
+      content: '';
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+    }
+  }
+  padding: 0;
+  margin-bottom: 1em;
+  .title-wrapper {
     display: flex;
-    // align-items: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
     .title {
       i {
         font-style: normal;
         font-weight: 200;
       }
       font-weight: 500;
-      margin-bottom: 8px;
+      // padding-bottom: 8px;
     }
     .tags {
       padding-left: 8px;
+      display: block;
       .tag {
-        background: #ff9e22;
-        color: #242424;
+        display: block;
+        background: white;
+        color: black;
         border-radius: 4px;
         padding: 4px 8px;
         line-height: 1;
-        text-align: middle;
         font-weight: 700;
         font-size: 10pt;
         &::before {
@@ -278,31 +338,34 @@ export default {
     align-items: center;
     .skip {
       .material-icons-sharp {
-        vertical-align: middle;
         line-height: 32px;
         width: 32px;
         height: 32px;
         font-size: 18px;
         text-align: center;
         cursor: pointer;
-        &:hover, &:active, .paused {
-          background: #424242;
+        &:hover, &:active {
           border-radius: 32px;
+          background: $base-color;
         }
       }
     }
     .play-state {
       margin-right: 8px;
+      width: 32px;
+      height: 32px;
       cursor: pointer;
       display: inline-block;
       .material-icons-sharp {
-        vertical-align: middle;
         line-height: 32px;
         width: 32px;
         height: 32px;
         text-align: center;
       }
-      &:hover, &:active, .paused {
+      &:hover, &:active {
+        &.paused {
+          background: $base-color;
+        }
         background: #424242;
         border-radius: 32px;
       }
@@ -310,67 +373,89 @@ export default {
     .playback-time-wrapper {
       flex-grow: 1;
       .playback-time-bar {
-        background: transparent;
         position: relative;
         display: block;
-        background: #424242;
+        background: $base-color;
         height: 8px;
         border-radius: 4px;
         width: 100%;
         cursor: pointer;
         font-size: 14px;
+        z-index: 0;
+        .playback-time-scrobble-bar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 2;
+        }
         .playback-time-indicator {
-          background: #ff9e22;
+          background: #424242;
           border-radius: 4px;
           position: absolute;
           top: 0;
           left: 0;
           bottom: 0;
-          transition: width .5s ease;
+          z-index: 1;
+          transition: width .2s ease;
         }
       }
     }
     .playback-time-marks {
+      display: flex;
+      flex-wrap: nowrap;
       padding-left: 8px;
+      margin-right: 24px;
+      width: 3.5em;
+      text-align: right;
       span {
-        font-weight: 400;
+        font-weight: 500;
         display: inline-block;
-        font-size: 80%;
+        vertical-align: middle;
+        line-height: 2rem;
+        font-size: 0.7rem;
         text-align: center;
         &.playback-time-separator::after {
           padding-left: 0.5ex;
           padding-right: 0.5ex;
-          content: ' : ';
+          content: ':';
         }
       }
     }
     .volume-control {
       margin-left: 8px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
       .material-icons-sharp {
-        vertical-align: middle;
         line-height: 32px;
         width: 32px;
         height: 32px;
         text-align: center;
       }
       &:hover, &:active, .muted {
-        background: #424242;
+        background: $base-color;
         border-radius: 32px;
       }
     }
     .download {
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
       .material-icons-sharp {
-        vertical-align: middle;
         line-height: 32px;
         width: 32px;
         height: 32px;
         text-align: center;
       }
       a:link, a:visited {
-        color: #ffffff;
+        color: white;
       }
       &:hover, &:active, .muted {
-        background: #424242;
+        background: $base-color;
         border-radius: 32px;
       }
     }
