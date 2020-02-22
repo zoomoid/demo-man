@@ -130,7 +130,6 @@ export default {
       const pos = tag.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
       const { seekable } = this.audio;
-      console.log(pos.width, pos.left, e.clientX, seekPos);
       let seekTarget = this.audio.duration * seekPos;
       if (seekable.start(0) > seekTarget) {
         seekTarget = seekable.start(0);
