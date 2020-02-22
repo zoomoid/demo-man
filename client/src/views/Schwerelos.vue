@@ -10,7 +10,7 @@
       <h2 class="artist">Diode Eins</h2>
       <h1 class="title">Schwerelos (Zoomoid Remix)</h1>
     </div>
-    <AudioManager class="players" :queue="queue"></AudioManager>
+    <AudioManager class="players" :queue="queue" :accentColor="accentColor"></AudioManager>
   </div>
 </template>
 
@@ -72,6 +72,7 @@ export default {
           tags: ['new'],
         },
       ],
+      accentColor: 'linear-gradient(135deg, rgb(109,23,229) 0%, rgb(109,23,229) 19.9%, rgb(255,0,0) 20%, rgb(255,0,0) 39.9%, rgb(255,174,13) 40%, rgb(255,174,13) 59.9%, rgb(133,255,13) 60%, rgb(133,255,13) 79.9%, rgb(0,216,255) 80%, rgb(0,216,255) 100%)',
     };
   },
 };

@@ -8,7 +8,7 @@
         :playStateOverrideBy="currentlyPlayingPlayer"
         v-on:playing="setPlayStateOverride"
         :tags="player.tags || []"
-        :accentColor="player.accentColor"
+        :accentColor="accentColor"
       ></AudioPlayer>
     </div>
     <div v-if="!queue">
@@ -29,7 +29,7 @@ export default {
       type: Array,
       default: undefined,
     },
-    accentCoor: {
+    accentColor: {
       type: String,
       default: '#FFD600',
     },
