@@ -28,7 +28,7 @@ build-staging:
     - docker tag $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/nightly:latest
     - docker push $CI_REGISTRY_IMAGE/nightly:latest
   tags: 
-    - occloxium-docker
+    - kubernetes
 
 build-prod:
   image: docker:latest
@@ -38,7 +38,7 @@ build-prod:
     - docker build -t $CI_REGISTRY_IMAGE/stable .
     - docker push $CI_REGISTRY_IMAGE/stable:latest
   tags: 
-    - occloxium-docker
+    - kubernetes
 
 deploy-prod:
   only:
