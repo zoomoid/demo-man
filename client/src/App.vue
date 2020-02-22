@@ -5,10 +5,10 @@
 </template>
 
 <style lang="scss">
-@import url('https://rsms.me/inter/inter.css');
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono:300,500,700&display=swap');
 
 html {
-  font-family: 'Inter', sans-serif;
+  font-family: 'IBM Plex Mono', sans-serif;
   letter-spacing: -0.03em;
   background: #121212;
   color: #ffffff;
