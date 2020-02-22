@@ -3,15 +3,14 @@
     <Breadcrump></Breadcrump>
     <div class="fill">
       <img
-        src="https://cdn.occloxium.com/i/zoomoid/covers/delay-long-version/cover.png"
+        src="https://cdn.occloxium.com/i/zoomoid/covers/shades-of-yellow/cover.png"
       />
     </div>
     <div class="release">
       <h2 class="artist">Zoomoid</h2>
-      <h1 class="title">Delay (Long Version)</h1>
-      <p>No one asked for this, here it is anyways!</p>
+      <h1 class="title">Shades Of Yellow</h1>
     </div>
-    <AudioManager class="players" :queue="queue"></AudioManager>
+    <AudioManager class="players" :queue="queue" :accentColor="'#FFD600'"></AudioManager>
   </div>
 </template>
 
@@ -29,8 +28,14 @@ export default {
       queue: [
         {
           id: 1,
-          name: 'Delay (Long Version)',
-          url: 'https://cdn.occloxium.com/a/zoomoid/demo/delay_long_version.mp3',
+          name: 'Shades Of Yellow',
+          url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/01_Shades_Of_Yellow.mp3',
+          tags: [],
+        },
+        {
+          id: 2,
+          name: 'The Moon',
+          url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/02_The_Moon.mp3',
           tags: [],
         },
       ],
