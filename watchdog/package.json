@@ -1,0 +1,15 @@
+{
+  "name": "watchdog",
+  "version": "1.0.0",
+  "description": "fs watchdog to notify the db backend of newly added files to the demo hub",
+  "main": "index.js",
+  "author": "Alexander Bartolomey",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "chokidar": "^3.3.1",
+    "music-metadata": "^6.3.7",
+    "node-fetch": "^2.6.0"
+  }
+}
