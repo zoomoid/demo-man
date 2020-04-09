@@ -44,8 +44,9 @@ const url = JSON.parse(process.env.PUBLIC_PATH) || {
 const volume = process.env.VOLUME || `.${p.sep}files${p.sep}`; // needs to be slash-terminated!
 
 const fileWatcher = chokidar.watch(`${volume}**.mp3`, {persistent: true, atomic: true, depth: 2});
+const folderWatcher = chokidar.watch(`${volume}`, {persistent: true, atomic: true, depth: 1});
 
-watcher.on('addDir', async path => {
+folderWatcher.on('addDir', async path => {
   log(`Directory has been added`, `type`, `Info`, `directory`, path, `timestamp`, new Date().toLocaleDateString('de-DE'));
   
   let folder = p.basename(path);
@@ -58,7 +59,7 @@ watcher.on('addDir', async path => {
  * Watcher for all new files being added
  * Kicks of the whole process
  */
-watcher.on('add', async path => {
+fileWatcher.on('add', async path => {
   log(`File has been added`, `type`, `Info`, `file`, path, `timestamp`, new Date().toLocaleDateString('de-DE'));
 
   let meta = await readMetadata(path);
@@ -70,24 +71,22 @@ watcher.on('add', async path => {
 
 /**
  * Watcher for file deletions
- * TODO: needs implementation
  */
-watcher.on('unlink', async path => {
+fileWatcher.on('unlink', async path => {
   log(`File ${path} has been removed`, `file`, path, `time`, new Date().toLocaleDateString('de-DE'));
+ 
   log(`Requesting deletion of indexed audio file`, `file`, path, `db`, url);
-
   // API Server querys for full path on delete request
   await removeTrackFromAPI(path);
 });
 
 /**
  * Watcher for album deletions
- * TODO: needs implementation
  */
-watcher.on('unlink', async path => {
+folderWatcher.on('unlinkDir', async path => {
   log(`File ${path} has been removed`, `file`, path, `time`, new Date().toLocaleDateString('de-DE'));
+  
   log(`Requesting deletion of indexed audio file`, `file`, path, `db`, url);
-
   // API Server querys for full path on delete request
   await removeAlbumFromAPI(path);
 });
