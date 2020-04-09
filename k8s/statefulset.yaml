@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: web
+  name: demo-mongodb
+  labels:
+    app: demo-mongodb
+spec:
+  replicas: 1
+  serviceName: demo-mongodb-svc
+  selector:
+    matchLabels:
+      app: demo-mongodb
+  template:
+    metadata:
+      labels:
+        app: demo-mongodb
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: demo-mongodb
+        image: mongo:4.2.5
+        env:
+          - name: "MONGO_INITDB_DATABASE"
+            value: "demo"
+        ports:
+        - containerPort: 27017
+          name: mongod-port
+        resources:
+            limits:
+              cpu: "100m"
+              memory: 2Gi
+            requests:
+              cpu: "50m"
+              memory: 500Mi
+        lifecycle:
+          preStop:
+            exec:
+              command: 
+              - "/bin/sh"
+              - "-c"
+              - "exec mongodump -d demo --archive"
+        volumeMounts:
+          - name: demo-mongodb-data
+            mountPath: /data/db
+      restartPolicy: Always
+      volumes:
+        - name: demo-mongodb-data
+          persistentVolumeClaim:
+            claimName: demo-mongodb-pvc

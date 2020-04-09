@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-zoomoid-de
+  namespace: web
+spec:
+  selector:
+    matchLabels:
+      app: demo-zoomoid-de
+  template:
+    metadata:
+      labels:
+        app: demo-zoomoid-de
+    spec:
+      containers:
+      - name: api
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo.zoomoid.de/api:2.0.0
+        env:
+          - name: MONGOURL
+            value: "mongodb://demo-mondodb:27017"
+          - name: DB
+            value: "demo"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+      - name: client
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo.zoomoid.de/client:2.0.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+      - name: watchdog
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo.zoomoid.de/watchdog:2.0.0
+        env:
+          - name: VOLUME
+            value: '/app/files'
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      restartPolicy: Always
+      imagePullSecrets:
+        - gitlab
+      nodeSelector:
+        view: left # schedule to left-wing as volume for watchdog persists only there
