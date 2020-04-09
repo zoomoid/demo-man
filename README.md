@@ -1,4 +1,4 @@
-# demo-zoomoid-de
+# Demo Man - Your audio demo provider 
 
 Microservice architecture for rapidly providing new demo tracks by Zoomoid.
 
