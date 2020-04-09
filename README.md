@@ -28,3 +28,7 @@ with authentication for the mongodb server to only allow an authenticated user, 
 database, we leverage the services sharing the same subnet inside the Kubernetes cluster. Hence we can reject any
 requests to routes only available to the watchdog coming from outside the cluster subnet. This can obviously be spoofed,
 but we really don't care at the moment.
+
+In the future, we might implement the mentioned mechanism of using RBAC and user credentials for the watchdog to send
+with a POST in order to modify the database and leverage Kubernetes Secrets for mounting the credentials into the
+watchdog container.
