@@ -7,44 +7,55 @@ stages:
     name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:latest
     entrypoint: ['/docker-entrypoint.sh']
   before_script:
-    - echo $kube_config | base64 -d > /root/runner
-    - export KUBECONFIG="$KUBECONFIG:/root/runner"
-    - kubectl config use-context runner@kubernetes
+  - echo $kube_config | base64 -d > /root/runner
+  - export KUBECONFIG="$KUBECONFIG:/root/runner"
+  - kubectl config use-context runner@kubernetes
   tags:
-    - kubernetes
+  - kubernetes
 
-variables:
-  DEPLOYMENT: 'demo-zoomoid-de'
-
-build-staging:
-  except:
-    - master
-  image: docker:latest
-  stage: build
-  script: 
-    - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
-    - docker build -t $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA .
-    - docker push $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA
-    - docker tag $CI_REGISTRY_IMAGE/nightly:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/nightly:latest
-    - docker push $CI_REGISTRY_IMAGE/nightly:latest
-  tags: 
-    - kubernetes
-
-build-prod:
-  image: docker:latest
-  stage: build
-  script: 
-    - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
-    - docker build -t $CI_REGISTRY_IMAGE/stable .
-    - docker push $CI_REGISTRY_IMAGE/stable:latest
-  tags: 
-    - kubernetes
-
-deploy-prod:
+.build-pre:
   only:
-  - master
+  - tags
+  stage: build
+  image: docker:latest
+  before_script:
+  - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
+  tags:
+  - kubernetes
+
+build:api:
+  extends: .build-pre
+  script: 
+    - cd api/
+    - docker build -t $CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG
+
+build:client:
+  extends: .build-pre
+  script: 
+    - cd client/
+    - docker build -t $CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG
+
+build:watchdog:
+  extends: .build-pre
+  script: 
+    - cd watchdog/
+    - docker build -t $CI_REGISTRY_IMAGE/watchdog:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE/watchdog:$CI_COMMIT_TAG
+
+deploy:
+  only:
+  - tags
   stage: deploy
+  variables:
+    CLIENT: "demo-client"
+    API: "demo-api"
+    WATCHDOG: "demo-watchdog"
+    DPL: "demo-zoomoid-de"
   extends: .kubectl
   script:
-  - kubectl rollout restart deployment/$DEPLOYMENT
+  - kubectl --record deployment.apps/$DPL set image deployment.v1.apps/$DPL $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG
+  - kubectl --record deployment.apps/$DPL set image deployment.v1.apps/$DPL $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG
+  - kubectl --record deployment.apps/$DPL set image deployment.v1.apps/$DPL $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG
   
