@@ -1,0 +1,18 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "backend API for DB consistency among audio files in the demo repo. We may later elevate this service to support more than just the demo repository, hence we encapsulate it in a microservice",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alexander Bartolomey",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongodb": "^3.5.5"
+  }
+}
