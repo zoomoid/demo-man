@@ -43,8 +43,16 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        # volumeMounts:
+        #   - mountPath: : '/app/files'
+        #     name: ftp-volume
+      # volumes:
+      # - name: ftp-volume
+      #   persistentVolumeClaim:
+      #     claimName: 
       restartPolicy: Always
       imagePullSecrets:
         - gitlab
       nodeSelector:
         view: left # schedule to left-wing as volume for watchdog persists only there
+
