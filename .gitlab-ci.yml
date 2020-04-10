@@ -4,7 +4,7 @@ stages:
 
 .kubectl:
   image:
-    name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:latest
+    name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:1.18.1
     entrypoint: ['/docker-entrypoint.sh']
   before_script:
   - echo $kube_config | base64 -d > /root/runner
@@ -55,7 +55,7 @@ deploy:
     DPL: "demo-zoomoid-de"
   extends: .kubectl
   script:
-  - kubectl --record deployment.apps/$DPL set image deployment.v1.apps/$DPL $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG
-  - kubectl --record deployment.apps/$DPL set image deployment.v1.apps/$DPL $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG
-  - kubectl --record deployment.apps/$DPL set image deployment.v1.apps/$DPL $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG
+  - kubectl set image deployment/$DPL $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/$DPL $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/$DPL $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
   
