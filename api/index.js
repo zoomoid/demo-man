@@ -1,4 +1,4 @@
-import { log } from './util';
+import { log } from '@zoomoid/log';
 import client from './db';
 import cors from 'cors';
 import express from 'express';
