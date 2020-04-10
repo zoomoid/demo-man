@@ -1,7 +1,7 @@
 import chokidar from 'chokidar';
 import * as metadata from 'music-metadata';
 import fetch from 'node-fetch'; 
-import { log } from './util';
+import { log } from '@zoomoid/log';
 import * as p from 'path';
 
 /**
@@ -93,7 +93,7 @@ folderWatcher.on('unlinkDir', async path => {
 
 /**
  * Requests creation of a new track
- * @param {*} data 
+ * @param {*} data track data to post to the API
  */
 async function postTrackToAPI(data) {
   const resp = await post(`${apiEndpoint}/demo/file`, data);
@@ -133,7 +133,7 @@ async function removeTrackFromAPI(path) {
 
 /**
  * Requests deletion of a previously added album
- * @param {*} path 
+ * @param {*} path directory name that we need to delete
  */
 async function removeAlbumFromAPI(path) {
   const resp = await del(`${apiEndpoint}/demo/folder`, {'path': path});
@@ -211,6 +211,6 @@ async function readMetadata(path){
     "path": path, // full path of file INSIDE volume
     "filename": p.basename(path), // this gets us the last element of the array inline
     "namespace": p.basename(p.dirname(path)),
-    "url": `${url.prefix}://${url.hostname}${p.sep}${url.ftpPrefix}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}`
+    "url": `${url.prefix}://${url.hostname}${p.sep}${url.ftpPrefix}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
   }
 }
