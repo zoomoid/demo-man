@@ -199,6 +199,7 @@ async function readMetadata(path){
     "title": src.common.title,
     "artist": src.common.artist,
     "albumartist": src.common.albumartist,
+    "album": src.common.album,
     "genre": src.common.genre,
     "composer": src.common.composer,
     "comment": src.common.comment,
