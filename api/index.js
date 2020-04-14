@@ -1,7 +1,8 @@
 import { log } from '@zoomoid/log';
-import client from './db';
+import client from './db.js';
 import cors from 'cors';
 import express from 'express';
+import { cover } from './demo-cover.js';
 
 var app = express();
 const demoRouter = express.Router();
@@ -12,7 +13,7 @@ app.use(express.json());
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
 
-app.use('/demo', demoRouter);
+app.use('/api/demo', demoRouter);
 
 /**
  * Default MongoDB database for the demo domain
@@ -130,6 +131,47 @@ demoRouter.get('/', async (req, res, next) => {
 });
 
 /**
+ * Demo stub route for client testing
+ */
+app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
+  try {
+    log(`Received request to demo route`, `type`, `Info`, `route`, req.route)
+    res.status(200).json([
+      {
+        title: 'Shades Of Yellow',
+        album: 'Shades Of Yellow',
+        track: {
+          no: 1,
+          of: 1,
+        },
+        bpm: 120,
+        disk: {
+          no: 1,
+          of: 1,
+        },
+        albumartist: 'Zoomoid',
+        composer: 'Alexander Bartolomey',
+        artist: 'Zoomoid',
+        genre: 'House',
+        year: 2020,
+        comment: '',
+        bitrate: 320000,
+        lossless: false,
+        duration: 377,
+        path: '/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
+        filename: 'Shades Of Yellow.mp3',
+        namespace: 'shades-of-yellow',
+        url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
+        cover: cover,
+      }
+    ])
+  } catch (err) {
+    log(`Demo object seems to have an error`);
+    next(err);
+  }
+});
+
+/**
  * Get all tracks from the API for a certain namespace from the API
  */
 demoRouter.get('/:namespace', async (req, res, next) => {
@@ -147,7 +189,6 @@ demoRouter.get('/:namespace', async (req, res, next) => {
     next(err);
   }
 });
-
 
 app.listen(apiPort, () => {
   log(`Started API server`, `type`, `Info`, `port`, apiPort, `time`, new Date().toLocaleDateString('de-DE'));
