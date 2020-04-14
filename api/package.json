@@ -4,16 +4,16 @@
   "description": "backend API for DB consistency among audio files in the demo repo. We may later elevate this service to support more than just the demo repository, hence we encapsulate it in a microservice",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "Alexander Bartolomey",
   "license": "MIT",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@zoomoid/log": "^1.0.1",
+    "@zoomoid/log": "^1.1.4",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mongodb": "^3.5.5"
+    "mongodb": "^3.5.6"
   }
 }
