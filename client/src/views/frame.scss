@@ -27,3 +27,23 @@
     margin: 0;
   }
 }
+
+.error {
+  font-size: 24pt;
+  text-align: center;
+  width: 50%;
+  margin: 8em auto 0;
+  h1 {
+    font-weight: 900;
+    font-size: 3em;
+    text-align: left;
+  }
+  p {
+    opacity: 0.3;
+    font-size: 0.8em;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

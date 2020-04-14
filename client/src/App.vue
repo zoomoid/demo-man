@@ -5,10 +5,10 @@
 </template>
 
 <style lang="scss">
-@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono:300,500,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,500,700&display=swap');
 
 html {
-  font-family: 'IBM Plex Mono', sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   letter-spacing: -0.03em;
   background: #121212;
   color: #ffffff;
