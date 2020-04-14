@@ -1,7 +1,7 @@
-import { MongoClient } from 'mongodb';
+import { default as mongodb } from 'mongodb';
 
 const client = async (url, db) => {
-  const client = new MongoClient(url);
+  const client = new mongodb.MongoClient(url);
   try {
     await client.connect()
     return client.db(db).collection(db);
