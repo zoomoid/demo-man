@@ -4,6 +4,13 @@
       <div class="title" v-html="name">
 
       </div>
+      <div class="download">
+        <a :href="file" target="_blank">
+          <i class="material-icons-sharp">
+            get_app
+          </i>
+        </a>
+      </div>
       <div class="tags" v-if="tags.length > 0">
         <span class="tag" v-for="tag in tags" v-bind:key="tag">
           {{tag}}
@@ -11,14 +18,14 @@
       </div>
     </div>
     <div class="player">
-      <div class="skip">
+      <!-- <div class="skip">
         <i @click="skipToBeginning" class="material-icons-sharp">
           skip_previous
         </i>
         <i @click="skipToEnd" class="material-icons-sharp">
           skip_next
         </i>
-      </div>
+      </div> -->
       <div class="play-state">
         <i @click="pause" v-if="playing && !paused && !finished" class="material-icons-sharp">
           pause
@@ -36,10 +43,12 @@
       </div>
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
-          <div
+          <!-- <div
           v-bind:style="{ width: progress + '%', background: accentColor }"
-            class="playback-time-indicator"></div>
+            class="playback-time-indicator"></div> -->
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
+          <div class="bg"></div>
+          <div class="fg" v-bind:style="{ width: `${100 - progress}%` }"></div>
         </div>
       </div>
       <div class="playback-time-marks">
@@ -47,21 +56,15 @@
         <span class="playback-time-separator"></span>
         <span class="playback-time-total">{{duration}}</span>
       </div>
-      <div class="volume-control">
+      <!-- <div class="volume-control">
         <i v-if="!this.isMuted" @click="mute" class="material-icons-sharp">
           volume_up
         </i>
         <i v-if="this.isMuted" @click="mute" class="material-icons-sharp muted">
           volume_off
         </i>
-      </div>
-      <div class="download">
-        <a :href="file" target="_blank">
-          <i class="material-icons-sharp">
-            get_app
-          </i>
-        </a>
-      </div>
+      </div> -->
+
     </div>
     <audio
       :src="file"
@@ -261,18 +264,25 @@ export default {
   }
 }
 
-$base-color: rgb(86,86,86);
-$color1: #efefef;
-$color2: #dadada;
+$base-color: rgba(255,255,255,0.2);
+$color1: #121212;
+$color2: #242424;
 $loading-fade: linear-gradient(135deg,
   $color1 0%, $color1 10%, $color2 30%, $color1 50%,
   $color2 70%, $color1  90%, $color1 100%);
 
 .player-wrapper {
+  // Loading animation
   &:not(.loaded) {
     position: relative;
+    height: 16pt;
+    width: 50%;
+    opacity: 0.9;
+    & > .player, .title-wrapper {
+      opacity: 0;
+    }
     &::after {
-      border-radius: 8px;
+      border-radius: 64px;
       z-index: 100;
       position: absolute;
       content: '';
@@ -283,10 +293,10 @@ $loading-fade: linear-gradient(135deg,
       width: 100%;
       height: 100%;
       background: $loading-fade repeat scroll 0% 0% / 200% 100%;
-      animation: 2s ease 0s infinite none running loading;
+      animation: 4s linear 0s infinite none running loading;
     }
     &::before {
-      border-radius: 8px;
+      border-radius: 64px;
       z-index: 99;
       position: absolute;
       content: '';
@@ -296,10 +306,14 @@ $loading-fade: linear-gradient(135deg,
       bottom: 0;
       width: 100%;
       height: 100%;
-      background: #ffffff;
+      background: $color1;
     }
   }
-  padding: 0;
+  display: block;
+  background: #ffffff;
+  border-radius: 20pt;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  padding: 2em;
   margin-bottom: 1em;
   .title-wrapper {
     display: flex;
@@ -313,6 +327,25 @@ $loading-fade: linear-gradient(135deg,
       }
       font-weight: 500;
       // padding-bottom: 8px;
+    }
+    .download {
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      .material-icons-sharp {
+        line-height: 32px;
+        width: 32px;
+        height: 32px;
+        text-align: center;
+        font-size: 150%;
+      }
+      a:link, a:visited {
+        color: #1a1a1a;
+      }
+      &:hover, &:active, .muted {
+        background: $base-color;
+        border-radius: 32px;
+      }
     }
     .tags {
       padding-left: 8px;
@@ -335,47 +368,36 @@ $loading-fade: linear-gradient(135deg,
   .player {
     display: flex;
     align-items: center;
-    .skip {
-      .material-icons-sharp {
-        line-height: 32px;
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-        text-align: center;
-        cursor: pointer;
-        &:hover, &:active {
-          border-radius: 32px;
-          background: $base-color;
-        }
-      }
-    }
     .play-state {
       margin-right: 8px;
-      width: 32px;
-      height: 32px;
+      width: 64px;
+      height: 64px;
       cursor: pointer;
       display: inline-block;
       .material-icons-sharp {
-        line-height: 32px;
-        width: 32px;
-        height: 32px;
+        line-height: 64px;
+        width: 64px;
+        height: 64px;
         text-align: center;
+        font-size: 32pt;
       }
       &:hover, &:active {
         &.paused {
           background: $base-color;
         }
-        background: #424242;
+        background: rgba(255,255,255,0.2);
+        text-shadow: 0 2px 2px rgba(0,0,0,0.2);
         border-radius: 32px;
       }
     }
     .playback-time-wrapper {
       flex-grow: 1;
       .playback-time-bar {
+        flex-grow: 1;
         position: relative;
         display: block;
-        background: $base-color;
-        height: 8px;
+        // background: $base-color;
+        height: 96pt;
         border-radius: 4px;
         width: 100%;
         cursor: pointer;
@@ -389,17 +411,27 @@ $loading-fade: linear-gradient(135deg,
           right: 0;
           width: 100%;
           height: 100%;
-          z-index: 2;
+          z-index: 7;
         }
-        .playback-time-indicator {
-          background: #424242;
-          border-radius: 4px;
+        img, div {
           position: absolute;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          z-index: 1;
-          transition: width .2s ease;
+          display: block;
+          height: 100%;
+          width: 100%;
+          &.bg {
+            width: 100%;
+            opacity: 1;
+            z-index: 5;
+            background-size: 100% 100%;
+            background-image: url('../assets/shades-of-yellow-waveform.png');
+          }
+          &.fg {
+            z-index: 6;
+            right: 0;
+            background-color: #ffffff;
+            opacity: 0.66;
+            transition: width linear 4s;
+          }
         }
       }
     }
@@ -440,24 +472,7 @@ $loading-fade: linear-gradient(135deg,
         border-radius: 32px;
       }
     }
-    .download {
-      width: 32px;
-      height: 32px;
-      cursor: pointer;
-      .material-icons-sharp {
-        line-height: 32px;
-        width: 32px;
-        height: 32px;
-        text-align: center;
-      }
-      a:link, a:visited {
-        color: white;
-      }
-      &:hover, &:active, .muted {
-        background: $base-color;
-        border-radius: 32px;
-      }
-    }
+
   }
 }
 
