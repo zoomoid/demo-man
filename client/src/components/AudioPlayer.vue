@@ -430,7 +430,7 @@ $loading-fade: linear-gradient(135deg,
             right: 0;
             background-color: #ffffff;
             opacity: 0.66;
-            transition: width linear 4s;
+            // transition: width linear 1s;
           }
         }
       }

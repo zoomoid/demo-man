@@ -3,8 +3,12 @@
     <template v-if="this.error">
       <div class="error">
         <h1>404<br>Not Found</h1>
-        <p>{{ this.error }}</p>
-        <router-link to="/">Go back &crarr;</router-link>
+        <p>The song you were looking for could not be found.</p>
+        <p class="err">{{ this.error }}</p>
+        <router-link to="/">
+          <i class="material-icons-sharp">arrow_back</i>
+          <span>Go back</span>
+        </router-link>
       </div>
 
     </template>
