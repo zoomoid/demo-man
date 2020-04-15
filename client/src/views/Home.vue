@@ -38,8 +38,8 @@ div {
       list-style: none outside none;
       font-size: 1.5em;
       a:link, a:visited {
-        color: #ffffff;
-        font-weight: 500;
+        font-weight: 700;
+        color: #1a1a1a;
       }
       &::before {
         content: '/ '

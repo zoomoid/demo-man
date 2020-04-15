@@ -18,7 +18,7 @@ export default {
 .breadcrump {
   padding: 1em 2em 1em 2em;
   a {
-    color: #ffffff;
+    color: #1a1a1a;
     .material-icons-sharp {
       vertical-align: middle;
       line-height: 32px;
@@ -26,7 +26,8 @@ export default {
       height: 32px;
       text-align: center;
       &:hover, &:active, .muted {
-        background: #424242;
+        background: rgba(255,255,255,0.2);
+        text-shadow: 0 2px 2px rgba(0,0,0,0.2);
         border-radius: 32px;
       }
     }

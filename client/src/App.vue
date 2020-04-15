@@ -10,8 +10,8 @@
 html {
   font-family: 'IBM Plex Sans', sans-serif;
   letter-spacing: -0.03em;
-  background: #121212;
-  color: #ffffff;
+  background: #F58B44;
+  color: #1a1a1a;
 }
 body {
   margin: 0;
