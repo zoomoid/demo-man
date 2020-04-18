@@ -28,7 +28,27 @@ const demoDB = process.env.DB || 'demo'
  */
 const clientStub = client(url, demoDB);
 
-demoRouter.route('/file')
+/**
+ * A very simply express.js route guard middleware which just compares a sent token against an expected one.
+ * Neither uses atomic comparison of passwords nor does it cover all expected cases.
+ * It works on a best-effort strategy.
+ */
+const guard = (request, response, next) => {
+  if(!process.env.TOKEN){
+    log(`No token provided as ENV variable`, `type`, `Error`);
+    response.status(500).json({"error": "Error while authenticating"});
+    return
+  }
+  if(request.body.token && request.body.token === process.env.TOKEN){
+    log(`Sucessfully authenticated request`, `type`, `Info`);
+    next();
+  } else {
+    log(`Received unauthorized request`, `type`, `Error`, `attempted_with`, `${request.body.token}`);
+    response.status(401).json({"error": "Unauthorized"});
+  }
+}
+
+demoRouter.route('/file').use(guard)
   /**
    * Add new track to API
    */
@@ -66,7 +86,7 @@ demoRouter.route('/file')
     }
   });
 
-demoRouter.route('/folder')
+demoRouter.route('/folder').use(guard)
   /**
    * Add new album to API
    */
