@@ -12,7 +12,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/srv/cluster/demo-zoomoid-de/mongodb"
+    path: "/mnt/k8s//demo-zoomoid-de/mongodb"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -31,3 +31,35 @@ spec:
     limits:
       storage: 4Gi
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-audio-pv
+  namespace: web
+  labels:
+    app: demo-zoomoid-de
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/k8s/demo-zoomoid-de/audio"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-audio-pvc
+  namespace: web
+  labels:
+    app: demo-zoomoid-de
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+    limits:
+      storage: 10Gi

@@ -23,7 +23,7 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
         ports:
         - containerPort: 8080
       - name: client
@@ -31,25 +31,39 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
         ports:
         - containerPort: 80
       - name: watchdog
         image: registry.git.rwth-aachen.de/occloxium-webdev/demo.zoomoid.de/watchdog:2.0.0
         env:
           - name: VOLUME
-            value: '/app/files'
+            value: "/app/files"
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
-        # volumeMounts:
-        #   - mountPath: : '/app/files'
-        #     name: ftp-volume
-      # volumes:
-      # - name: ftp-volume
-      #   persistentVolumeClaim:
-      #     claimName: 
+            cpu: "100m"
+        volumeMounts:
+          - mountPath: "/app/files"
+            name: audio-volume
+      - name: pusher
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo.zoomoid.de/pusher:2.0.0
+        env:
+          - name: VOLUME
+            value: "/pusher/files"
+          - name: PORT
+            value: "3000"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+          - mountPath: "/pusher/files"
+            name: audio-volume
+      volumes:
+      - name: audio-volume
+        persistentVolumeClaim:
+          claimName: demo-audio-pvc
       restartPolicy: Always
       imagePullSecrets:
         - gitlab
