@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  client:
+    image: docker.pkg.github.com/occloxium/demo-man/client:1.0.0
+    container_name: demo-client
+    restart: on-failure
+    networks: 
+    - frontend
+    ports: 
+    - "8080:80"
+
+  api:
+    image: docker.pkg.github.com/occloxium/demo-man/api:1.0.0
+    container_name: demo-api
+    restart: on-failure
+    environment: 
+      MONGOURL: mongodb://demo-mongodb:27017
+      DB: demo
+    network:
+    - backend
+    - frontend
+    ports: 
+    - "8080:8080"
+
+  watchdog:
+    image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.0.0
+    container_name: demo-watchdog
+    restart: on-failure
+    ports:
+    - "8080:8080"
+    environment: 
+      VOLUME: /app/files
+    volumes:
+    - files:/app/files
+    network:
+    - backend
+
+  db:
+    image: mongo:4.2.5
+    container_name: demo-mongodb
+    restart: on-failure
+    volumes:
+    - db-data:/data/db
+    environment: 
+      MONGO_INITDB_DATABASE: demo
+    ports:
+    - "27017:27017"
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  files:
+  db-data:
