@@ -1,0 +1,16 @@
+{
+  "name": "pusher",
+  "version": "1.0.0",
+  "description": "Pusher is an HTTP front-end for adding new audio files to the demo-man",
+  "main": "index.js",
+  "scripts": {
+    "start": "fastify start index.js"
+  },
+  "author": "Alexander Bartolomey",
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^2.13.1",
+    "fastify-static": "^2.6.0",
+    "fluent-schema": "^0.10.0"
+  }
+}
