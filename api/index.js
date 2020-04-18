@@ -48,11 +48,11 @@ const guard = (request, response, next) => {
   }
 }
 
-demoRouter.route('/file').use(guard)
+demoRouter.route('/file')
   /**
    * Add new track to API
    */
-  .post(async (req, res, next) => {
+  .post(guard, async (req, res, next) => {
     try {
       const doc = req.body;
       doc.type = 'Track';
@@ -71,7 +71,7 @@ demoRouter.route('/file').use(guard)
   /**
    * Delete track from API
    */
-  .delete(async (req, res, next) => {
+  .delete(guard, async (req, res, next) => {
     try {
       const c = await clientStub;
       resp = await c.deleteOne({ path: req.body.path, type: 'Track' });
@@ -86,11 +86,11 @@ demoRouter.route('/file').use(guard)
     }
   });
 
-demoRouter.route('/folder').use(guard)
+demoRouter.route('/folder')
   /**
    * Add new album to API
    */
-  .post(async (req, res, next) => {
+  .post(guard, async (req, res, next) => {
     try {
       const doc = {
         type: 'Album',
@@ -111,7 +111,7 @@ demoRouter.route('/folder').use(guard)
   /**
    * Delete album from API
    */
-  .delete(async (req, res, next) => {
+  .delete(guard, async (req, res, next) => {
     try {
       const path = req.body.path;
       const c = await clientStub;
@@ -211,5 +211,5 @@ demoRouter.get('/:namespace', async (req, res, next) => {
 });
 
 app.listen(apiPort, () => {
-  log(`Started API server`, `type`, `Info`, `port`, apiPort, `time`, new Date().toLocaleDateString('de-DE'));
+  log(`Started API server`, `type`, `Info`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
 });
