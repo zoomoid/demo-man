@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-api-svc
+  name: demo-api
   namespace: web
   labels:
     app: demo-zoomoid-de
@@ -15,7 +15,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-client-svc
+  name: demo-client
   namespace: web
   labels:
     app: demo-zoomoid-de
@@ -32,7 +32,7 @@ metadata:
   namespace: web
   labels:
     app: demo-mongodb
-  name: demo-mongodb-svc
+  name: demo-mongodb
 spec:
   selector:
     app: demo-mongodb
