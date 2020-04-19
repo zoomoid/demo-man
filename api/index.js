@@ -15,6 +15,10 @@ const apiPort = process.env.PORT || '8080';
 
 app.use('/api/demo', demoRouter);
 
+if(!process.env.TOKEN){
+  log(`No auth token provided as ENV variable. POST and DELETE routes will not work`, `type`, `Warning`);
+}
+
 /**
  * Default MongoDB database for the demo domain
  * This is namespaced to make it more easily extensible later on
