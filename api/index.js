@@ -3,13 +3,15 @@ const cors = require('cors');
 const express = require('express');
 const { cover } = require('./demo-cover.js');
 const logger = require('@zoomoid/log');
-var pino = require('express-pino-logger')();
+var pino = require('express-pino-logger');
 
 var app = express();
 const demoRouter = express.Router();
 
 app.use(cors());
-app.use(pino);
+app.use(pino({
+  prettyPrint: { colorize: true }
+}));
 app.use(express.json({
   limit: "10mb"
 }));
