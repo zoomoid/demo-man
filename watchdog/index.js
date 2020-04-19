@@ -11,8 +11,8 @@ const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-zoomoid'
 
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: 'https',
-  hostname: 'cdn.occloxium.com',
-  ftpPrefix: `a${p.sep}zoomoid${p.sep}demo${p.sep}`, // needs to be slash-terminated!
+  hostname: 'files.zoomoid.de',
+  dir: ``, // needs to be slash-terminated!
 };
 
 /**
@@ -171,16 +171,20 @@ async function del(ep, data){
  */
 async function __request(method, ep, data){
   try {
-    const resp = fetch(ep, {
-      mode: 'cors',
-      method: 'POST',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data),
-    });
-    return resp;
+    if(!process.env.DRY_RUN){
+      const resp = fetch(ep, {
+        mode: 'cors',
+        method: 'POST',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+      });
+      return resp;
+    } else {
+      log(`Dry run! Not sending request to API`, `type`, `Warning`, `endpoint`, `${ep}`, `data`, data);
+    }
   } catch (err) {
     log(`Received error response from backend`, `type`, `Error`, `response`, err);
   }
@@ -212,6 +216,6 @@ async function readMetadata(path){
     "path": path, // full path of file INSIDE volume
     "filename": p.basename(path), // this gets us the last element of the array inline
     "namespace": p.basename(p.dirname(path)),
-    "url": `${url.prefix}://${url.hostname}${p.sep}${url.ftpPrefix}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
+    "url": `${url.prefix}://${url.hostname}${p.sep}${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
   }
 }
