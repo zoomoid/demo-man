@@ -41,6 +41,13 @@ spec:
         env:
           - name: VOLUME
             value: "/app/files"
+          - name: PUBLIC_PATH
+            value: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": "demo"}'
+          - name: TOKEN 
+            valueFrom:
+              secretKeyRef:
+                name: demo-zoomoid-de-api-token-secret
+                key: token
         resources:
           limits:
             memory: "128Mi"
@@ -48,20 +55,20 @@ spec:
         volumeMounts:
           - mountPath: "/app/files"
             name: audio-volume
-      - name: pusher
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo.zoomoid.de/pusher:2.0.0
-        env:
-          - name: VOLUME
-            value: "/pusher/files"
-          - name: PORT
-            value: "3000"
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
-        volumeMounts:
-          - mountPath: "/pusher/files"
-            name: audio-volume
+      # - name: pusher
+      #   image: docker.pkg.github.com/occloxium/demo-man/pusher:2.0.0
+      #   env:
+      #     - name: VOLUME
+      #       value: "/pusher/files"
+      #     - name: PORT
+      #       value: "3000"
+      #   resources:
+      #     limits:
+      #       memory: "128Mi"
+      #       cpu: "100m"
+      #   volumeMounts:
+      #     - mountPath: "/pusher/files"
+      #       name: audio-volume
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
