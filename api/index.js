@@ -1,8 +1,8 @@
-import { log } from '@zoomoid/log';
-import client from './db.js';
-import cors from 'cors';
-import express from 'express';
-import { cover } from './demo-cover.js';
+const client = require('./db.js');
+const cors = require('cors');
+const express = require('express');
+const { cover } = require('./demo-cover.js');
+const logger = require('@zoomoid/log');
 
 var app = express();
 const demoRouter = express.Router();
@@ -16,7 +16,7 @@ const apiPort = process.env.PORT || '8080';
 app.use('/api/demo', demoRouter);
 
 if(!process.env.TOKEN){
-  log(`No auth token provided as ENV variable. POST and DELETE routes will not work`, `type`, `Warning`);
+  logger.warn(`No auth token provided as ENV variable. POST and DELETE routes will not work`);
 }
 
 /**
@@ -39,15 +39,15 @@ const clientStub = client(url, demoDB);
  */
 const guard = (request, response, next) => {
   if(!process.env.TOKEN){
-    log(`No token provided as ENV variable`, `type`, `Error`);
+    logger.error(`No token provided as ENV variable`);
     response.status(500).json({"error": "Error while authenticating"});
     return
   }
   if(request.body.token && request.body.token === process.env.TOKEN){
-    log(`Sucessfully authenticated request`, `type`, `Info`);
+    logger.info(`Sucessfully authenticated request`);
     next();
   } else {
-    log(`Received unauthorized request`, `type`, `Error`, `attempted_with`, `${request.body.token}`);
+    logger.error(`Received unauthorized request`, `attempted_with`, `${request.body.token}`);
     response.status(401).json({"error": "Unauthorized"});
   }
 }
@@ -62,13 +62,13 @@ demoRouter.route('/file')
       doc.type = 'Track';
       const c = await clientStub;
       resp = await c.insertOne(doc);
-      log(`Successfully inserted document into MongoDB storage`, `type`, `Info`, `inserted`, `${JSON.stringify(req.body).substr(0, 80)}...`);
+      logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   })
@@ -79,13 +79,13 @@ demoRouter.route('/file')
     try {
       const c = await clientStub;
       resp = await c.deleteOne({ path: req.body.path, type: 'Track' });
-      log(`Successfully deleted document from MongoDB storage`, `type`, `Info`, `deletedTrack`, `${req.body.path}`);
+      logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   });
@@ -108,7 +108,7 @@ demoRouter.route('/folder')
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   })
@@ -123,14 +123,14 @@ demoRouter.route('/folder')
         c.deleteMany({ type: 'Track', namespace: path }),
         c.deleteOne({ type: 'Album', name: path }),
       ]);
-      log(`Successfully deleted document from MongoDB storage`, `type`, `Info`, `deletedAlbum`, `${req.body.path}`);
+      logger.info(`Successfully deleted document from MongoDB storage`, `deletedAlbum`, `${req.body.path}`);
 
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   });
@@ -149,7 +149,7 @@ demoRouter.get('/', async (req, res, next) => {
       'data': resp
     });
   } catch (err) {
-    log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+    logger.error(`Received error from MongoDB (driver)`, `response`, err);
     next(err);
   }
 });
@@ -159,7 +159,7 @@ demoRouter.get('/', async (req, res, next) => {
  */
 app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
   try {
-    log(`Received request to demo route`, `type`, `Info`, `route`, req.route)
+    logger.info(`Received request to demo route`, `route`, req.route)
     res.status(200).json([
       {
         title: 'Shades Of Yellow',
@@ -190,7 +190,7 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
       }
     ])
   } catch (err) {
-    log(`Demo object seems to have an error`);
+    logger.error(`Demo object seems to have an error`);
     next(err);
   }
 });
@@ -209,11 +209,11 @@ demoRouter.get('/:namespace', async (req, res, next) => {
       'data': resp
     });
   } catch (err) {
-    log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+    logger.error(`Received error from MongoDB (driver)`, `response`, err);
     next(err);
   }
 });
 
 app.listen(apiPort, () => {
-  log(`Started API server`, `type`, `Info`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
+  logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
 });

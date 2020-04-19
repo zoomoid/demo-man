@@ -1,4 +1,5 @@
-import { default as mongodb } from 'mongodb';
+const mongodb = require('mongodb');
+const logger = require('@zoomoid/log');
 
 const client = async (url, db) => {
   const client = new mongodb.MongoClient(url);
@@ -6,7 +7,7 @@ const client = async (url, db) => {
     await client.connect()
     return client.db(db).collection(db);
   } catch (err) {
-    console.error(err);
+    logger.error(`Encountered error while connecting to mongodb`, `error`, err);
   }
 }
 
