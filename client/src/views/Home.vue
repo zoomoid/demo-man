@@ -1,6 +1,6 @@
 <template>
   <div>
-      <div class="error" v-if="!this.directories">
+      <div class="error" v-if="!this.directories.length">
           <h1>There's nothing here...
           </h1>
           <p>
@@ -24,16 +24,22 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data: () => ({
     error: null,
-    directories: [
-      'shades-of-yellow',
-      'delay',
-      '301',
-      'schwerelos',
-    ],
+    directories: [],
   }),
+  mounted() {
+    axios.get('/api/v1/demo').then((v) => {
+      // at this point, v is an array of tracks. We assume they share the same
+      // metadata, hence we just pick the first one and roll with it
+      this.directories = v.data;
+    }).catch((err) => {
+      this.error = err;
+    });
+  },
 };
 </script>
 

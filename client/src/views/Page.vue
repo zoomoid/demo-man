@@ -15,7 +15,7 @@
     <template v-else>
       <Breadcrump></Breadcrump>
       <div class="fill">
-        <img :src="`data:image/gif;base64,${album.cover}`"/>
+        <img :src="`data:${album.cover.format};base64,${album.cover.data}`"/>
       </div>
       <div class="release">
         <h2 class="artist">{{album.artist}}</h2>
@@ -45,7 +45,7 @@ export default {
     };
   },
   mounted() {
-    axios.get(`http://localhost:8080/api/stub/${this.$route.params.id}`).then((v) => {
+    axios.get(`/api/v1/demo/${this.$route.params.id}`).then((v) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
       const f = v.data[0];
