@@ -4,13 +4,13 @@ metadata:
   name: demo-api-svc
   namespace: web
   labels:
-    app: demo-zoomoid-de
+    app: demo-api
 spec:
   selector:
-    app: demo-zoomoid-de
+    app: demo-api
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 80
+    targetPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -18,10 +18,10 @@ metadata:
   name: demo-client-svc
   namespace: web
   labels:
-    app: demo-zoomoid-de
+    app: demo-client
 spec:
   selector:
-    app: demo-zoomoid-de
+    app: demo-client
   ports:
   - port: 80
     targetPort: 80
