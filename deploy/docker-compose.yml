@@ -35,7 +35,7 @@ services:
       PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
       TOKEN: demotoken
       API_ENDPOINT: http://demo-api
-      DRY_RUN: true
+      DRY_RUN: "true"
     volumes:
     - ./files:/app/files
     networks:
