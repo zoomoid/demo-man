@@ -17,6 +17,7 @@ services:
     environment: 
       MONGOURL: mongodb://demo-mongodb:27017
       DB: demo
+      TOKEN: demotoken
     networks:
     - backend
     - frontend
@@ -31,8 +32,12 @@ services:
     - "8082:8080"
     environment: 
       VOLUME: /app/files
+      PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
+      TOKEN: demotoken
+      API_ENDPOINT: http://demo-api
+      DRY_RUN: true
     volumes:
-    - files:/app/files
+    - ./files:/app/files
     networks:
     - backend
 
@@ -54,5 +59,4 @@ networks:
   backend:
 
 volumes:
-  files:
   db-data:
