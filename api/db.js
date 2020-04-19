@@ -11,4 +11,4 @@ const client = async (url, db) => {
   }
 }
 
-export default client
+module.exports = client

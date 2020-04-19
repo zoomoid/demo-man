@@ -3,17 +3,26 @@ const cors = require('cors');
 const express = require('express');
 const { cover } = require('./demo-cover.js');
 const logger = require('@zoomoid/log');
+var pino = require('express-pino-logger')();
 
 var app = express();
 const demoRouter = express.Router();
 
 app.use(cors());
-app.use(express.json());
+app.use(pino);
+app.use(express.json({
+  limit: "10mb"
+}));
+
+// app.use(express.urlencoded({
+//   limit: '10mb'
+// }));
+// app.use(pino)
 
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
 
-app.use('/api/demo', demoRouter);
+app.use('/api/v1/demo', demoRouter);
 
 if(!process.env.TOKEN){
   logger.warn(`No auth token provided as ENV variable. POST and DELETE routes will not work`);
@@ -52,11 +61,16 @@ const guard = (request, response, next) => {
   }
 }
 
+app.get('/ping', (_, response) => {
+  response.send("pong.");
+});
+
 demoRouter.route('/file')
   /**
    * Add new track to API
    */
   .post(guard, async (req, res, next) => {
+    logger.info('Received POST request on /file route');
     try {
       const doc = req.body;
       doc.type = 'Track';
@@ -95,10 +109,12 @@ demoRouter.route('/folder')
    * Add new album to API
    */
   .post(guard, async (req, res, next) => {
+    logger.info('Received POST request on /folder route', `path`, req.body);
+
     try {
       const doc = {
         type: 'Album',
-        name: req.body.path
+        name: req.body.album
       };
 
       const c = await clientStub;
@@ -139,11 +155,13 @@ demoRouter.route('/folder')
  * Get all albums from the API
  */
 demoRouter.get('/', async (req, res, next) => {
+  logger.info(`Received request to /`, `route`, req.route)
+
   try {
-    const c = await clientStub;
+    const c = await client(url, demoDB);
 
-    resp = await c.find({ type: 'Album' });
-
+    resp = await c.find({ type: 'Album' }).toArray();
+    
     res.status(200).json({
       'success': 'true',
       'data': resp
@@ -186,7 +204,10 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
         filename: 'Shades Of Yellow.mp3',
         namespace: 'shades-of-yellow',
         url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
-        cover: cover,
+        cover: {
+          data: cover,
+          format: 'image/png',
+        },
       }
     ])
   } catch (err) {
@@ -202,7 +223,7 @@ demoRouter.get('/:namespace', async (req, res, next) => {
   try {
     const c = await clientStub;
 
-    resp = await c.find({ type: 'Track', namespace: req.params.namespace });
+    resp = await c.find({ type: 'Track', namespace: req.params.namespace }).toArray();
 
     res.status(200).json({
       'success': 'true',
@@ -214,6 +235,10 @@ demoRouter.get('/:namespace', async (req, res, next) => {
   }
 });
 
-app.listen(apiPort, () => {
-  logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
+app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
+  if(err){
+    logger.error(`Error occured on API server startup`, `error`, err);
+  } else {
+    logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
+  }
 });
