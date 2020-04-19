@@ -5,7 +5,6 @@
   "main": "index.js",
   "author": "Alexander Bartolomey",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "start": "node index.js"
   },

@@ -3,11 +3,12 @@ const metadata = require('music-metadata');
 const fetch = require('node-fetch'); 
 const logger = require('@zoomoid/log');
 const p = require('path');
+const fs = require('fs');
 
 /**
  * API Server endpoint to query
  */
-const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api'
+const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo'
 
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: 'https',
@@ -102,7 +103,7 @@ fileWatcher.on('unlink', async path => {
 folderWatcher.on('unlinkDir', async path => {
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
 
-  log(`Directory has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
+  logger.info(`Directory has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
   
   // API Server querys for full path on delete request
   await removeAlbumFromAPI(reducedFilename);
@@ -113,8 +114,8 @@ folderWatcher.on('unlinkDir', async path => {
  * @param {*} data track data to post to the API
  */
 async function postTrackToAPI(data) {
-  const resp = await post(`${apiEndpoint}/demo/file`, data);
-  if (resp && resp.status !== 200) {
+  const resp = await post(`${apiEndpoint}/file`, data);
+  if (resp && resp.status == 200) {
     logger.info(`Successfully posted track to API`, `response`, resp);
   } else {
     logger.error(`Received error status from API`, `response`, resp);
@@ -126,7 +127,7 @@ async function postTrackToAPI(data) {
  * @param {string} album album title
  */
 async function postAlbumToAPI(album) {
-  const resp = await post(`${apiEndpoint}/demo/folder`, {'album': album});
+  const resp = await post(`${apiEndpoint}/folder`, {'album': album});
   if (resp && resp.status == 200) {
     logger.info(`Successfully posted album to API`, `response`, resp);
   } else {
@@ -139,7 +140,7 @@ async function postAlbumToAPI(album) {
  * @param {string} path path of the audio file to query the DB with
  */
 async function removeTrackFromAPI(path) {
-  const resp = await del(`${apiEndpoint}/demo/file`, {'path': path});
+  const resp = await del(`${apiEndpoint}/file`, {'path': path});
   logger.info(`Requesting deletion of indexed track`, `file`, path, `db`, url, `ep`, apiEndpoint);
 
   if (resp && resp.status == 200) {
@@ -154,7 +155,7 @@ async function removeTrackFromAPI(path) {
  * @param {*} path directory name that we need to delete
  */
 async function removeAlbumFromAPI(path) {
-  const resp = await del(`${apiEndpoint}/demo/folder`, {'path': path});
+  const resp = await del(`${apiEndpoint}/folder`, {'path': path});
   logger.info(`Requesting deletion of indexed album`, `file`, path, `db`, url, `ep`, apiEndpoint);
 
   if (resp && resp.status == 200) {
@@ -224,6 +225,8 @@ async function readMetadata(path){
 
   logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
 
+  fs.writeFileSync(p.join(volume, p.dirname(path), 'cover.txt'), JSON.stringify(src.common.picture[0]));
+
   return {
     "year": src.common.year,
     "track": src.common.track,
@@ -239,7 +242,10 @@ async function readMetadata(path){
     "duration": src.format.duration,
     "lossless": src.format.lossless,
     "bitrate": src.format.bitrate,
-    "cover": src.common.picture,
+    "cover": {
+      "format": src.common.picture[0].format,
+      "data": src.common.picture[0].data.toString('base64'),
+    },
     "path": path, // full path of file INSIDE volume
     "filename": p.basename(path), // this gets us the last element of the array inline
     "namespace": p.basename(p.dirname(path)),
