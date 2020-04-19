@@ -2,7 +2,7 @@ version: "3"
 
 services:
   client:
-    image: client:latest
+    build: ../client
     container_name: demo-client
     restart: on-failure
     networks: 
@@ -11,10 +11,13 @@ services:
     - "8081:80"
 
   api:
-    image: api:latest
+    build: ../api
     container_name: demo-api
     restart: on-failure
+    depends_on: 
+    - db
     environment: 
+      PORT: "8080"
       MONGOURL: mongodb://demo-mongodb:27017
       DB: demo
       TOKEN: demotoken
@@ -25,7 +28,7 @@ services:
     - "8080:8080"
 
   watchdog:
-    image: watchdog:latest
+    build: ../watchdog
     container_name: demo-watchdog
     restart: on-failure
     ports:
@@ -34,8 +37,7 @@ services:
       VOLUME: /app/files
       PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
       TOKEN: demotoken
-      API_ENDPOINT: http://demo-api
-      DRY_RUN: "true"
+      API_ENDPOINT: 'http://demo-api:8080/api/v1/demo'
     volumes:
     - ./files:/app/files
     networks:
