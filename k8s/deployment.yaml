@@ -14,9 +14,10 @@ spec:
       labels:
         app: demo-api
     spec:
+      restartPolicy: Always
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:1.0.0
+        image: docker.pkg.github.com/occloxium/demo-man/api:1.1.2
         env:
           - name: MONGOURL
             value: "mongodb://demo-mondodb:27017"
@@ -52,9 +53,10 @@ spec:
       labels:
         app: demo-client
     spec:
+      restartPolicy: Always
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:1.0.0
+        image: docker.pkg.github.com/occloxium/demo-man/client:1.1.2
         resources:
           limits:
             memory: "128Mi"
@@ -80,7 +82,7 @@ spec:
     spec:
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.0.0
+        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.1.2
         env:
           - name: VOLUME
             value: "/app/files"
@@ -105,8 +107,3 @@ spec:
         persistentVolumeClaim:
           claimName: demo-audio-pvc
       restartPolicy: Always
-      imagePullSecrets:
-        - gitlab
-      nodeSelector:
-        view: left # schedule to left-wing as volume for watchdog persists only there
-
