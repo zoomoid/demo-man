@@ -7,7 +7,7 @@ import * as p from 'path';
 /**
  * API Server endpoint to query
  */
-const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-zoomoid'
+const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api'
 
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: 'https',
