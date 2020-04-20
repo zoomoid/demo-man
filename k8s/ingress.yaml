@@ -18,7 +18,7 @@ spec:
       - path: /
         backend:
           serviceName: demo-client
-          servicePort: 80
+          servicePort: 8081
       - path: /api
         backend:
           serviceName: demo-api

@@ -10,7 +10,7 @@ spec:
   capacity:
     storage: 4Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   hostPath:
     path: "/mnt/k8s/demo-zoomoid-de/mongodb"
 ---
@@ -24,7 +24,7 @@ metadata:
 spec:
   storageClassName: manual
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 2Gi
