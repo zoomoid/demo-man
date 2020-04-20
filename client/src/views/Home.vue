@@ -32,10 +32,10 @@ export default {
     directories: [],
   }),
   mounted() {
-    axios.get('/api/v1/demo').then((v) => {
+    axios.get('/api/v1/demo').then((response) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
-      this.directories = v.data;
+      this.directories = response.data.data.map((v) => v.name);
     }).catch((err) => {
       this.error = err;
     });

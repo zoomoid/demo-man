@@ -45,16 +45,16 @@ export default {
     };
   },
   mounted() {
-    axios.get(`/api/v1/demo/${this.$route.params.id}`).then((v) => {
+    axios.get(`/api/v1/demo/${this.$route.params.id}`).then((response) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
-      const f = v.data[0];
+      const f = response.data.data[0];
       this.album = {
         title: f.title,
         artist: f.albumartist,
         cover: f.cover,
       };
-      this.queue = v.data.map((track) => ({
+      this.queue = response.data.data.map((track) => ({
         id: track.track.no,
         name: track.title,
         url: track.url,
