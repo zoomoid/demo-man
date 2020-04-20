@@ -54,7 +54,7 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
-  depth: 1,
+  depth: 2,
   awaitWriteFinish: true,
 });
 const folderWatcher = chokidar.watch(`${volume}/`, {
