@@ -22,4 +22,4 @@ spec:
       - path: /api
         backend:
           serviceName: demo-api
-          servicePort: 80
+          servicePort: 8080

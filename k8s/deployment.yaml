@@ -26,7 +26,7 @@ spec:
           - name: DB
             value: "demo"
           - name: PORT
-            value: "80"
+            value: "8080"
           - name: TOKEN 
             valueFrom:
               secretKeyRef:
@@ -37,7 +37,7 @@ spec:
             memory: "128Mi"
             cpu: "100m"
         ports:
-        - containerPort: 80
+        - containerPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
