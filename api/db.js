@@ -2,10 +2,11 @@ const mongodb = require('mongodb');
 const logger = require('@zoomoid/log');
 
 const state = {
-  db: null
+  db: null,
+  collection: null,
 }
 
-exports.connect = (url, db) => {
+exports.connect = (url, collection) => {
   return new Promise((resolve, reject) => {
     if (state.db) {
       logger.info(`Using cached database connection`);
@@ -14,7 +15,7 @@ exports.connect = (url, db) => {
 
     mongodb.MongoClient.connect(url).then((db) => {
       logger.info(`Successfully connected to mongodb`);
-
+      state.collection = collection;
       state.db = db;
       resolve(state.db);
     }).catch((err) => {
@@ -25,7 +26,7 @@ exports.connect = (url, db) => {
 }
 
 exports.get = () => {
-  return state.db;
+  return state.db.collection(state.collection);
 }
 
 exports.close = () => {
