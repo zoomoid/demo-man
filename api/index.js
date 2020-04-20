@@ -46,7 +46,8 @@ const guard = (request, response, next) => {
     return
   }
   if(request.body.token && request.body.token === process.env.TOKEN){
-    logger.info(`Sucessfully authenticated request`);
+    logger.info(`Sucessfully authenticated request. Detaching token from body`);
+    delete request.body.token;
     next();
   } else {
     logger.error(`Received unauthorized request`, `attempted_with`, `${request.body.token}`);
