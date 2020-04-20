@@ -14,9 +14,9 @@ exports.connect = (url, collection) => {
     } 
 
     mongodb.MongoClient.connect(url).then((db) => {
-      logger.info(`Successfully connected to mongodb`);
       state.collection = collection;
       state.db = db;
+      logger.info(`Successfully connected to mongodb`, `db`, state.db, `collection`, state.collection);
       resolve(state.db);
     }).catch((err) => {
       logger.error(`Encountered error while connecting connection`, `error`, err);
