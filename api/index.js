@@ -9,7 +9,7 @@ var app = express();
 const demoRouter = express.Router();
 
 app.use(cors());
-app.use(pino());
+// app.use(pino());
 app.use(express.json({
   limit: "3mb"
 }));
