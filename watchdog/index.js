@@ -51,7 +51,6 @@ const token = process.env.TOKEN;
 const volume = process.env.VOLUME || `.`; // needs to be slash-terminated!
 
 const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
-  ignore: `${volume}/*.mp3`,
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
