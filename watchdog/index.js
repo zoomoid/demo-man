@@ -50,8 +50,21 @@ const token = process.env.TOKEN;
  */
 const volume = process.env.VOLUME || `.`; // needs to be slash-terminated!
 
-const fileWatcher = chokidar.watch(`${volume}/**/**.mp3`, {persistent: true, atomic: true, depth: 2});
-const folderWatcher = chokidar.watch(`${volume}/`, {persistent: true, atomic: true, depth: 1});
+const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
+  ignore: `${volume}/*.mp3`,
+  ignoreInitial: true,
+  persistent: true, 
+  atomic: true, 
+  depth: 2,
+  awaitWriteFinish: true,
+});
+const folderWatcher = chokidar.watch(`${volume}/`, {
+  ignoreInitial: true,
+  persistent: true, 
+  atomic: true, 
+  depth: 1,
+  awaitWriteFinish: true,
+});
 logger.info(`Watching directory`, `volume`, volume);
 
 folderWatcher.on('addDir', async path => {
