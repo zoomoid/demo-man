@@ -13,7 +13,7 @@ exports.connect = (url, collection) => {
       resolve(state.db);
     } 
 
-    mongodb.MongoClient.connect(url).then((db) => {
+    mongodb.MongoClient.connect(url, { useUnifiedTopology: true }).then((db) => {
       state.collection = collection;
       state.db = db;
       // console.log(state.db);

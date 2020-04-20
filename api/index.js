@@ -223,7 +223,7 @@ demoRouter.get('/:namespace', async (req, res, next) => {
   }
 });
 
-db.connect(`${url}/${demoDB}`).then(() => {
+db.connect(`${url}/${demoDB}`, demoDB).then(() => {
   app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
     if(err){
       logger.error(`Error occured on API server startup`, `error`, err);
