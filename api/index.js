@@ -106,7 +106,8 @@ demoRouter.route('/folder')
     try {
       const doc = {
         type: 'Album',
-        name: req.body.album
+        name: req.body.album,
+        url: `https://demo.zoomoid.de/api/v1/demo/${req.body.album}`,
       };
 
       resp = await db.get().insertOne(doc);
