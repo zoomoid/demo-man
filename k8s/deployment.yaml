@@ -22,7 +22,7 @@ spec:
         image: docker.pkg.github.com/occloxium/demo-man/api:1.1.2
         env:
           - name: MONGOURL
-            value: "mongodb://demo-mondodb:27017"
+            value: "mongodb://demo-mongodb:27017"
           - name: DB
             value: "demo"
           - name: PORT

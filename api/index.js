@@ -1,4 +1,4 @@
-const client = require('./db.js');
+const db = require('./db.js');
 const cors = require('cors');
 const express = require('express');
 const { cover } = require('./demo-cover.js');
@@ -35,13 +35,6 @@ if(!process.env.TOKEN){
  * This is namespaced to make it more easily extensible later on
  */
 const demoDB = process.env.DB || 'demo'
-
-/**
- * Refactored mongodb client collection
- * Stub this, as we then can simply await the already resolved Promise kept globally available rather than open a new
- * connection on each API call
- */
-const clientStub = client(url, demoDB);
 
 /**
  * A very simply express.js route guard middleware which just compares a sent token against an expected one.
@@ -237,10 +230,16 @@ demoRouter.get('/:namespace', async (req, res, next) => {
   }
 });
 
-app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
-  if(err){
-    logger.error(`Error occured on API server startup`, `error`, err);
-  } else {
-    logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
-  }
-});
+db.connect(`${url}/${demoDB}`).then(() => {
+  app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
+    if(err){
+      logger.error(`Error occured on API server startup`, `error`, err);
+    } else {
+      logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
+    }
+  });
+}).catch((err) => {
+  logger.error(`MongoDB connector failed to connect to database`, `error`, err);
+  process.exit(1);
+})
+
