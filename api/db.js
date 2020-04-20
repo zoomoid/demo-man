@@ -2,6 +2,7 @@ const mongodb = require('mongodb');
 const logger = require('@zoomoid/log');
 
 const state = {
+  __collection: null,
   db: null,
   collection: null,
 }
@@ -14,10 +15,11 @@ exports.connect = (url, collection) => {
     } 
 
     mongodb.MongoClient.connect(url, { useUnifiedTopology: true }).then((db) => {
-      state.collection = collection;
-      state.db = db;
+      state.__collection = collection;
+      state.db = db.db();
+      state.collection = state.db.collection(state.__collection);
       // console.log(state.db);
-      logger.info(`Successfully connected to mongodb`, `collection`, state.collection);
+      logger.info(`Successfully connected to mongodb`, `URI`, url, `collection`, state.__collection);
       resolve(state.db);
     }).catch((err) => {
       console.log(err);
@@ -28,7 +30,8 @@ exports.connect = (url, collection) => {
 }
 
 exports.get = () => {
-  return state.db.collection(state.collection);
+  logger.info(`Access to collection recorded`, `collection`, state.__collection);
+  return state.collection;
 }
 
 exports.close = () => {

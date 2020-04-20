@@ -19,7 +19,7 @@ spec:
         - name: github
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:latest
+        image: docker.pkg.github.com/occloxium/demo-man/api:1.1.14
         env:
           - name: MONGOURL
             value: "mongodb://demo-mongodb:27017"
@@ -60,7 +60,7 @@ spec:
         - name: github
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:latest
+        image: docker.pkg.github.com/occloxium/demo-man/client:1.1.14
         resources:
           limits:
             memory: "128Mi"
@@ -88,7 +88,7 @@ spec:
         - name: github
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:latest
+        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.1.14
         env:
           - name: VOLUME
             value: "/app/files"

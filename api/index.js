@@ -9,11 +9,9 @@ var app = express();
 const demoRouter = express.Router();
 
 app.use(cors());
-app.use(pino({
-  prettyPrint: { colorize: true }
-}));
+app.use(pino());
 app.use(express.json({
-  limit: "10mb"
+  limit: "3mb"
 }));
 
 // app.use(express.urlencoded({
