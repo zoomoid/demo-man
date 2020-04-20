@@ -69,8 +69,7 @@ demoRouter.route('/file')
     try {
       const doc = req.body;
       doc.type = 'Track';
-      const c = await clientStub;
-      resp = await c.insertOne(doc);
+      resp = await db.get().insertOne(doc);
       logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
         'success': true,
@@ -86,8 +85,7 @@ demoRouter.route('/file')
    */
   .delete(guard, async (req, res, next) => {
     try {
-      const c = await clientStub;
-      resp = await c.deleteOne({ path: req.body.path, type: 'Track' });
+      resp = await db.get().deleteOne({ path: req.body.path, type: 'Track' });
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
       res.status(200).json({
         'success': true,
@@ -129,7 +127,7 @@ demoRouter.route('/folder')
   .delete(guard, async (req, res, next) => {
     try {
       const path = req.body.path;
-      const c = await clientStub;
+      const c = db.get();
       resp = await Promise.all([
         c.deleteMany({ type: 'Track', namespace: path }),
         c.deleteOne({ type: 'Album', name: path }),
@@ -153,9 +151,7 @@ demoRouter.get('/', async (req, res, next) => {
   logger.info(`Received request to /`, `route`, req.route)
 
   try {
-    const c = await clientStub;
-
-    resp = await c.find({ type: 'Album' }).toArray();
+    resp = await db.get().find({ type: 'Album' }).toArray();
     
     res.status(200).json({
       'success': 'true',
@@ -216,9 +212,7 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
  */
 demoRouter.get('/:namespace', async (req, res, next) => {
   try {
-    const c = await clientStub;
-
-    resp = await c.find({ type: 'Track', namespace: req.params.namespace }).toArray();
+    resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray();
 
     res.status(200).json({
       'success': 'true',
