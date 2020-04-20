@@ -160,7 +160,7 @@ demoRouter.get('/', async (req, res, next) => {
   logger.info(`Received request to /`, `route`, req.route)
 
   try {
-    const c = await client(url, demoDB);
+    const c = await clientStub;
 
     resp = await c.find({ type: 'Album' }).toArray();
     
