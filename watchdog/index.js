@@ -225,7 +225,7 @@ async function readMetadata(path){
 
   logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
 
-  fs.writeFileSync(p.join(volume, p.dirname(path), 'cover.txt'), JSON.stringify(src.common.picture[0]));
+  // fs.writeFile(p.join(volume, p.dirname(path), 'cover.txt'), JSON.stringify(src.common.picture[0]));
 
   return {
     "year": src.common.year,
