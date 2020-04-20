@@ -1,7 +1,7 @@
-import { readFileSync } from 'fs';
+const fs = require('fs');
 
-const cover = readFileSync('./demo-cover').toString();
+const cover = fs.readFileSync('./demo-cover').toString();
 
-export {
-  cover as cover
-};
+module.exports = {
+  cover: cover,
+}

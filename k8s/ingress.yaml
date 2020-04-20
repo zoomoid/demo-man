@@ -17,6 +17,9 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: demo-client-svc
-          servicePort: 80
-    # We dont want any ingress rules for the API as it should not be reachable from outside the cluster
+          serviceName: demo-client
+          servicePort: 8081
+      - path: /api
+        backend:
+          serviceName: demo-api
+          servicePort: 8080

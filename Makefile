@@ -6,17 +6,29 @@ all: build tag push
 version:
 	@echo $(VERSION)
 
-build:
+build-latest:
+	@echo Building locally...
 	docker build -t api api/
 	docker build -t watchdog watchdog/
 	docker build -t client client/
 
+build:
+	docker build -t api:$(VERSION) api/
+	docker build -t watchdog:$(VERSION) watchdog/
+	docker build -t client:$(VERSION) client/
+
 tag: build
-	docker tag api:latest $(GH_REG_PREFIX)/api:$(VERSION)	
-	docker tag watchdog:latest $(GH_REG_PREFIX)/watchdog:$(VERSION)	
-	docker tag client:latest $(GH_REG_PREFIX)/client:$(VERSION)
+	docker tag api:$(VERSION) $(GH_REG_PREFIX)/api:$(VERSION)	
+	docker tag watchdog:$(VERSION) $(GH_REG_PREFIX)/watchdog:$(VERSION)	
+	docker tag client:$(VERSION) $(GH_REG_PREFIX)/client:$(VERSION)
 
 push: build tag
 	docker push $(GH_REG_PREFIX)/api:$(VERSION)
 	docker push $(GH_REG_PREFIX)/watchdog:$(VERSION)
 	docker push $(GH_REG_PREFIX)/client:$(VERSION)
+
+api:
+	docker build -t api:latest api/
+	docker tag api:latest $(GH_REG_PREFIX)/api:latest
+	docker push $(GH_REG_PREFIX)/api:latest
+

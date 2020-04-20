@@ -1,19 +1,32 @@
-import { log } from '@zoomoid/log';
-import client from './db.js';
-import cors from 'cors';
-import express from 'express';
-import { cover } from './demo-cover.js';
+const db = require('./db.js');
+const cors = require('cors');
+const express = require('express');
+const { cover } = require('./demo-cover.js');
+const logger = require('@zoomoid/log');
+var pino = require('express-pino-logger');
 
 var app = express();
 const demoRouter = express.Router();
 
 app.use(cors());
-app.use(express.json());
+// app.use(pino());
+app.use(express.json({
+  limit: "3mb"
+}));
+
+// app.use(express.urlencoded({
+//   limit: '10mb'
+// }));
+// app.use(pino)
 
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
 
-app.use('/api/demo', demoRouter);
+app.use('/api/v1/demo', demoRouter);
+
+if(!process.env.TOKEN){
+  logger.warn(`No auth token provided as ENV variable. POST and DELETE routes will not work`);
+}
 
 /**
  * Default MongoDB database for the demo domain
@@ -22,111 +35,110 @@ app.use('/api/demo', demoRouter);
 const demoDB = process.env.DB || 'demo'
 
 /**
- * Refactored mongodb client collection
- * Stub this, as we then can simply await the already resolved Promise kept globally available rather than open a new
- * connection on each API call
- */
-const clientStub = client(url, demoDB);
-
-/**
  * A very simply express.js route guard middleware which just compares a sent token against an expected one.
  * Neither uses atomic comparison of passwords nor does it cover all expected cases.
  * It works on a best-effort strategy.
  */
 const guard = (request, response, next) => {
   if(!process.env.TOKEN){
-    log(`No token provided as ENV variable`, `type`, `Error`);
+    logger.error(`No token provided as ENV variable`);
     response.status(500).json({"error": "Error while authenticating"});
     return
   }
   if(request.body.token && request.body.token === process.env.TOKEN){
-    log(`Sucessfully authenticated request`, `type`, `Info`);
+    logger.info(`Sucessfully authenticated request. Detaching token from body`);
+    delete request.body.token;
     next();
   } else {
-    log(`Received unauthorized request`, `type`, `Error`, `attempted_with`, `${request.body.token}`);
+    logger.error(`Received unauthorized request`, `attempted_with`, `${request.body.token}`);
     response.status(401).json({"error": "Unauthorized"});
   }
 }
 
-demoRouter.route('/file').use(guard)
+app.get('/ping', (_, response) => {
+  response.send("pong.");
+});
+
+demoRouter.route('/file')
   /**
    * Add new track to API
    */
-  .post(async (req, res, next) => {
+  .post(guard, async (req, res, next) => {
+    logger.info('Received POST request on /file route');
     try {
       const doc = req.body;
       doc.type = 'Track';
-      const c = await clientStub;
-      resp = await c.insertOne(doc);
-      log(`Successfully inserted document into MongoDB storage`, `type`, `Info`, `inserted`, `${JSON.stringify(req.body).substr(0, 80)}...`);
+      resp = await db.get().insertOne(doc);
+      logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   })
   /**
    * Delete track from API
    */
-  .delete(async (req, res, next) => {
+  .delete(guard, async (req, res, next) => {
     try {
-      const c = await clientStub;
-      resp = await c.deleteOne({ path: req.body.path, type: 'Track' });
-      log(`Successfully deleted document from MongoDB storage`, `type`, `Info`, `deletedTrack`, `${req.body.path}`);
+      resp = await db.get().deleteOne({ path: req.body.path, type: 'Track' });
+      logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   });
 
-demoRouter.route('/folder').use(guard)
+demoRouter.route('/folder')
   /**
    * Add new album to API
    */
-  .post(async (req, res, next) => {
+  .post(guard, async (req, res, next) => {
+    logger.info('Received POST request on /folder route', `path`, req.body);
+
     try {
       const doc = {
         type: 'Album',
-        name: req.body.path
+        name: req.body.album,
+        url: `https://demo.zoomoid.de/api/v1/demo/${req.body.album}`,
       };
 
-      const c = await clientStub;
-      resp = await c.insertOne(doc);
+      resp = await db.get().insertOne(doc);
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   })
   /**
    * Delete album from API
    */
-  .delete(async (req, res, next) => {
+  .delete(guard, async (req, res, next) => {
     try {
       const path = req.body.path;
-      const c = await clientStub;
+      const c = db.get();
       resp = await Promise.all([
         c.deleteMany({ type: 'Track', namespace: path }),
         c.deleteOne({ type: 'Album', name: path }),
       ]);
-      log(`Successfully deleted document from MongoDB storage`, `type`, `Info`, `deletedAlbum`, `${req.body.path}`);
+      logger.info(`Successfully deleted document from MongoDB storage`, `deletedAlbum`, `${req.body.path}`);
 
       res.status(200).json({
         'success': true,
         'response': resp,
       });
     } catch (err) {
-      log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+      logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
     }
   });
@@ -135,17 +147,17 @@ demoRouter.route('/folder').use(guard)
  * Get all albums from the API
  */
 demoRouter.get('/', async (req, res, next) => {
+  logger.info(`Received request to /`, `route`, req.route)
+
   try {
-    const c = await clientStub;
-
-    resp = await c.find({ type: 'Album' });
-
+    resp = await db.get().find({ type: 'Album' }).toArray();
+    
     res.status(200).json({
       'success': 'true',
       'data': resp
     });
   } catch (err) {
-    log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+    logger.error(`Received error from MongoDB (driver)`, `response`, err);
     next(err);
   }
 });
@@ -155,7 +167,7 @@ demoRouter.get('/', async (req, res, next) => {
  */
 app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
   try {
-    log(`Received request to demo route`, `type`, `Info`, `route`, req.route)
+    logger.info(`Received request to demo route`, `route`, req.route)
     res.status(200).json([
       {
         title: 'Shades Of Yellow',
@@ -182,11 +194,14 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
         filename: 'Shades Of Yellow.mp3',
         namespace: 'shades-of-yellow',
         url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
-        cover: cover,
+        cover: {
+          data: cover,
+          format: 'image/png',
+        },
       }
     ])
   } catch (err) {
-    log(`Demo object seems to have an error`);
+    logger.error(`Demo object seems to have an error`);
     next(err);
   }
 });
@@ -196,20 +211,28 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
  */
 demoRouter.get('/:namespace', async (req, res, next) => {
   try {
-    const c = await clientStub;
-
-    resp = await c.find({ type: 'Track', namespace: req.params.namespace });
+    resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray();
 
     res.status(200).json({
       'success': 'true',
       'data': resp
     });
   } catch (err) {
-    log(`Received error from MongoDB (driver)`, `type`, `Error`, `response`, err);
+    logger.error(`Received error from MongoDB (driver)`, `response`, err);
     next(err);
   }
 });
 
-app.listen(apiPort, () => {
-  log(`Started API server`, `type`, `Info`, `port`, apiPort, `time`, new Date().toLocaleDateString('de-DE'));
-});
+db.connect(`${url}/${demoDB}`, demoDB).then(() => {
+  app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
+    if(err){
+      logger.error(`Error occured on API server startup`, `error`, err);
+    } else {
+      logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
+    }
+  });
+}).catch((err) => {
+  logger.error(`MongoDB connector failed to connect to database`, `error`, err);
+  process.exit(1);
+})
+

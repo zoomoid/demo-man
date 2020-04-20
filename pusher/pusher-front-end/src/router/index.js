@@ -1,10 +1,16 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import UploadForm from "../components/UploadForm.vue";
+import Success from "../components/Success.vue";
 
 Vue.use(VueRouter);
 
 const routes = [
+  {
+    path: "/success",
+    name: "Success",
+    component: Success
+  },
   {
     path: "/",
     name: "Upload",
@@ -13,7 +19,6 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  mode: "history",
   base: process.env.BASE_URL,
   routes
 });

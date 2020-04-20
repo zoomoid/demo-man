@@ -10,9 +10,9 @@ spec:
   capacity:
     storage: 4Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   hostPath:
-    path: "/mnt/k8s//demo-zoomoid-de/mongodb"
+    path: "/mnt/k8s/demo-zoomoid-de/mongodb"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,7 +24,7 @@ metadata:
 spec:
   storageClassName: manual
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 2Gi
@@ -43,9 +43,9 @@ spec:
   capacity:
     storage: 8Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   hostPath:
-    path: "/mnt/k8s/demo-zoomoid-de/audio"
+    path: "/mnt/k8s/demo-man"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -57,7 +57,7 @@ metadata:
 spec:
   storageClassName: manual
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 5Gi
