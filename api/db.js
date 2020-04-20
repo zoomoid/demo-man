@@ -17,7 +17,7 @@ exports.connect = (url, collection) => {
       state.collection = collection;
       state.db = db;
       console.log(state.db);
-      logger.info(`Successfully connected to mongodb`, `db`, state.db, `collection`, state.collection);
+      logger.info(`Successfully connected to mongodb`, `collection`, state.collection);
       resolve(state.db);
     }).catch((err) => {
       console.log(err);

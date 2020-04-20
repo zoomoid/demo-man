@@ -26,3 +26,9 @@ push: build tag
 	docker push $(GH_REG_PREFIX)/api:$(VERSION)
 	docker push $(GH_REG_PREFIX)/watchdog:$(VERSION)
 	docker push $(GH_REG_PREFIX)/client:$(VERSION)
+
+api:
+	docker build -t api:latest api/
+	docker tag api:latest $(GH_REG_PREFIX)/api:latest
+	docker push $(GH_REG_PREFIX)/api:latest
+
