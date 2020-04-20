@@ -110,8 +110,7 @@ demoRouter.route('/folder')
         name: req.body.album
       };
 
-      const c = await clientStub;
-      resp = await c.insertOne(doc);
+      resp = await db.get().insertOne(doc);
       res.status(200).json({
         'success': true,
         'response': resp,
