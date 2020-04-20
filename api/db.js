@@ -16,9 +16,11 @@ exports.connect = (url, collection) => {
     mongodb.MongoClient.connect(url).then((db) => {
       state.collection = collection;
       state.db = db;
+      console.log(state.db);
       logger.info(`Successfully connected to mongodb`, `db`, state.db, `collection`, state.collection);
       resolve(state.db);
     }).catch((err) => {
+      console.log(err);
       logger.error(`Encountered error while connecting connection`, `error`, err);
       reject(err);
     });
