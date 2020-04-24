@@ -71,7 +71,6 @@ demoRouter.route('/file')
       resp = await db.get().insertOne(doc);
       logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -87,7 +86,6 @@ demoRouter.route('/file')
       resp = await db.get().deleteOne({ path: req.body.path, type: 'Track' });
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -112,7 +110,6 @@ demoRouter.route('/folder')
 
       resp = await db.get().insertOne(doc);
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -134,7 +131,6 @@ demoRouter.route('/folder')
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedAlbum`, `${req.body.path}`);
 
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -153,7 +149,6 @@ demoRouter.get('/', async (req, res, next) => {
     resp = await db.get().find({ type: 'Album' }).toArray();
     
     res.status(200).json({
-      'success': 'true',
       'data': resp
     });
   } catch (err) {
@@ -214,11 +209,24 @@ demoRouter.get('/:namespace', async (req, res, next) => {
     resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray();
 
     res.status(200).json({
-      'success': 'true',
       'data': resp
     });
   } catch (err) {
     logger.error(`Received error from MongoDB (driver)`, `response`, err);
+    next(err);
+  }
+});
+
+demoRouter.get('/:namespace/cover', async (req, res, next) => {
+  try {
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace });
+
+    res.status(200).json({
+      cover: resp.cover.url,
+      mimeType: resp.cover.mimeType,
+    });
+  } catch (err) {
+    logger.error('Error while fetching cover image', `namespace`, `${req.params.id}`);
     next(err);
   }
 });
