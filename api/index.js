@@ -190,7 +190,7 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
         namespace: 'shades-of-yellow',
         url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
         cover: {
-          data: cover,
+          url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/cover.png',
           format: 'image/png',
         },
       }
@@ -221,10 +221,7 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace });
 
-    res.status(200).json({
-      cover: resp.cover.url,
-      mimeType: resp.cover.mimeType,
-    });
+    res.redirect(resp.cover.url);
   } catch (err) {
     logger.error('Error while fetching cover image', `namespace`, `${req.params.id}`);
     next(err);
