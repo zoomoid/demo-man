@@ -238,9 +238,9 @@ async function readMetadata(path){
 
   logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
 
-  const mimeType = src.common.picture[0].format.replace("image/", "");
+  const mimeType = src.common.picture[0].format;
 
-  fs.writeFile(p.join(volume, p.dirname(path), `cover.${mimeType}`), src.common.picture[0].data);
+  fs.writeFile(p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`), src.common.picture[0].data);
 
   return {
     "year": src.common.year,
