@@ -238,7 +238,9 @@ async function readMetadata(path){
 
   logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
 
-  // fs.writeFile(p.join(volume, p.dirname(path), 'cover.txt'), JSON.stringify(src.common.picture[0]));
+  const mimeType = src.common.picture[0].format.replace("image/", "");
+
+  fs.writeFile(p.join(volume, p.dirname(path), `cover.${mimeType}`), src.common.picture[0].data);
 
   return {
     "year": src.common.year,
@@ -256,8 +258,8 @@ async function readMetadata(path){
     "lossless": src.format.lossless,
     "bitrate": src.format.bitrate,
     "cover": {
-      "format": src.common.picture[0].format,
-      "data": src.common.picture[0].data.toString('base64'),
+      "mimeType": mimeType,
+      "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${imgType}`
     },
     "path": path, // full path of file INSIDE volume
     "filename": p.basename(path), // this gets us the last element of the array inline
