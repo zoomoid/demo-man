@@ -3,7 +3,7 @@ const metadata = require('music-metadata');
 const fetch = require('node-fetch'); 
 const logger = require('@zoomoid/log');
 const p = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 
 /**
  * API Server endpoint to query
@@ -234,36 +234,42 @@ async function __request(method, ep, data){
  * @param {string} path to new file 
  */
 async function readMetadata(path){
-  const src = await metadata.parseFile(p.join(volume, path));
+  try {
+    const src = await metadata.parseFile(p.join(volume, path));
 
-  logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
+    logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
+  
+    const mimeType = src.common.picture[0].format;
+    const path = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
+    logger.info("Writing cover to file", "filename", path, "mimeType", mimeType);
+    await fs.writeFile(path, src.common.picture[0].data);
 
-  const mimeType = src.common.picture[0].format;
-
-  fs.writeFile(p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`), src.common.picture[0].data);
-
-  return {
-    "year": src.common.year,
-    "track": src.common.track,
-    "title": src.common.title,
-    "artist": src.common.artist,
-    "albumartist": src.common.albumartist,
-    "album": src.common.album,
-    "genre": src.common.genre,
-    "composer": src.common.composer,
-    "comment": src.common.comment,
-    "bpm": src.common.bpm,
-    "type": src.format.container,
-    "duration": src.format.duration,
-    "lossless": src.format.lossless,
-    "bitrate": src.format.bitrate,
-    "cover": {
-      "mimeType": mimeType,
-      "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${mimeType.replace("image/", "")}`
-    },
-    "path": path, // full path of file INSIDE volume
-    "filename": p.basename(path), // this gets us the last element of the array inline
-    "namespace": p.basename(p.dirname(path)),
-    "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
+    return {
+      "year": src.common.year,
+      "track": src.common.track,
+      "title": src.common.title,
+      "artist": src.common.artist,
+      "albumartist": src.common.albumartist,
+      "album": src.common.album,
+      "genre": src.common.genre,
+      "composer": src.common.composer,
+      "comment": src.common.comment,
+      "bpm": src.common.bpm,
+      "type": src.format.container,
+      "duration": src.format.duration,
+      "lossless": src.format.lossless,
+      "bitrate": src.format.bitrate,
+      "cover": {
+        "mimeType": mimeType,
+        "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${mimeType.replace("image/", "")}`
+      },
+      "path": path, // full path of file INSIDE volume
+      "filename": p.basename(path), // this gets us the last element of the array inline
+      "namespace": p.basename(p.dirname(path)),
+      "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
+    }    
+  } catch (err) {
+    logger.error("Error while parsing audio metadata", "error", err);
   }
+
 }
