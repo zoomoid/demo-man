@@ -234,15 +234,17 @@ async function __request(method, ep, data){
  * @param {string} path to new file 
  */
 async function readMetadata(path){
+  console.log(path);
   try {
+    logger.info(`Reading IDv3 off of audio file`, `path`, path);
     const src = await metadata.parseFile(p.join(volume, path));
 
     logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
   
     const mimeType = src.common.picture[0].format;
-    const path = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
-    logger.info("Writing cover to file", "filename", path, "mimeType", mimeType);
-    fs.writeFileSync(path, src.common.picture[0].data);
+    const abspath = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
+    logger.info("Writing cover to file", "filename", abspath, "mimeType", mimeType);
+    fs.writeFileSync(abspath, src.common.picture[0].data);
 
     return {
       "year": src.common.year,
@@ -269,6 +271,7 @@ async function readMetadata(path){
       "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
     }    
   } catch (err) {
+    console.log(err);
     logger.error("Error while parsing audio metadata", "error", err);
   }
 
