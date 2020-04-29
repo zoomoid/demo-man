@@ -16,6 +16,7 @@ app.use(express.json({
 
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
+const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api:8080/api/v1/demo'
 const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man:5000/wavify'
 app.use('/api/v1/demo', demoRouter);
 
@@ -128,7 +129,7 @@ demoRouter.route('/folder')
       const doc = {
         type: 'Album',
         name: req.body.album,
-        url: `https://demo.zoomoid.de/api/v1/demo/${req.body.album}`,
+        url: `${apiEndpoint}/${req.body.album}`,
       };
 
       resp = await db.get().insertOne(doc);

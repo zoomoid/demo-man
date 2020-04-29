@@ -11,4 +11,4 @@ RUN npm ci
 
 ADD . .
 
-CMD [ "npm", "start", "|", "pino-pretty"]
+CMD [ "npm", "start" ]
