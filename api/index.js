@@ -16,7 +16,7 @@ app.use(express.json({
 
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
-const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man:5000/'
+const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man:5000/wavify'
 app.use('/api/v1/demo', demoRouter);
 
 if(!process.env.TOKEN){
