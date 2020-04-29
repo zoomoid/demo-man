@@ -3,7 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const { cover } = require('./demo-cover.js');
 const logger = require('@zoomoid/log');
-var pino = require('express-pino-logger');
+const fetch = require('node-fetch');
 
 var app = express();
 const demoRouter = express.Router();
@@ -14,14 +14,9 @@ app.use(express.json({
   limit: "3mb"
 }));
 
-// app.use(express.urlencoded({
-//   limit: '10mb'
-// }));
-// app.use(pino)
-
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
-
+const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man:5000/'
 app.use('/api/v1/demo', demoRouter);
 
 if(!process.env.TOKEN){
@@ -55,8 +50,25 @@ const guard = (request, response, next) => {
   }
 }
 
+const waveManHook = (url, name) => {
+  logger.info("Requesting waveform from wave-man", "url", wavemanUrl, "track", name)
+  return new Promise((resolve, reject) => {
+    fetch(wavemanUrl).then((res) => {
+      logger.info("WaveMan rendered audio waveform", "track", name, "trackUrl", url);
+      resolve(res.text());
+    }).catch((err) => {
+      logger.error("WaveMan responded unexcepectedly", "error", err, "track", name, "wavemanUrl", wavemanUrl, "trackUrl", url);
+      reject(err);
+    });
+  });
+}
+
 app.get('/ping', (_, response) => {
   response.send("pong.");
+});
+
+app.get('/healthz', (_, response) => {
+  response.status(200).send("ok");
 });
 
 demoRouter.route('/file')
@@ -68,6 +80,11 @@ demoRouter.route('/file')
     try {
       const doc = req.body;
       doc.type = 'Track';
+
+      // Get SVG waveform from waveman
+      svg = await waveManHook(doc.url, doc.title);
+      doc.waveform = svg
+
       resp = await db.get().insertOne(doc);
       logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
