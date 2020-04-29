@@ -53,7 +53,13 @@ const guard = (request, response, next) => {
 const waveManHook = (url, name) => {
   logger.info("Requesting waveform from wave-man", "url", wavemanUrl, "track", name)
   return new Promise((resolve, reject) => {
-    fetch(wavemanUrl).then((res) => {
+    fetch(wavemanUrl, { 
+      method: 'POST',
+      body:    JSON.stringify({
+        uri: url,
+      }),
+      headers: { 'Content-Type': 'application/json' } 
+    }).then((res) => {
       logger.info("WaveMan rendered audio waveform", "track", name, "trackUrl", url);
       resolve(res.text());
     }).catch((err) => {
