@@ -64,7 +64,7 @@ spec:
         - name: github
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man-server:2.6
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man-server:2.7
         resources:
           limits:
             memory: "128Mi"
@@ -91,7 +91,7 @@ spec:
         - name: github
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:1.3.5
+        image: docker.pkg.github.com/occloxium/demo-man/client:1.3.6
         resources:
           limits:
             memory: "128Mi"
@@ -119,7 +119,7 @@ spec:
       - name: github
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.3.5
+        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.3.6
         env:
         - name: VOLUME
           value: "/app/files"

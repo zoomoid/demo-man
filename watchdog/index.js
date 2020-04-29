@@ -63,7 +63,10 @@ const folderWatcher = chokidar.watch(`${volume}/`, {
   persistent: true, 
   atomic: true, 
   depth: 1,
-  awaitWriteFinish: true,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 100,
+  },
 });
 logger.info(`Watching directory`, `volume`, volume);
 
