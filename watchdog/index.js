@@ -54,8 +54,11 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
-  depth: 2,
-  awaitWriteFinish: true,
+  depth: 1,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 100,
+  },
 });
 const folderWatcher = chokidar.watch(`${volume}/`, {
   ignored: '**/.**',
@@ -107,7 +110,7 @@ fileWatcher.on('add', async path => {
 fileWatcher.on('unlink', async path => {
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
 
-  logger.info(`File  has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
+  logger.info(`File has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
  
   // API Server querys for full path on delete request
   await removeTrackFromAPI(reducedFilename);
