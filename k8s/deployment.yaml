@@ -17,7 +17,7 @@ spec:
         - name: github
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:1.3.6
+        image: docker.pkg.github.com/occloxium/demo-man/api:1.4
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -25,6 +25,8 @@ spec:
           value: "demo"
         - name: WAVE_ENDPOINT
           value: http://demo-wave-man:5000/wavify
+        - name: API_ENDPOINT
+          value: https://demo.zoomoid.de/api/v1/demo
         - name: PORT
           value: "8080"
         - name: TOKEN 
@@ -64,7 +66,7 @@ spec:
         - name: github
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man-server:2.7
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man-server:2.8
         resources:
           limits:
             memory: "128Mi"
@@ -91,7 +93,7 @@ spec:
         - name: github
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:1.3.6
+        image: docker.pkg.github.com/occloxium/demo-man/client:1.4
         resources:
           limits:
             memory: "128Mi"
@@ -119,14 +121,14 @@ spec:
       - name: github
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.3.6
+        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.4
         env:
         - name: VOLUME
           value: "/app/files"
         - name: PUBLIC_PATH
           value: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
         - name: API_ENDPOINT
-          value: http://demo-api:8080/api/v1/demo
+          value: http://demo-api:8080/api/v1/demo # use service name instead of global public endpoint
         - name: TOKEN 
           valueFrom:
             secretKeyRef:
