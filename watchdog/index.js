@@ -3,7 +3,7 @@ const metadata = require('music-metadata');
 const fetch = require('node-fetch'); 
 const logger = require('@zoomoid/log');
 const p = require('path');
-const fs = require('fs').promises;
+const fs = require('fs');
 
 /**
  * API Server endpoint to query
@@ -242,7 +242,7 @@ async function readMetadata(path){
     const mimeType = src.common.picture[0].format;
     const path = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
     logger.info("Writing cover to file", "filename", path, "mimeType", mimeType);
-    await fs.writeFile(path, src.common.picture[0].data);
+    fs.writeFileSync(path, src.common.picture[0].data);
 
     return {
       "year": src.common.year,
