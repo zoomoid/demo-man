@@ -259,7 +259,7 @@ async function readMetadata(path){
     "bitrate": src.format.bitrate,
     "cover": {
       "mimeType": mimeType,
-      "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${imgType}`
+      "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${mimeType.replace("image/", "")}`
     },
     "path": path, // full path of file INSIDE volume
     "filename": p.basename(path), // this gets us the last element of the array inline
