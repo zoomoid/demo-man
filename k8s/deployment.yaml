@@ -17,7 +17,7 @@ spec:
         - name: github
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:1.4.1
+        image: docker.pkg.github.com/occloxium/demo-man/api:1.4.2
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
