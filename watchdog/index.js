@@ -54,7 +54,7 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
-  depth: 1,
+  depth: 2,
   awaitWriteFinish: {
     stabilityThreshold: 2000,
     pollInterval: 100,
@@ -100,7 +100,7 @@ fileWatcher.on('add', async path => {
   let meta = await readMetadata(reducedFilename);
   logger.info(`Read metadata of audio file`, `file`, reducedFilename, `data`, meta, `length`, meta.length);
   
-  logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `db`, url);
+  logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `publicUrl`, url);
   await postTrackToAPI(meta);
 });
 
@@ -133,6 +133,7 @@ folderWatcher.on('unlinkDir', async path => {
  * @param {*} data track data to post to the API
  */
 async function postTrackToAPI(data) {
+  logger.info(`Requesting addition of track`, `file`, data.title, `ep`, apiEndpoint);
   const resp = await post(`${apiEndpoint}/file`, data);
   if (resp && resp.status == 200) {
     logger.info(`Successfully posted track to API`, `response`, resp);
@@ -146,6 +147,8 @@ async function postTrackToAPI(data) {
  * @param {string} album album title
  */
 async function postAlbumToAPI(album) {
+  logger.info(`Requesting addition of album`, `file`, album, `ep`, apiEndpoint);
+
   const resp = await post(`${apiEndpoint}/folder`, {'album': album});
   if (resp && resp.status == 200) {
     logger.info(`Successfully posted album to API`, `response`, resp);
@@ -212,7 +215,7 @@ async function __request(method, ep, data){
   try {
     if(!process.env.DRY_RUN){
       data.token = token;
-      const resp = fetch(ep, {
+      const resp = await fetch(ep, {
         mode: 'cors',
         method: method,
         cache: 'no-cache',
@@ -223,7 +226,7 @@ async function __request(method, ep, data){
       });
       return resp;
     } else {
-      logger.warn(`Dry run! Not sending request to API`, `endpoint`, `${ep}`, `data`, data);
+      logger.warn(`Dry run! Not sending request to API server`, `endpoint`, `${ep}`, `data`, data);
       return {
         "success": true,
         "note": "dry_run",
@@ -231,7 +234,7 @@ async function __request(method, ep, data){
       }
     }
   } catch (err) {
-    logger.error(`Received error response from backend`, `response`, err);
+    logger.error(`Received error response from API server`, `response`, err, "endpoint", `${ep}`);
   }
 }
 
