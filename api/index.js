@@ -246,7 +246,7 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
 
     res.redirect(resp.cover.url);
   } catch (err) {
-    logger.error('Error while fetching cover image', `namespace`, `${req.params.namespace}`);
+    logger.error('Error while fetching cover image', `namespace`, `${req.params.namespace}`, `error`, err);
     next(err);
   }
 });
@@ -259,8 +259,8 @@ demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
       "Content-Type": "image/svg+xml"
     }).send(resp.waveform.replace(/\\/g, ''));
   } catch (err) {
-    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track._id`, `${req.params.track}`);
-
+    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track._id`, `${req.params.track}`, `error`, err);
+    next(err);
   }
 });
 
