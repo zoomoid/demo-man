@@ -43,11 +43,11 @@
       </div>
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
-          <!-- <div
-          v-bind:style="{ width: progress + '%', background: accentColor }"
-            class="playback-time-indicator"></div> -->
+
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
-          <div class="bg"></div>
+          <!-- <img class="bg" :src="`data:image/svg+xml;base64,${waveform}`"> -->
+          <div class="bg" v-bind:style="{
+            backgroundImage: `url('${waveformUrl}')`}"></div>
           <div class="fg" v-bind:style="{ width: `${100 - progress}%` }"></div>
         </div>
       </div>
@@ -56,14 +56,7 @@
         <span class="playback-time-separator"></span>
         <span class="playback-time-total">{{duration}}</span>
       </div>
-      <!-- <div class="volume-control">
-        <i v-if="!this.isMuted" @click="mute" class="material-icons-sharp">
-          volume_up
-        </i>
-        <i v-if="this.isMuted" @click="mute" class="material-icons-sharp muted">
-          volume_off
-        </i>
-      </div> -->
+
 
     </div>
     <audio
@@ -116,6 +109,10 @@ export default {
     accentColor: {
       type: String,
       default: '#FFD600',
+    },
+    waveformUrl: {
+      type: String,
+      default: '',
     },
   },
   watch: {
@@ -422,8 +419,6 @@ $loading-fade: linear-gradient(135deg,
             width: 100%;
             opacity: 1;
             z-index: 5;
-            background-size: 100% 100%;
-            background-image: url('../assets/shades-of-yellow-waveform.png');
           }
           &.fg {
             z-index: 6;

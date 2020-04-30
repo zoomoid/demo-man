@@ -4,7 +4,7 @@
       <div class="error">
         <h1>404<br>Not Found</h1>
         <p>The song you were looking for could not be found.</p>
-        <p class="err">{{ this.error }}</p>
+        <!-- <p class="err">{{ this.error }}</p> -->
         <router-link to="/">
           <i class="material-icons-sharp">arrow_back</i>
           <span>Go back</span>
@@ -15,7 +15,7 @@
     <template v-else>
       <Breadcrump></Breadcrump>
       <div class="fill">
-        <img :src="`data:${album.cover.format};base64,${album.cover.data}`"/>
+        <img :src="`https://demo.zoomoid.de/api/v1/demo/${this.$route.params.id}/cover`"/>
       </div>
       <div class="release">
         <h2 class="artist">{{album.artist}}</h2>
@@ -45,19 +45,22 @@ export default {
     };
   },
   mounted() {
-    axios.get(`/api/v1/demo/${this.$route.params.id}`).then((response) => {
+    axios.get(`https://demo.zoomoid.de/api/v1/demo/${this.$route.params.id}`).then((response) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
       const f = response.data.data[0];
       this.album = {
-        title: f.title,
+        title: f.album,
         artist: f.albumartist,
         cover: f.cover,
       };
       this.queue = response.data.data.map((track) => ({
-        id: track.track.no,
+        id: track._id, // eslint-disable-line
+        no: track.track.no,
         name: track.title,
         url: track.url,
+        waveformUrl:
+          `https://demo.zoomoid.de/api/v1/demo/${this.$route.params.id}/${track._id}/waveform`, // eslint-disable-line
         tags: [],
       }));
     }).catch((err) => {

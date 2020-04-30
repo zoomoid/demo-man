@@ -9,10 +9,11 @@
         v-on:playing="setPlayStateOverride"
         :tags="player.tags || []"
         :accentColor="accentColor"
+        :waveform="player.waveform"
       ></AudioPlayer>
     </div>
     <div v-if="!queue">
-      <span>No commits for release yet...</span>
+      <span>No tracks added yet...</span>
     </div>
   </div>
 </template>
