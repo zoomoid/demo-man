@@ -256,7 +256,7 @@ demoRouter.get('/:namespace/:track', async (req, res, next) => {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
 
     if(resp){
-      resp.waveformUrl = `${API_ENDPOINT}/${req.params.namespace}/${req.params.track}/waveform`;
+      resp.waveformUrl = `${apiEndpoint}/${req.params.namespace}/${req.params.track}/waveform`;
       res.json(resp);  
     } else {
       res.status(404).send("Not found");
