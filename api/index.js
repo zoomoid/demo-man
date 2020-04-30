@@ -59,9 +59,9 @@ const waveManHook = (url, name) => {
         uri: url,
       }),
       headers: { 'Content-Type': 'application/json' } 
-    }).then((res) => {
+    }).then((res) => res.json()).then((res) => {
       logger.info("WaveMan rendered audio waveform", "track", name, "trackUrl", url);
-      resolve(res.text());
+      resolve(res.svg);
     }).catch((err) => {
       logger.error("WaveMan responded unexcepectedly", "error", err, "track", name, "wavemanUrl", wavemanUrl, "trackUrl", url);
       reject(err);
