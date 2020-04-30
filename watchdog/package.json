@@ -1,6 +1,6 @@
 {
   "name": "watchdog",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "fs watchdog to notify the db backend of newly added files to the demo hub",
   "main": "index.js",
   "author": "Alexander Bartolomey",
