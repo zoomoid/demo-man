@@ -251,6 +251,22 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
   }
 });
 
+demoRouter.get('/:namespace/:track', async (req, res, next) => {
+  try {
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
+
+    if(resp){
+      resp.waveformUrl = `${API_ENDPOINT}/${req.params.namespace}/${req.params.track}/waveform`;
+      res.json(resp);  
+    } else {
+      res.status(404).send("Not found");
+    }
+  } catch (err) {
+    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
+    next(err);
+  }
+});
+
 demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
