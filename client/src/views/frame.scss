@@ -1,8 +1,15 @@
-.players, .release, .fill {
-  padding: 2em 2em 2em 2em;
+.release, .fill {
+  padding: 2em 2em;
   width: 100%;
-  max-width: 66%;
   // text-align: center;
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+.players {
+  width: 100%;
+  // text-align: center;
+  max-width: 1024px;
   margin: 0 auto;
 }
 
@@ -13,6 +20,7 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     border-radius: 8px;
     width: 100%;
+    max-width: 450px;
   }
 }
 .release {

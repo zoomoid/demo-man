@@ -43,9 +43,7 @@
       </div>
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
-
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
-          <!-- <img class="bg" :src="`data:image/svg+xml;base64,${waveform}`"> -->
           <div class="bg" v-bind:style="{
             backgroundImage: `url('${waveformUrl}')`}"></div>
           <div class="fg" v-bind:style="{ width: `${100 - progress}%` }"></div>
@@ -95,6 +93,10 @@ export default {
       default: false,
     },
     id: {
+      type: String,
+      default: -1,
+    },
+    no: {
       type: Number,
       default: -1,
     },
@@ -117,7 +119,7 @@ export default {
   },
   watch: {
     playStateOverrideBy() {
-      if (this.playStateOverrideBy !== this.id || this.playStateOverrideBy === -1) {
+      if (this.playStateOverrideBy !== this.no || this.playStateOverrideBy === -1) {
         this.pause();
         this.$emit('paused');
       }
@@ -147,7 +149,7 @@ export default {
       this.audio.currentTime = 0;
     },
     play() {
-      this.$emit('playing', this.id);
+      this.$emit('playing', this.no);
       this.finished = false;
       this.playing = true;
       this.paused = false;
@@ -308,10 +310,11 @@ $loading-fade: linear-gradient(135deg,
   }
   display: block;
   background: #ffffff;
-  border-radius: 20pt;
+  border-top-left-radius: 16pt;
+  border-top-right-radius: 16pt;
   box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-  padding: 2em;
-  margin-bottom: 1em;
+  padding: 1em;
+  margin-bottom: -16pt;
   .title-wrapper {
     display: flex;
     align-items: center;
@@ -367,14 +370,14 @@ $loading-fade: linear-gradient(135deg,
     align-items: center;
     .play-state {
       margin-right: 8px;
-      width: 64px;
-      height: 64px;
+      width: 48px;
+      height: 48px;
       cursor: pointer;
       display: inline-block;
       .material-icons-sharp {
-        line-height: 64px;
-        width: 64px;
-        height: 64px;
+        line-height: 48px;
+        width: 48px;
+        height: 48px;
         text-align: center;
         font-size: 32pt;
       }
@@ -418,11 +421,14 @@ $loading-fade: linear-gradient(135deg,
           &.bg {
             width: 100%;
             opacity: 1;
-            z-index: 5;
+            z-index: 2;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
           }
           &.fg {
-            z-index: 6;
+            z-index: 3;
             right: 0;
+            height: 80%;
             background-color: #ffffff;
             opacity: 0.66;
             // transition: width linear 1s;

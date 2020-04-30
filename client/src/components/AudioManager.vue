@@ -9,7 +9,8 @@
         v-on:playing="setPlayStateOverride"
         :tags="player.tags || []"
         :accentColor="accentColor"
-        :waveform="player.waveform"
+        :waveformUrl="player.waveformUrl"
+        :no="player.no"
       ></AudioPlayer>
     </div>
     <div v-if="!queue">
