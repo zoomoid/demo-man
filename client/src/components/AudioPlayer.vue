@@ -313,7 +313,7 @@ $loading-fade: linear-gradient(135deg,
   border-top-left-radius: 16pt;
   border-top-right-radius: 16pt;
   box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-  padding: 1em;
+  padding: 2em 2em 4em;
   margin-bottom: -16pt;
   .title-wrapper {
     display: flex;
@@ -424,11 +424,11 @@ $loading-fade: linear-gradient(135deg,
             z-index: 2;
             background-repeat: no-repeat;
             background-size: 100% 100%;
+            height: 128px;
           }
           &.fg {
             z-index: 3;
             right: 0;
-            height: 80%;
             background-color: #ffffff;
             opacity: 0.66;
             // transition: width linear 1s;
