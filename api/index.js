@@ -1,7 +1,6 @@
 const db = require('./db.js');
 const cors = require('cors');
 const express = require('express');
-const { cover } = require('./demo-cover.js');
 const logger = require('@zoomoid/log');
 const fetch = require('node-fetch');
 
