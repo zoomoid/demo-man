@@ -255,9 +255,13 @@ demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
 
-    res.set({
-      "Content-Type": "image/svg+xml"
-    }).send(resp.waveform.replace(/\\/g, ''));
+    if(resp){
+      res.set({
+        "Content-Type": "image/svg+xml"
+      }).send(resp.waveform.replace(/\\/g, ''));  
+    } else {
+      res.status(404).send("Not found");
+    }
   } catch (err) {
     logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
     next(err);
