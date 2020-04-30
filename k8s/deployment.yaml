@@ -24,7 +24,7 @@ spec:
         - name: DB
           value: "demo"
         - name: WAVE_ENDPOINT
-          value: http://demo-wave-man/wavify
+          value: http://demo-wave-man:8080/wavify
         - name: API_ENDPOINT
           value: https://demo.zoomoid.de/api/v1/demo
         - name: PORT
@@ -38,18 +38,18 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
-        startupProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-          failureThreshold: 6
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 10
+        # startupProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 8080
+        #   failureThreshold: 6
+        #   periodSeconds: 10
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 8080
+        #   initialDelaySeconds: 20
+        #   periodSeconds: 10
         ports:
         - containerPort: 8080
 ---
@@ -72,19 +72,20 @@ spec:
         - name: github
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man-server:2.9
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.11.3
         resources:
           limits:
-            memory: "128Mi"
-            cpu: "50m"
+            memory: "1Gi"
+            cpu: "500m"
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: "/app/tmp"
+          name: wave-man-volume
+      volumes:
+      - name: wave-man-volume
+        persistentVolumeClaim:
+          claimName: demo-wave-man-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment

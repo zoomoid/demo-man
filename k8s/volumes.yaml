@@ -63,3 +63,36 @@ spec:
       storage: 5Gi
     limits:
       storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-wave-man-pv
+  namespace: web
+  labels:
+    app: demo-wave-man
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/k8s/demo-wave-man"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-wave-man-pvc
+  namespace: web
+  labels:
+    app: demo-wave-man
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+    limits:
+      storage: 10Gi
