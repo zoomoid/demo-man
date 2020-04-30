@@ -3,7 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const logger = require('@zoomoid/log');
 const fetch = require('node-fetch');
-
+const ObjectID = require('mongodb').ObjectID;
 var app = express();
 const demoRouter = express.Router();
 
@@ -253,7 +253,7 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
 
 demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
   try {
-    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, title: req.params.track });
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
 
     res.set({
       "Content-Type": "image/svg+xml"
