@@ -253,7 +253,7 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
 
 demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
   try {
-    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, name: req.params.track });
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, title: req.params.track });
 
     res.set({
       "Content-Type": "image/svg+xml"
