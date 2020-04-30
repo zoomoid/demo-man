@@ -54,23 +54,22 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
+  usePolling: true,
   depth: 2,
   awaitWriteFinish: {
-    stabilityThreshold: 2000,
-    pollInterval: 100,
+    stabilityThreshold: 3000,
+    pollInterval: 1000,
   },
 });
+
 const folderWatcher = chokidar.watch(`${volume}/`, {
-  ignored: '**/.**',
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
+  usePolling: true,
   depth: 1,
-  awaitWriteFinish: {
-    stabilityThreshold: 2000,
-    pollInterval: 100,
-  },
 });
+
 logger.info(`Watching directory`, `volume`, volume);
 
 folderWatcher.on('addDir', async path => {
