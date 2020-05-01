@@ -43,11 +43,9 @@
       </div>
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
-          <!-- <div
-          v-bind:style="{ width: progress + '%', background: accentColor }"
-            class="playback-time-indicator"></div> -->
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
-          <div class="bg"></div>
+          <div class="bg" v-bind:style="{
+            backgroundImage: `url('${waveformUrl}')`}"></div>
           <div class="fg" v-bind:style="{ width: `${100 - progress}%` }"></div>
         </div>
       </div>
@@ -56,14 +54,7 @@
         <span class="playback-time-separator"></span>
         <span class="playback-time-total">{{duration}}</span>
       </div>
-      <!-- <div class="volume-control">
-        <i v-if="!this.isMuted" @click="mute" class="material-icons-sharp">
-          volume_up
-        </i>
-        <i v-if="this.isMuted" @click="mute" class="material-icons-sharp muted">
-          volume_off
-        </i>
-      </div> -->
+
 
     </div>
     <audio
@@ -102,6 +93,10 @@ export default {
       default: false,
     },
     id: {
+      type: String,
+      default: -1,
+    },
+    no: {
       type: Number,
       default: -1,
     },
@@ -117,10 +112,14 @@ export default {
       type: String,
       default: '#FFD600',
     },
+    waveformUrl: {
+      type: String,
+      default: '',
+    },
   },
   watch: {
     playStateOverrideBy() {
-      if (this.playStateOverrideBy !== this.id || this.playStateOverrideBy === -1) {
+      if (this.playStateOverrideBy !== this.no || this.playStateOverrideBy === -1) {
         this.pause();
         this.$emit('paused');
       }
@@ -150,7 +149,7 @@ export default {
       this.audio.currentTime = 0;
     },
     play() {
-      this.$emit('playing', this.id);
+      this.$emit('playing', this.no);
       this.finished = false;
       this.playing = true;
       this.paused = false;
@@ -265,8 +264,8 @@ export default {
 }
 
 $base-color: rgba(255,255,255,0.2);
-$color1: #121212;
-$color2: #242424;
+$color1: #000000;
+$color2: #161616;
 $loading-fade: linear-gradient(135deg,
   $color1 0%, $color1 10%, $color2 30%, $color1 50%,
   $color2 70%, $color1  90%, $color1 100%);
@@ -275,11 +274,13 @@ $loading-fade: linear-gradient(135deg,
   // Loading animation
   &:not(.loaded) {
     position: relative;
-    height: 16pt;
-    width: 50%;
-    opacity: 0.9;
+    margin: 1em 0;
+    height: 32pt;
+    width: 100%;
+    opacity: 0.5;
     & > .player, .title-wrapper {
       opacity: 0;
+      display: none;
     }
     &::after {
       border-radius: 64px;
@@ -293,7 +294,7 @@ $loading-fade: linear-gradient(135deg,
       width: 100%;
       height: 100%;
       background: $loading-fade repeat scroll 0% 0% / 200% 100%;
-      animation: 4s linear 0s infinite none running loading;
+      animation: 1s ease-in-out 0s infinite none running loading;
     }
     &::before {
       border-radius: 64px;
@@ -309,12 +310,15 @@ $loading-fade: linear-gradient(135deg,
       background: $color1;
     }
   }
-  display: block;
-  background: #ffffff;
-  border-radius: 20pt;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-  padding: 2em;
-  margin-bottom: 1em;
+  &.loaded {
+    display: block;
+    background: #ffffff;
+    border-top-left-radius: 16pt;
+    border-top-right-radius: 16pt;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    padding: 2em 2em 4em;
+    margin-bottom: -16pt;
+  }
   .title-wrapper {
     display: flex;
     align-items: center;
@@ -370,14 +374,14 @@ $loading-fade: linear-gradient(135deg,
     align-items: center;
     .play-state {
       margin-right: 8px;
-      width: 64px;
-      height: 64px;
+      width: 48px;
+      height: 48px;
       cursor: pointer;
       display: inline-block;
       .material-icons-sharp {
-        line-height: 64px;
-        width: 64px;
-        height: 64px;
+        line-height: 48px;
+        width: 48px;
+        height: 48px;
         text-align: center;
         font-size: 32pt;
       }
@@ -421,12 +425,13 @@ $loading-fade: linear-gradient(135deg,
           &.bg {
             width: 100%;
             opacity: 1;
-            z-index: 5;
+            z-index: 2;
+            background-repeat: no-repeat;
             background-size: 100% 100%;
-            background-image: url('../assets/shades-of-yellow-waveform.png');
+            height: 128px;
           }
           &.fg {
-            z-index: 6;
+            z-index: 3;
             right: 0;
             background-color: #ffffff;
             opacity: 0.66;

@@ -1,10 +1,9 @@
 const db = require('./db.js');
 const cors = require('cors');
 const express = require('express');
-const { cover } = require('./demo-cover.js');
 const logger = require('@zoomoid/log');
-var pino = require('express-pino-logger');
-
+const fetch = require('node-fetch');
+const ObjectID = require('mongodb').ObjectID;
 var app = express();
 const demoRouter = express.Router();
 
@@ -14,14 +13,10 @@ app.use(express.json({
   limit: "3mb"
 }));
 
-// app.use(express.urlencoded({
-//   limit: '10mb'
-// }));
-// app.use(pino)
-
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
-
+const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo'
+const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man/wavify'
 app.use('/api/v1/demo', demoRouter);
 
 if(!process.env.TOKEN){
@@ -55,8 +50,31 @@ const guard = (request, response, next) => {
   }
 }
 
+const waveManHook = (url, name) => {
+  logger.info("Requesting waveform from wave-man", "url", wavemanUrl, "track", name)
+  return new Promise((resolve, reject) => {
+    fetch(wavemanUrl, { 
+      method: 'POST',
+      body:    JSON.stringify({
+        uri: url,
+      }),
+      headers: { 'Content-Type': 'application/json' } 
+    }).then((res) => res.json()).then((res) => {
+      logger.info("WaveMan rendered audio waveform", "track", name, "trackUrl", url);
+      resolve(res.svg);
+    }).catch((err) => {
+      logger.error("WaveMan responded unexcepectedly", "error", err, "track", name, "wavemanUrl", wavemanUrl, "trackUrl", url);
+      reject(err);
+    });
+  });
+}
+
 app.get('/ping', (_, response) => {
   response.send("pong.");
+});
+
+app.get('/healthz', (_, response) => {
+  response.status(200).send("ok");
 });
 
 demoRouter.route('/file')
@@ -68,10 +86,14 @@ demoRouter.route('/file')
     try {
       const doc = req.body;
       doc.type = 'Track';
+
+      // Get SVG waveform from waveman
+      svg = await waveManHook(doc.url, doc.title);
+      doc.waveform = svg
+
       resp = await db.get().insertOne(doc);
       logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -87,7 +109,6 @@ demoRouter.route('/file')
       resp = await db.get().deleteOne({ path: req.body.path, type: 'Track' });
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -107,12 +128,11 @@ demoRouter.route('/folder')
       const doc = {
         type: 'Album',
         name: req.body.album,
-        url: `https://demo.zoomoid.de/api/v1/demo/${req.body.album}`,
+        url: `${apiEndpoint}/${req.body.album}`,
       };
 
       resp = await db.get().insertOne(doc);
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -134,7 +154,6 @@ demoRouter.route('/folder')
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedAlbum`, `${req.body.path}`);
 
       res.status(200).json({
-        'success': true,
         'response': resp,
       });
     } catch (err) {
@@ -153,7 +172,6 @@ demoRouter.get('/', async (req, res, next) => {
     resp = await db.get().find({ type: 'Album' }).toArray();
     
     res.status(200).json({
-      'success': 'true',
       'data': resp
     });
   } catch (err) {
@@ -195,7 +213,7 @@ app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
         namespace: 'shades-of-yellow',
         url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
         cover: {
-          data: cover,
+          url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/cover.png',
           format: 'image/png',
         },
       }
@@ -214,11 +232,54 @@ demoRouter.get('/:namespace', async (req, res, next) => {
     resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray();
 
     res.status(200).json({
-      'success': 'true',
       'data': resp
     });
   } catch (err) {
     logger.error(`Received error from MongoDB (driver)`, `response`, err);
+    next(err);
+  }
+});
+
+demoRouter.get('/:namespace/cover', async (req, res, next) => {
+  try {
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace });
+
+    res.redirect(resp.cover.url);
+  } catch (err) {
+    logger.error('Error while fetching cover image', `namespace`, `${req.params.namespace}`, `error`, err);
+    next(err);
+  }
+});
+
+demoRouter.get('/:namespace/:track', async (req, res, next) => {
+  try {
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
+
+    if(resp){
+      resp.waveformUrl = `${apiEndpoint}/${req.params.namespace}/${req.params.track}/waveform`;
+      res.json(resp);  
+    } else {
+      res.status(404).send("Not found");
+    }
+  } catch (err) {
+    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
+    next(err);
+  }
+});
+
+demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
+  try {
+    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
+
+    if(resp){
+      res.set({
+        "Content-Type": "image/svg+xml"
+      }).send(resp.waveform.replace(/\\/g, ''));  
+    } else {
+      res.status(404).send("Not found");
+    }
+  } catch (err) {
+    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
     next(err);
   }
 });

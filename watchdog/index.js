@@ -54,17 +54,22 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
+  usePolling: true,
   depth: 2,
-  awaitWriteFinish: true,
+  awaitWriteFinish: {
+    stabilityThreshold: 3000,
+    pollInterval: 1000,
+  },
 });
+
 const folderWatcher = chokidar.watch(`${volume}/`, {
-  ignored: '**/.**',
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
+  usePolling: true,
   depth: 1,
-  awaitWriteFinish: true,
 });
+
 logger.info(`Watching directory`, `volume`, volume);
 
 folderWatcher.on('addDir', async path => {
@@ -94,7 +99,7 @@ fileWatcher.on('add', async path => {
   let meta = await readMetadata(reducedFilename);
   logger.info(`Read metadata of audio file`, `file`, reducedFilename, `data`, meta, `length`, meta.length);
   
-  logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `db`, url);
+  logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `publicUrl`, url);
   await postTrackToAPI(meta);
 });
 
@@ -104,7 +109,7 @@ fileWatcher.on('add', async path => {
 fileWatcher.on('unlink', async path => {
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
 
-  logger.info(`File  has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
+  logger.info(`File has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
  
   // API Server querys for full path on delete request
   await removeTrackFromAPI(reducedFilename);
@@ -127,6 +132,7 @@ folderWatcher.on('unlinkDir', async path => {
  * @param {*} data track data to post to the API
  */
 async function postTrackToAPI(data) {
+  logger.info(`Requesting addition of track`, `file`, data.title, `ep`, apiEndpoint);
   const resp = await post(`${apiEndpoint}/file`, data);
   if (resp && resp.status == 200) {
     logger.info(`Successfully posted track to API`, `response`, resp);
@@ -140,6 +146,8 @@ async function postTrackToAPI(data) {
  * @param {string} album album title
  */
 async function postAlbumToAPI(album) {
+  logger.info(`Requesting addition of album`, `file`, album, `ep`, apiEndpoint);
+
   const resp = await post(`${apiEndpoint}/folder`, {'album': album});
   if (resp && resp.status == 200) {
     logger.info(`Successfully posted album to API`, `response`, resp);
@@ -206,7 +214,7 @@ async function __request(method, ep, data){
   try {
     if(!process.env.DRY_RUN){
       data.token = token;
-      const resp = fetch(ep, {
+      const resp = await fetch(ep, {
         mode: 'cors',
         method: method,
         cache: 'no-cache',
@@ -217,7 +225,7 @@ async function __request(method, ep, data){
       });
       return resp;
     } else {
-      logger.warn(`Dry run! Not sending request to API`, `endpoint`, `${ep}`, `data`, data);
+      logger.warn(`Dry run! Not sending request to API server`, `endpoint`, `${ep}`, `data`, data);
       return {
         "success": true,
         "note": "dry_run",
@@ -225,7 +233,7 @@ async function __request(method, ep, data){
       }
     }
   } catch (err) {
-    logger.error(`Received error response from backend`, `response`, err);
+    logger.error(`Received error response from API server`, `response`, err, "endpoint", `${ep}`);
   }
 }
 
@@ -234,34 +242,45 @@ async function __request(method, ep, data){
  * @param {string} path to new file 
  */
 async function readMetadata(path){
-  const src = await metadata.parseFile(p.join(volume, path));
+  console.log(path);
+  try {
+    logger.info(`Reading IDv3 off of audio file`, `path`, path);
+    const src = await metadata.parseFile(p.join(volume, path));
 
-  logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
+    logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
+  
+    const mimeType = src.common.picture[0].format;
+    const abspath = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
+    logger.info("Writing cover to file", "filename", abspath, "mimeType", mimeType);
+    fs.writeFileSync(abspath, src.common.picture[0].data);
 
-  // fs.writeFile(p.join(volume, p.dirname(path), 'cover.txt'), JSON.stringify(src.common.picture[0]));
-
-  return {
-    "year": src.common.year,
-    "track": src.common.track,
-    "title": src.common.title,
-    "artist": src.common.artist,
-    "albumartist": src.common.albumartist,
-    "album": src.common.album,
-    "genre": src.common.genre,
-    "composer": src.common.composer,
-    "comment": src.common.comment,
-    "bpm": src.common.bpm,
-    "type": src.format.container,
-    "duration": src.format.duration,
-    "lossless": src.format.lossless,
-    "bitrate": src.format.bitrate,
-    "cover": {
-      "format": src.common.picture[0].format,
-      "data": src.common.picture[0].data.toString('base64'),
-    },
-    "path": path, // full path of file INSIDE volume
-    "filename": p.basename(path), // this gets us the last element of the array inline
-    "namespace": p.basename(p.dirname(path)),
-    "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
+    return {
+      "year": src.common.year,
+      "track": src.common.track,
+      "title": src.common.title,
+      "artist": src.common.artist,
+      "albumartist": src.common.albumartist,
+      "album": src.common.album,
+      "genre": src.common.genre,
+      "composer": src.common.composer,
+      "comment": src.common.comment,
+      "bpm": src.common.bpm,
+      "type": src.format.container,
+      "duration": src.format.duration,
+      "lossless": src.format.lossless,
+      "bitrate": src.format.bitrate,
+      "cover": {
+        "mimeType": mimeType,
+        "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${mimeType.replace("image/", "")}`
+      },
+      "path": path, // full path of file INSIDE volume
+      "filename": p.basename(path), // this gets us the last element of the array inline
+      "namespace": p.basename(p.dirname(path)),
+      "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}` // this monster contains the final shareable url on the webserver
+    }    
+  } catch (err) {
+    console.log(err);
+    logger.error("Error while parsing audio metadata", "error", err);
   }
+
 }

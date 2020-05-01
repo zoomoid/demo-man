@@ -8,7 +8,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 4Gi
+    storage: 1Gi
   accessModes:
     - ReadWriteMany
   hostPath:
@@ -27,9 +27,9 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 2Gi
+      storage: 512Mi
     limits:
-      storage: 4Gi
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -54,6 +54,39 @@ metadata:
   namespace: web
   labels:
     app: demo-zoomoid-de
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+    limits:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-wave-man-pv
+  namespace: web
+  labels:
+    app: demo-wave-man
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/k8s/demo-wave-man"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-wave-man-pvc
+  namespace: web
+  labels:
+    app: demo-wave-man
 spec:
   storageClassName: manual
   accessModes:
