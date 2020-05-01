@@ -62,7 +62,7 @@ export default {
         waveformUrl:
           `https://demo.zoomoid.de/api/v1/demo/${this.$route.params.id}/${track._id}/waveform`, // eslint-disable-line
         tags: [],
-      }));
+      })).sort((a, b) => (a.no - b.no));
     }).catch((err) => {
       this.error = err;
     });

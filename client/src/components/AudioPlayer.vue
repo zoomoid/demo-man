@@ -264,8 +264,8 @@ export default {
 }
 
 $base-color: rgba(255,255,255,0.2);
-$color1: #121212;
-$color2: #242424;
+$color1: #000000;
+$color2: #161616;
 $loading-fade: linear-gradient(135deg,
   $color1 0%, $color1 10%, $color2 30%, $color1 50%,
   $color2 70%, $color1  90%, $color1 100%);
@@ -274,11 +274,13 @@ $loading-fade: linear-gradient(135deg,
   // Loading animation
   &:not(.loaded) {
     position: relative;
-    height: 16pt;
-    width: 50%;
-    opacity: 0.9;
+    margin: 1em 0;
+    height: 32pt;
+    width: 100%;
+    opacity: 0.5;
     & > .player, .title-wrapper {
       opacity: 0;
+      display: none;
     }
     &::after {
       border-radius: 64px;
@@ -292,7 +294,7 @@ $loading-fade: linear-gradient(135deg,
       width: 100%;
       height: 100%;
       background: $loading-fade repeat scroll 0% 0% / 200% 100%;
-      animation: 4s linear 0s infinite none running loading;
+      animation: 1s ease-in-out 0s infinite none running loading;
     }
     &::before {
       border-radius: 64px;
@@ -308,13 +310,15 @@ $loading-fade: linear-gradient(135deg,
       background: $color1;
     }
   }
-  display: block;
-  background: #ffffff;
-  border-top-left-radius: 16pt;
-  border-top-right-radius: 16pt;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-  padding: 2em 2em 4em;
-  margin-bottom: -16pt;
+  &.loaded {
+    display: block;
+    background: #ffffff;
+    border-top-left-radius: 16pt;
+    border-top-right-radius: 16pt;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    padding: 2em 2em 4em;
+    margin-bottom: -16pt;
+  }
   .title-wrapper {
     display: flex;
     align-items: center;
