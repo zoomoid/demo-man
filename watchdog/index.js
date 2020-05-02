@@ -63,6 +63,7 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
 });
 
 const folderWatcher = chokidar.watch(`${volume}/`, {
+  ignored: '.*',
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
