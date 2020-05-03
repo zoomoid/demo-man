@@ -196,7 +196,10 @@ demoRouter.get('/', async (req, res, next) => {
  */
 demoRouter.get('/:namespace', async (req, res, next) => {
   try {
-    resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray();
+    resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray().map((t) => {
+      t.el = `${apiEndpoint}/${req.params.namespace}/${t._id}/`;
+      return t
+    });
 
     res.status(200).json({
       'data': resp
@@ -229,7 +232,10 @@ demoRouter.get('/:namespace/:track', async (req, res, next) => {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
 
     if(resp){
-      resp.waveformUrl = `${apiEndpoint}/${req.params.namespace}/${req.params.track}/waveform`;
+      resp.waveformUrl = {
+        full: `${apiEndpoint}/waveform/${req.params.namespace}/${req.params.track}/full`,
+        small: `${apiEndpoint}/waveform/${req.params.namespace}/${req.params.track}/small`
+      };
       res.json(resp);  
     } else {
       res.status(404).send("Not found");
