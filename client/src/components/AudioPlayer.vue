@@ -44,8 +44,10 @@
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
-          <div class="bg" v-bind:style="{
-            backgroundImage: `url('${waveformUrl}')`}"></div>
+          <div class="bg bg--full" v-bind:style="{
+            backgroundImage: `url('${waveformUrl.full}')`}"></div>
+          <div class="bg bg--small" v-bind:style="{
+            backgroundImage: `url('${waveformUrl.small}')`}"></div>
           <div class="fg" v-bind:style="{ width: `${100 - progress}%` }"></div>
         </div>
       </div>
@@ -113,8 +115,11 @@ export default {
       default: '#FFD600',
     },
     waveformUrl: {
-      type: String,
-      default: '',
+      type: Object,
+      default: () => ({
+        full: '',
+        small: '',
+      }),
     },
   },
   watch: {
@@ -429,6 +434,20 @@ $loading-fade: linear-gradient(135deg,
             background-repeat: no-repeat;
             background-size: 100% 100%;
             height: 128px;
+            &.bg--full {
+              display: block;
+            }
+            &.bg--small {
+              display: none;
+            }
+            @media screen and (max-width: 768px) {
+              &.bg--full {
+                display: none;
+              }
+              &.bg--small {
+                display: block;
+              }
+            }
           }
           &.fg {
             z-index: 3;
