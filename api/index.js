@@ -196,7 +196,8 @@ demoRouter.get('/', async (req, res, next) => {
  */
 demoRouter.get('/:namespace', async (req, res, next) => {
   try {
-    resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray().map((t) => {
+    resp = await db.get().find({ type: 'Track', namespace: req.params.namespace }).toArray();
+    resp = resp.map((t) => {
       t.el = `${apiEndpoint}/${req.params.namespace}/${t._id}/`;
       return t
     });
