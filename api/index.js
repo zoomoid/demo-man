@@ -61,7 +61,7 @@ const waveManHook = (url, name) => {
       headers: { 'Content-Type': 'application/json' } 
     }).then((res) => res.json()).then((res) => {
       logger.info("WaveMan rendered audio waveform", "track", name, "trackUrl", url);
-      resolve(res.svg);
+      resolve(res);
     }).catch((err) => {
       logger.error("WaveMan responded unexcepectedly", "error", err, "track", name, "wavemanUrl", wavemanUrl, "trackUrl", url);
       reject(err);
@@ -79,19 +79,30 @@ app.get('/healthz', (_, response) => {
 
 demoRouter.route('/file')
   /**
-   * Add new track to API
+   * Add new track to API and queries wave-man for waveforms
    */
   .post(guard, async (req, res, next) => {
     logger.info('Received POST request on /file route');
     try {
       const doc = req.body;
       doc.type = 'Track';
+      doc._id = new ObjectID()
 
       // Get SVG waveform from waveman
       svg = await waveManHook(doc.url, doc.title);
-      doc.waveform = svg
+      
+      waveformDoc = {
+        type: 'Waveform',
+        namespace: doc.namespace,
+        track_id: doc._id,
+        full: svg.full,
+        small: svg.small,
+      }
 
-      resp = await db.get().insertOne(doc);
+      resp = await Promise.all([
+        db.get().insertOne(doc),
+        db.get().insertOne(waveformDoc),
+      ]);
       logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
       res.status(200).json({
         'response': resp,
@@ -102,7 +113,7 @@ demoRouter.route('/file')
     }
   })
   /**
-   * Delete track from API
+   * DELETE track from API
    */
   .delete(guard, async (req, res, next) => {
     try {
@@ -119,7 +130,7 @@ demoRouter.route('/file')
 
 demoRouter.route('/folder')
   /**
-   * Add new album to API
+   * ADD new album to API
    */
   .post(guard, async (req, res, next) => {
     logger.info('Received POST request on /folder route', `path`, req.body);
@@ -141,7 +152,7 @@ demoRouter.route('/folder')
     }
   })
   /**
-   * Delete album from API
+   * DELETE album from API
    */
   .delete(guard, async (req, res, next) => {
     try {
@@ -163,7 +174,7 @@ demoRouter.route('/folder')
   });
 
 /**
- * Get all albums from the API
+ * GET all namespaces/albums
  */
 demoRouter.get('/', async (req, res, next) => {
   logger.info(`Received request to /`, `route`, req.route)
@@ -181,51 +192,7 @@ demoRouter.get('/', async (req, res, next) => {
 });
 
 /**
- * Demo stub route for client testing
- */
-app.get('/api/stub/shades-of-yellow', async (req, res, next) => {
-  try {
-    logger.info(`Received request to demo route`, `route`, req.route)
-    res.status(200).json([
-      {
-        title: 'Shades Of Yellow',
-        album: 'Shades Of Yellow',
-        track: {
-          no: 1,
-          of: 1,
-        },
-        bpm: 120,
-        disk: {
-          no: 1,
-          of: 1,
-        },
-        albumartist: 'Zoomoid',
-        composer: 'Alexander Bartolomey',
-        artist: 'Zoomoid',
-        genre: 'House',
-        year: 2020,
-        comment: '',
-        bitrate: 320000,
-        lossless: false,
-        duration: 377,
-        path: '/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
-        filename: 'Shades Of Yellow.mp3',
-        namespace: 'shades-of-yellow',
-        url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/Shades Of Yellow.mp3',
-        cover: {
-          url: 'https://cdn.occloxium.com/a/zoomoid/demo/shades-of-yellow/cover.png',
-          format: 'image/png',
-        },
-      }
-    ])
-  } catch (err) {
-    logger.error(`Demo object seems to have an error`);
-    next(err);
-  }
-});
-
-/**
- * Get all tracks from the API for a certain namespace from the API
+ * GET all tracks from the API for a certain namespace from the API
  */
 demoRouter.get('/:namespace', async (req, res, next) => {
   try {
@@ -240,6 +207,9 @@ demoRouter.get('/:namespace', async (req, res, next) => {
   }
 });
 
+/**
+ * GET the cover of a specified namespace/album
+ */
 demoRouter.get('/:namespace/cover', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace });
@@ -251,6 +221,9 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
   }
 });
 
+/**
+ * GET a specific track from the API
+ */
 demoRouter.get('/:namespace/:track', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
@@ -267,22 +240,72 @@ demoRouter.get('/:namespace/:track', async (req, res, next) => {
   }
 });
 
-demoRouter.get('/:namespace/:track/waveform', async (req, res, next) => {
-  try {
-    resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace, _id: ObjectID.createFromHexString(req.params.track) });
 
-    if(resp){
-      res.set({
-        "Content-Type": "image/svg+xml"
-      }).send(resp.waveform.replace(/\\/g, ''));  
-    } else {
-      res.status(404).send("Not found");
+demoRouter.route('/waveform/:track/:mode')
+  /**
+   * GET a specific waveform for a specific track from the API server
+   * :track is supposed to be a string of ObjectId of the track in question
+   * :mode has to be either "full" or "small", otherway an error is returned
+   */
+  .get(async (req, res, next) => {
+    try {
+      const resp = await db.get().findOne({ 
+        type: 'Waveform', 
+        track_id: ObjectID.createFromHexString(req.params.track) 
+      });
+      if(resp){
+        res.set({
+          "Content-Type": "image/svg+xml"
+        });
+        switch (req.params.mode) {
+          case 'small':
+            res.send(resp.small.replace(/\\/g, ''))
+            break;
+          case 'full':
+            res.send(resp.full.replace(/\\/g, ''))
+            break;
+          default:
+            res.status(405);
+            next("Unsupported mode")
+            break;
+        }
+      } else {
+        res.status(404).send("Not found");
+      }
+    } catch (err) {
+      logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
+      next(err);
     }
-  } catch (err) {
-    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
-    next(err);
-  }
-});
+  });
+
+demoRouter.route('/waveform/:track')
+  /** 
+   * for a given track, regenerate waveforms by querying the wave-man again. This might be useful
+   * if we change the config maps for the wave-man and do not want to remove the existing track to
+   * retrigger the generation 
+   */
+  .patch(guard, async (req, res, next) => {
+    try {
+      // Fetch track url from database
+      const { url, name } = await db.get().findOne(
+        { _id: ObjectID.createFromHexString(req.params.track), type: 'Track' }, 
+        { url: 1, name: 1 }
+      );
+      const svg = await waveManHook(url, name);
+      resp = await db.get().updateOne(
+        { track_id: ObjectID.createFromHexString(req.params.track), type: "Waveform" }, 
+        { full: svg.full, small: svg.small }
+      );
+      logger.info(`Successfully updated waveform`, `updated`, `${name}`);
+      res.status(200).json({
+        'response': resp,
+      });
+    } catch (err) {
+      console.error(err);
+      logger.error(`Received error along the way of retriggering waveform generation`, `response`, err);
+      next(err);
+    }
+  });
 
 db.connect(`${url}/${demoDB}`, demoDB).then(() => {
   app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
