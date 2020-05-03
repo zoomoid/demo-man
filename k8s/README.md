@@ -9,6 +9,12 @@ alpha state, as we ultimately want to use our own SSO service.
 kubectl create secret generic demo-zoomoid-de-api-token-secret --from-literal=token='<TOKEN>'
 ```
 
+as well as configmaps for the wave-man to configure its output
+
+```bash
+kubectl create configmap demo-wave-man-config --from-file=config/
+```
+
 Then, afterwards, you would deploy all other resources to your cluster:
 
 ```bash
