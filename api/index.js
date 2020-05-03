@@ -234,8 +234,8 @@ demoRouter.get('/:namespace/:track', async (req, res, next) => {
 
     if(resp){
       resp.waveformUrl = {
-        full: `${apiEndpoint}/waveform/${req.params.namespace}/${req.params.track}/full`,
-        small: `${apiEndpoint}/waveform/${req.params.namespace}/${req.params.track}/small`
+        full: `${apiEndpoint}/waveform/${req.params.track}/full`,
+        small: `${apiEndpoint}/waveform/${req.params.track}/small`
       };
       res.json(resp);  
     } else {
