@@ -50,6 +50,7 @@ const token = process.env.TOKEN;
  */
 const volume = process.env.VOLUME || `.`; // needs to be slash-terminated!
 
+/** FILE Watcher */
 const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   ignoreInitial: true,
   persistent: true, 
@@ -62,8 +63,10 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   },
 });
 
-const folderWatcher = chokidar.watch(`${volume}/`, {
-  ignored: '.*',
+/** FOLDER Watcher */
+const folderWatcher = chokidar.watch(`/`, {
+  cwd: `${volume}`,
+  ignored: [/(^|[\/\\])\../, 'private-keys-v1.d'], // exclude some FileZilla bullshit directories
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
