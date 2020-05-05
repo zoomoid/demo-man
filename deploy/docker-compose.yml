@@ -46,7 +46,7 @@ services:
     - backend
 
   waveman:
-    image: docker.pkg.github.com/occloxium/wave-man/wave-man-server:2.8
+    image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.15.1
     container_name: demo-wave-man
     restart: on-failure
     environment: 

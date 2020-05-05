@@ -15,6 +15,7 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: github
+        - name: gitlab
       containers:
       - name: api
         image: docker.pkg.github.com/occloxium/demo-man/api:1.6.3
@@ -70,6 +71,7 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: github
+        - name: gitlab
       containers:
       - name: wave-man
         image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.15.1
@@ -109,6 +111,7 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: github
+        - name: gitlab
       containers:
       - name: client
         image: docker.pkg.github.com/occloxium/demo-man/client:1.6.4
@@ -137,6 +140,7 @@ spec:
     spec:
       imagePullSecrets:
       - name: github
+      - name: gitlab
       containers:
       - name: watchdog
         image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.6
