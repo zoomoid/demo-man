@@ -49,13 +49,13 @@ deploy:
   - tags
   stage: deploy
   variables:
-    CLIENT: "demo-client"
-    API: "demo-api"
-    WATCHDOG: "demo-watchdog"
-    DPL: "demo-zoomoid-de"
+    CLIENT: "client"
+    API: "api"
+    WATCHDOG: "watchdog"
+    DPL: "zoomoid-de"
   extends: .kubectl
   script:
-  - kubectl set image deployment/$API $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/$WATCHDOG $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/demo-$API $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/demo-$WATCHDOG $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/demo-$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
   
