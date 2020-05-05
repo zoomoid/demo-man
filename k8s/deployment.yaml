@@ -17,7 +17,7 @@ spec:
         - name: github
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:1.6
+        image: docker.pkg.github.com/occloxium/demo-man/api:1.6.3
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -72,7 +72,7 @@ spec:
         - name: github
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.15
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.15.1
         resources:
           limits:
             memory: "1Gi"
@@ -88,7 +88,7 @@ spec:
       - name: wave-man-volume
         persistentVolumeClaim:
           claimName: demo-wave-man-pvc
-      - name: config
+      - name: wave-man-config
         configMap:
           name: demo-wave-man-config
 ---
@@ -111,7 +111,7 @@ spec:
         - name: github
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:1.5.5
+        image: docker.pkg.github.com/occloxium/demo-man/client:1.6.4
         resources:
           limits:
             memory: "128Mi"
@@ -139,7 +139,7 @@ spec:
       - name: github
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.5.5
+        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.6
         env:
         - name: VOLUME
           value: "/app/files"

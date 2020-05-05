@@ -55,7 +55,7 @@ deploy:
     DPL: "demo-zoomoid-de"
   extends: .kubectl
   script:
-  - kubectl set image deployment/$DPL $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/$DPL $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/$DPL $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/$API $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/$WATCHDOG $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
   
