@@ -52,6 +52,7 @@ const volume = process.env.VOLUME || `.`; // needs to be slash-terminated!
 
 /** FILE Watcher */
 const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
+  cwd: `${volume}`,
   ignoreInitial: true,
   persistent: true, 
   atomic: true, 
@@ -64,7 +65,7 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
 });
 
 /** FOLDER Watcher */
-const folderWatcher = chokidar.watch(`/`, {
+const folderWatcher = chokidar.watch(`${volume}/`, {
   cwd: `${volume}`,
   ignored: [/(^|[\/\\])\../, 'private-keys-v1.d'], // exclude some FileZilla bullshit directories
   ignoreInitial: true,
@@ -101,6 +102,8 @@ fileWatcher.on('add', async path => {
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
 
   let meta = await readMetadata(reducedFilename);
+  // TODO: experiment if this is safe to leave in, it should be, if the filename submitted does not contain the volume,
+  // hence creating a cyclic fs 
   logger.info(`Read metadata of audio file`, `file`, reducedFilename, `data`, meta, `length`, meta.length);
   
   logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `publicUrl`, url);
@@ -111,6 +114,8 @@ fileWatcher.on('add', async path => {
  * Watcher for file deletions
  */
 fileWatcher.on('unlink', async path => {
+  // TODO: experiment if this is safe to leave in, it should be, if the filename submitted does not contain the volume,
+  // hence creating a cyclic fs
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
 
   logger.info(`File has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
