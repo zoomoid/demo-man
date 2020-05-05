@@ -57,5 +57,5 @@ deploy:
   script:
   - kubectl set image deployment/demo-$API $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
   - kubectl set image deployment/demo-$CLIENT $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/demo-$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/demo-$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/watchdog:$CI_COMMIT_TAG --record
   
