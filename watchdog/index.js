@@ -258,10 +258,15 @@ async function readMetadata(path){
 
     logger.info(`Parsed audio file metadata`,  `dirname`, p.dirname(path), `filename`, p.basename(path));
   
-    const mimeType = src.common.picture[0].format;
-    const abspath = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
-    logger.info("Writing cover to file", "filename", abspath, "mimeType", mimeType);
-    fs.writeFileSync(abspath, src.common.picture[0].data);
+    if(src.common.picture[0]){
+      const mimeType = src.common.picture[0].format;
+      const abspath = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
+      logger.info("Writing cover to file", "filename", abspath, "mimeType", mimeType);  
+      fs.writeFileSync(abspath, src.common.picture[0].data);
+    } else {
+      logger.warn(`Audio file metadata has no cover yet, omitting for now`, `path`, `${path}`);
+    }
+    
 
     return {
       "year": src.common.year,
@@ -289,7 +294,7 @@ async function readMetadata(path){
     }    
   } catch (err) {
     console.log(err);
-    logger.error("Error while parsing audio metadata", "error", err);
+    logger.error("Error while parsing audio metadata", "error", err, `file`, path);
   }
 
 }
