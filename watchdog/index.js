@@ -260,7 +260,7 @@ async function readMetadata(path){
     let mimeType = "";
     let abspath = "";
     let cover = {};
-    if(src.common.picture[0]){
+    if(src.common.picture){
       mimeType = src.common.picture[0].format;
       abspath = p.join(volume, p.dirname(path), `cover.${mimeType.replace("image/", "")}`);
       logger.info("Writing cover to file", "filename", abspath, "mimeType", mimeType);  
