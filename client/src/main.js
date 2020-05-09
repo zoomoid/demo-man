@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import App from '@/App.vue';
 import Home from '@/views/Home.vue';
 import Page from '@/views/Page.vue';
+import './registerServiceWorker';
 
 Vue.use(VueRouter);
 

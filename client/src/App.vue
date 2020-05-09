@@ -12,7 +12,9 @@ html {
   letter-spacing: -0.03em;
   background: #F58B44;
   color: #1a1a1a;
-  font-size: 10pt;
+  @media screen and (max-width: 768px) {
+    font-size: 10pt;
+  }
 }
 body {
   margin: 0;
