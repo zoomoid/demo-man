@@ -88,7 +88,7 @@
     <audio
       :src="file"
       ref="audiofile"
-      preload="auto">
+      preload="none">
     </audio>
   </div>
 </template>
@@ -162,18 +162,22 @@ export default {
   },
   methods: {
     setPosition: function name(e) {
-      const tag = e.target;
+      try {
+        const tag = e.target;
 
-      const pos = tag.getBoundingClientRect();
-      const seekPos = (e.clientX - pos.left) / pos.width;
-      const { seekable } = this.audio;
-      let seekTarget = this.audio.duration * seekPos;
-      if (seekable.start(0) > seekTarget) {
-        seekTarget = seekable.start(0);
-      } else if (seekable.end(0) < seekTarget) {
-        seekTarget = seekable.end(0);
+        const pos = tag.getBoundingClientRect();
+        const seekPos = (e.clientX - pos.left) / pos.width;
+        const { seekable } = this.audio;
+        let seekTarget = this.audio.duration * seekPos;
+        if (seekable.start(0) > seekTarget) {
+          seekTarget = seekable.start(0);
+        } else if (seekable.end(0) < seekTarget) {
+          seekTarget = seekable.end(0);
+        }
+        this.audio.currentTime = seekTarget;
+      } finally {
+        this.play();
       }
-      this.audio.currentTime = seekTarget;
     },
     stop() {
       this.$emit('paused');
@@ -218,7 +222,6 @@ export default {
     handleLoaded() {
       if (this.audio.readyState >= 2) {
         if (this.autoPlay) this.play();
-        this.loaded = true;
         this.totalDuration = parseInt(this.audio.duration, 10);
       } else {
         throw new Error('Failed to load sound file');
@@ -248,6 +251,7 @@ export default {
       this.audio.addEventListener('pause', this.handlePlayPause);
       this.audio.addEventListener('play', this.handlePlayPause);
       this.audio.addEventListener('ended', this.handleFinished);
+      this.loaded = true;
     },
     getAudio() {
       return this.$el.querySelectorAll('audio')[0];
@@ -367,11 +371,14 @@ $loading-fade: linear-gradient(135deg,
     }
     .metadata {
       display: flex;
-      gap: 1em;
       flex-wrap: wrap;
       align-items: center;
-      & > .div {
+      & > div {
         display: block;
+        padding-right: 1em;
+        &:last-child {
+          padding-right: 0;
+        }
       }
       .no::before {
         opacity: 0.5;
