@@ -175,7 +175,7 @@ export default {
           seekTarget = seekable.end(0);
         }
         this.audio.currentTime = seekTarget;
-      } finally {
+      } catch (err) {
         this.play();
       }
     },
@@ -425,23 +425,29 @@ $loading-fade: linear-gradient(135deg,
         }
       }
     }
-
   }
   .player {
     display: flex;
     align-items: center;
+    position: relative;
     .play-state {
       margin-right: 8px;
-      width: 48px;
-      height: 48px;
+      width: 32px;
+      height: 32px;
+      font-size: 32px;
+      @media screen and (min-width: 768px) {
+        width: 48px;
+        height: 48px;
+        font-size: 48px;
+      }
       cursor: pointer;
       display: inline-block;
       .material-icons-sharp {
-        line-height: 48px;
-        width: 48px;
-        height: 48px;
+        line-height: 1;
+        // width: 48px;
+        // height: 48px;
         text-align: center;
-        font-size: 32pt;
+        font-size: 1em;
       }
       a, i {
         color: inherit;
@@ -458,7 +464,11 @@ $loading-fade: linear-gradient(135deg,
         position: relative;
         display: block;
         // background: $base-color;
-        height: 96pt;
+        min-height: 64px;
+        height: 64px;
+        @media screen and (min-width: 768px) {
+          height: 128px;
+        }
         border-radius: 4px;
         width: 100%;
         cursor: pointer;
@@ -485,7 +495,7 @@ $loading-fade: linear-gradient(135deg,
             z-index: 2;
             background-repeat: no-repeat;
             background-size: 100% 100%;
-            height: 128px;
+            height: 100%;
             &.bg--full {
               display: block;
             }
@@ -500,6 +510,7 @@ $loading-fade: linear-gradient(135deg,
                 display: block;
               }
             }
+
           }
           &.fg {
             z-index: 3;
@@ -518,6 +529,12 @@ $loading-fade: linear-gradient(135deg,
       margin-right: 24px;
       width: 3.5em;
       text-align: right;
+      @media screen and (max-width: 768px) {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        margin-bottom: -2em;
+      }
       span {
         font-weight: 500;
         display: inline-block;
