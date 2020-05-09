@@ -11,6 +11,7 @@
         :accentColor="accentColor"
         :waveformUrl="player.waveformUrl"
         :no="player.no"
+        :additionalData="player.additionalData"
       ></AudioPlayer>
     </div>
     <div v-if="!queue">

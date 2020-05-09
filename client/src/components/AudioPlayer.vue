@@ -1,20 +1,46 @@
 <template>
   <div class="player-wrapper" :class="[this.loaded ? 'loaded' : '']">
     <div class="title-wrapper">
-      <div class="title" v-html="name">
+      <div class="title-line">
+        <div class="title" v-html="name">
+
+        </div>
 
       </div>
-      <div class="download">
-        <a :href="file" target="_blank">
-          <i class="material-icons-sharp">
-            get_app
-          </i>
-        </a>
-      </div>
-      <div class="tags" v-if="tags.length > 0">
+      <!-- <div class="tags" v-if="tags.length > 0">
         <span class="tag" v-for="tag in tags" v-bind:key="tag">
           {{tag}}
         </span>
+      </div> -->
+      <div class="metadata">
+        <div class="no" v-if="no">
+          <span>
+            {{no}}
+          </span>
+        </div>
+        <div class="comments" v-if="additionalData.comment">
+          <span class="comment" v-for="comment in additionalData.comment" v-bind:key="comment">
+            {{comment}}
+          </span>
+        </div>
+        <div class="genre" v-if="additionalData.genre">
+          <span v-for="genre in additionalData.genre" v-bind:key="genre">
+            {{genre}}
+          </span>
+        </div>
+        <div class="bpm" v-if="additionalData.bpm">
+          <span>
+            {{additionalData.bpm}}
+          </span>
+        </div>
+        <div class="hfill"></div>
+        <div class="download">
+          <a :href="file" target="_blank">
+            <i class="material-icons-sharp">
+              get_app
+            </i>
+          </a>
+        </div>
       </div>
     </div>
     <div class="player">
@@ -109,6 +135,10 @@ export default {
     tags: {
       type: Array,
       default: undefined,
+    },
+    additionalData: {
+      type: Object,
+      default: null,
     },
     accentColor: {
       type: String,
@@ -279,7 +309,7 @@ $loading-fade: linear-gradient(135deg,
   // Loading animation
   &:not(.loaded) {
     position: relative;
-    margin: 1em 0;
+    margin: 32pt 0 1em;
     height: 32pt;
     width: 100%;
     opacity: 0.5;
@@ -325,54 +355,70 @@ $loading-fade: linear-gradient(135deg,
     margin-bottom: -16pt;
   }
   .title-wrapper {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    padding-bottom: 8px;
-    .title {
-      i {
-        font-style: normal;
-        font-weight: 200;
-      }
-      font-weight: 500;
-      // padding-bottom: 8px;
-    }
-    .download {
-      width: 32px;
-      height: 32px;
-      cursor: pointer;
-      .material-icons-sharp {
-        line-height: 32px;
-        width: 32px;
-        height: 32px;
-        text-align: center;
+    padding-bottom: 16px;
+    .title-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      .title {
+        font-weight: 500;
         font-size: 150%;
       }
-      a:link, a:visited {
-        color: #1a1a1a;
-      }
-      &:hover, &:active, .muted {
-        background: $base-color;
-        border-radius: 32px;
-      }
     }
-    .tags {
-      padding-left: 8px;
-      display: block;
-      .tag {
+    .metadata {
+      display: flex;
+      gap: 1em;
+      flex-wrap: wrap;
+      align-items: center;
+      & > .div {
         display: block;
-        background: white;
-        color: black;
-        border-radius: 4px;
-        padding: 4px 8px;
-        line-height: 1;
-        font-weight: 700;
-        font-size: 10pt;
-        &::before {
-          content: '#'
+      }
+      .no::before {
+        opacity: 0.5;
+        content: "Track \2116"
+      }
+      .comments::before {
+        opacity: 0.5;
+        content: "Comment:"
+      }
+      .bpm::before {
+        opacity: 0.5;
+        content: "BPM:"
+      }
+      .genre::before {
+        opacity: 0.5;
+        content: "Genre:"
+      }
+      .hfill {
+        flex-grow: 1;
+      }
+      @media screen and (max-width: 768px) {
+        .hfill {
+          display: none;
+        }
+      }
+      .download {
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        .material-icons-sharp {
+          line-height: 32px;
+          width: 32px;
+          height: 32px;
+          text-align: center;
+          font-size: 150%;
+        }
+        a, i {
+          color: inherit;
+        }
+        color: #1a1a1a;
+        &:hover, &:active {
+          color: #F58B44;
+
         }
       }
     }
+
   }
   .player {
     display: flex;
@@ -390,13 +436,12 @@ $loading-fade: linear-gradient(135deg,
         text-align: center;
         font-size: 32pt;
       }
+      a, i {
+        color: inherit;
+      }
+      color: #1a1a1a;
       &:hover, &:active {
-        &.paused {
-          background: $base-color;
-        }
-        background: rgba(255,255,255,0.2);
-        text-shadow: 0 2px 2px rgba(0,0,0,0.2);
-        border-radius: 32px;
+        color: #F58B44;
       }
     }
     .playback-time-wrapper {

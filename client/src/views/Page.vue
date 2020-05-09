@@ -59,6 +59,7 @@ export default {
         no: track.track.no,
         name: track.title,
         url: track.url,
+        additionalData: track,
         waveformUrl: {
           full: `https://demo.zoomoid.de/api/v1/demo/waveform/${track._id}/full`, // eslint-disable-line
           small: `https://demo.zoomoid.de/api/v1/demo/waveform/${track._id}/small`, // eslint-disable-line
