@@ -11,7 +11,7 @@
       </div>
       <div class="success" v-else>
         <h1>
-          /demo-man
+          demo-man
         </h1>
         <ul>
           <li v-for="directory in directories" :key="directory">
@@ -55,7 +55,7 @@ export default {
 
     li {
       padding: 1em 0;
-      list-style: none outside none;
+      list-style: square;
       font-size: 1.5em;
       a:link, a:visited {
         font-weight: 700;
@@ -68,11 +68,7 @@ export default {
           background: #1a1a1a;
         }
       }
-      &::before {
-        vertical-align: baseline;
-        content: '/ ';
-        font-size: 1em;
-      }
+
     }
   }
 }

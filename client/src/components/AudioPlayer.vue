@@ -53,18 +53,15 @@
         </i>
       </div> -->
       <div class="play-state">
-        <i @click="pause" v-if="playing && !paused && !finished" class="material-icons-sharp">
+        <i @click="pause" v-if="playing && !finished" class="material-icons-sharp">
           pause
         </i>
-        <i @click="play" v-else-if="!playing && paused && !finished"
+        <i @click="play" v-else-if="!playing  && !finished"
            class="material-icons-sharp paused">
           play_arrow
         </i>
-        <i @click="replay" v-else-if="!playing && !paused && finished" class="material-icons-sharp">
+        <i @click="replay" v-else class="material-icons-sharp">
           replay
-        </i>
-        <i @click="stop" v-else class="material-icons-sharp">
-          stop
         </i>
       </div>
       <div class="playback-time-wrapper">
@@ -112,10 +109,6 @@ export default {
       type: String,
       default: null,
     },
-    autoPlay: {
-      type: Boolean,
-      default: false,
-    },
     loop: {
       type: Boolean,
       default: false,
@@ -154,9 +147,10 @@ export default {
   },
   watch: {
     playStateOverrideBy() {
-      if (this.playStateOverrideBy !== this.no || this.playStateOverrideBy === -1) {
+      // eslint-disable-next-line eqeqeq
+      if (this.playStateOverrideBy != this.no || this.playStateOverrideBy == -1) {
         this.pause();
-        this.$emit('paused');
+        this.$emit('pause', this.playStateOverrideBy);
       }
     },
   },
@@ -180,32 +174,23 @@ export default {
       }
     },
     stop() {
-      this.$emit('paused');
       this.playing = false;
-      this.paused = true;
       this.finished = true;
       this.audio.pause();
       this.audio.currentTime = 0;
+      this.$emit('pause');
     },
     play() {
-      this.$emit('playing', this.no);
       this.finished = false;
       this.playing = true;
-      this.paused = false;
       this.audio.play();
+      this.$emit('play', this.no);
     },
     pause() {
-      this.$emit('paused');
       this.playing = false;
-      this.paused = true;
       this.finished = false;
       this.audio.pause();
-    },
-    skipToBeginning() {
-      this.audio.currentTime = 0;
-    },
-    skipToEnd() {
-      this.audio.currentTime = this.audio.duration;
+      this.$emit('pause');
     },
     replay() {
       if (!this.playing && !this.paused && this.finished) {
@@ -214,14 +199,8 @@ export default {
         this.play();
       }
     },
-    mute() {
-      this.isMuted = !this.isMuted;
-      this.audio.muted = this.isMuted;
-      this.volumeValue = this.isMuted ? 0 : 75;
-    },
     handleLoaded() {
       if (this.audio.readyState >= 2) {
-        if (this.autoPlay) this.play();
         this.totalDuration = parseInt(this.audio.duration, 10);
       } else {
         throw new Error('Failed to load sound file');
@@ -231,18 +210,21 @@ export default {
       const currTime = parseInt(this.audio.currentTime, 10);
       this.progress = (currTime / this.totalDuration) * 100;
       this.currentTime = convertTimeHHMMSS(parseInt(this.audio.currentTime, 10));
+
+      this.$emit('progress', {
+        progress: this.progress,
+        currentTime: this.currentTime,
+        totalDuration: this.duration,
+      });
     },
     handlePlayPause(e) {
       if (e.type === 'pause' && this.playing === false) {
-        // this.progressStyle = 'width:0%;';
-        // this.currentTime = '00:00';
         this.paused = true;
       }
     },
     handleFinished() {
-      this.$emit('finished');
+      this.$emit('finish');
       this.playing = false;
-      this.paused = false;
       this.finished = true;
     },
     init() {
@@ -260,7 +242,6 @@ export default {
   data() {
     return {
       playing: false,
-      paused: true,
       finished: false,
       isMuted: false,
       loaded: false,
@@ -308,6 +289,7 @@ $color2: #161616;
 $loading-fade: linear-gradient(135deg,
   $color1 0%, $color1 10%, $color2 30%, $color1 50%,
   $color2 70%, $color1  90%, $color1 100%);
+
 
 .player-wrapper {
   // Loading animation

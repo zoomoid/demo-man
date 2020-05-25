@@ -23,6 +23,7 @@
       </div>
       <AudioManager class="players" :queue="queue" :accentColor="accentColor"></AudioManager>
     </template>
+
   </div>
 </template>
 
