@@ -113,6 +113,8 @@ export default {
 }
 .footer {
   background: #ffffff;
+  border-top: solid 1px rgba(0,0,0,0.33);
+  padding: 3em 0;
 }
 .playerbar {
   position: fixed;
