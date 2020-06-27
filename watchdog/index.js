@@ -12,8 +12,8 @@ const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo'
 
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: 'https',
-  hostname: 'files.zoomoid.de',
-  dir: ``, // needs to be slash-terminated!
+  hostname: 'demo.zoomoid.de', // Use internal fileserver instead of public one!
+  dir: `fs/`, // needs to be slash-terminated!
 };
 
 if(!process.env.TOKEN){
@@ -73,6 +73,24 @@ const folderWatcher = chokidar.watch(`${volume}/`, {
   atomic: true, 
   usePolling: true,
   depth: 1,
+});
+
+/** 
+ * Garbage collector
+ * 
+ * This file watcher removes any files and directories created in the process of SFTP handshakes by FileZilla
+ */
+const garbageCollector = chokidar.watch(['.cache', '.gnupg', 'private-keys-v1.d']);
+garbageCollector.on("addDir", async (path) => {
+  logger.info(`Cleaning up trash directories`, `directory`, path);
+
+  fs.rmdir(path, {recursive: true}, (err) => {
+    if (err) {
+      logger.error(`Error on rmdir w/ recursive option`, `error`, err);
+      return
+    } 
+    logger.info(`Finish cleanup round`, `directory`, path);
+  });
 });
 
 logger.info(`Watching directory`, `volume`, volume);
@@ -267,13 +285,11 @@ async function readMetadata(path){
       fs.writeFileSync(abspath, src.common.picture[0].data);
       cover = {
         "mimeType": mimeType,
-        "url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${mimeType.replace("image/", "")}`
+        "public_url": `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}cover.${mimeType.replace("image/", "")}`
       };
     } else {
       logger.warn(`Audio file metadata has no cover yet, omitting for now`, `path`, `${path}`);
     }
-    
-
     return {
       "year": src.common.year,
       "track": src.common.track,
@@ -299,5 +315,4 @@ async function readMetadata(path){
     console.log(err);
     logger.error("Error while parsing audio metadata", "error", err, `file`, path);
   }
-
 }
