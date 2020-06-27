@@ -4,7 +4,7 @@ stages:
 
 .kubectl:
   image:
-    name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:1.18.1
+    name: bitname/kubectl:1.18
     entrypoint: ['/docker-entrypoint.sh']
   before_script:
   - echo $kube_config | base64 -d > /root/runner
