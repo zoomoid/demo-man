@@ -89,24 +89,29 @@ demoRouter.route('/file')
       doc._id = new ObjectID()
 
       // Get SVG waveform from waveman
-      svg = await waveManHook(doc.url, doc.title);
-      
-      waveformDoc = {
-        type: 'Waveform',
-        namespace: doc.namespace,
-        track_id: doc._id,
-        full: svg.full,
-        small: svg.small,
-      }
+      try {
+        svg = await waveManHook(doc.url, doc.title);
 
-      resp = await Promise.all([
-        db.get().insertOne(doc),
-        db.get().insertOne(waveformDoc),
-      ]);
-      logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
-      res.status(200).json({
-        'response': resp,
-      });
+        waveformDoc = {
+          type: 'Waveform',
+          namespace: doc.namespace,
+          track_id: doc._id,
+          full: svg.full,
+          small: svg.small,
+        }
+  
+        resp = await Promise.all([
+          db.get().insertOne(doc),
+          db.get().insertOne(waveformDoc),
+        ]);
+        logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
+        res.status(200).json({
+          'response': resp,
+        });
+      } catch (e) {
+        logger.error('wave-man failed to respond with waveform', 'response', err);
+        next(err);
+      }      
     } catch (err) {
       logger.error(`Received error from MongoDB (driver)`, `response`, err);
       next(err);
@@ -253,6 +258,7 @@ demoRouter.route('/waveform/:track/:mode')
    * GET a specific waveform for a specific track from the API server
    * :track is supposed to be a string of ObjectId of the track in question
    * :mode has to be either "full" or "small", otherway an error is returned
+   * You can also send addition query "color" such that all templated colors get replaced with your color
    */
   .get(async (req, res, next) => {
     try {
@@ -264,18 +270,25 @@ demoRouter.route('/waveform/:track/:mode')
         res.set({
           "Content-Type": "image/svg+xml"
         });
+        let waveform;
         switch (req.params.mode) {
           case 'small':
-            res.send(resp.small.replace(/\\/g, ''))
+            waveform = resp.small.replace(/\\/g, '')
             break;
           case 'full':
-            res.send(resp.full.replace(/\\/g, ''))
+            waveform = resp.full.replace(/\\/g, '')
             break;
           default:
             res.status(405);
             next("Unsupported mode")
             break;
         }
+        let color = '#F58B44'
+        if (req.query.color) {
+          color = req.query.color;
+        }
+        waveform = waveform.replace(/{{.color}}/g, color)
+        res.send(waveform)
       } else {
         res.status(404).send("Not found");
       }
