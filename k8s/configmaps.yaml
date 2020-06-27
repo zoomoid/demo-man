@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-wave-man-config
+  namespace: web
+  labels:
+    app: demo-man
+    svc: wave-man
+data:
+  small.json: |
+    {
+      "step_width": 16,
+      "height": 200,
+      "color": "{{.color}}",
+      "rounded": 8,
+      "steps": 32,
+      "gap": 7,
+      "mode": "rounded_avg",
+      "align": "center",
+      "sr": 48000,
+      "mono": true,
+      "scale": 1,
+      "dpi": 600,
+      "preserveAspectRatio": "none" 
+    }
+  full.json: |
+    {
+      "step_width": 20,
+      "height": 200,
+      "color": "{{.color}}",
+      "rounded": 10,
+      "steps": 64,
+      "gap": 4,
+      "mode": "rounded_avg",
+      "align": "center",
+      "sr": 48000,
+      "mono": true,
+      "scale": 1,
+      "dpi": 600,
+      "preserveAspectRatio": "none"
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-fileserver-config
+  namespace: web
+  labels:
+    app: demo-man
+    svc: demo-fileserver
+data:
+  fs.conf: |
+    server {
+      server_name files.zoomoid.de;
+      location /fs {
+          root /var/www/files/demo;
+          autoindex on;
+          sendfile on;
+          sendfile_max_chunk 1m;
+          tcp_nopush on;
+          tcp_nodelay on;
+          keepalive_timeout 65;
+      }
+      listen 80;
+      # listen [::]:80 ipv6only=true;
+    }

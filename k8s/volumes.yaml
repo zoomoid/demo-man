@@ -4,7 +4,8 @@ metadata:
   name: demo-mongodb-pv
   namespace: web
   labels:
-    app: demo-mongodb
+    app: demo-man
+    svc: mongodb
 spec:
   storageClassName: manual
   persistentVolumeReclaimPolicy: Delete
@@ -21,7 +22,8 @@ metadata:
   name: demo-mongodb-pvc
   namespace: web
   labels:
-    app: demo-mongodb
+    app: demo-man
+    svc: mongodb
 spec:
   storageClassName: manual
   accessModes:
@@ -38,7 +40,7 @@ metadata:
   name: demo-audio-pv
   namespace: web
   labels:
-    app: demo-zoomoid-de
+    app: demo-man
 spec:
   storageClassName: manual
   capacity:
@@ -54,7 +56,7 @@ metadata:
   name: demo-audio-pvc
   namespace: web
   labels:
-    app: demo-zoomoid-de
+    app: demo-man
 spec:
   storageClassName: manual
   accessModes:
@@ -71,11 +73,12 @@ metadata:
   name: demo-wave-man-pv
   namespace: web
   labels:
-    app: demo-wave-man
+    app: demo-man
+    svc: wave-man
 spec:
   storageClassName: manual
   capacity:
-    storage: 8Gi
+    storage: 1Gi
   accessModes:
     - ReadWriteMany
   hostPath:
@@ -87,13 +90,14 @@ metadata:
   name: demo-wave-man-pvc
   namespace: web
   labels:
-    app: demo-wave-man
+    app: demo-man
+    svc: wave-man
 spec:
   storageClassName: manual
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
     limits:
-      storage: 10Gi
+      storage: 1Gi

@@ -3,22 +3,26 @@ kind: Deployment
 metadata:
   name: demo-api
   namespace: web
+  labels:
+    app: demo-man
+    svc: api
 spec:
   selector:
     matchLabels:
-      app: demo-api
+      app: demo-man
+      svc: api
   template:
     metadata:
       labels:
-        app: demo-api
+        app: demo-man
+        svc: api
     spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: github
-        - name: gitlab
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:1.8
+        image: docker.pkg.github.com/occloxium/demo-man/api:1.8.2
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -35,24 +39,12 @@ spec:
             secretKeyRef:
               name: demo-zoomoid-de-api-token-secret
               key: token
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
-        # startupProbe:
-        #   httpGet:
-        #     path: /healthz
-        #     port: 8080
-        #   failureThreshold: 6
-        #   periodSeconds: 10
-        # livenessProbe:
-        #   httpGet:
-        #     path: /healthz
-        #     port: 8080
-        #   initialDelaySeconds: 20
-        #   periodSeconds: 10
         ports:
         - containerPort: 8080
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "100m"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -60,25 +52,23 @@ metadata:
   name: demo-wave-man
   namespace: web
 spec:
+  replicas: 3
   selector:
     matchLabels:
-      app: demo-wave-man
+      app: demo-man
+      svc: wave-man
   template:
     metadata:
       labels:
-        app: demo-wave-man
+        app: demo-man
+        svc: wave-man
     spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: github
-        - name: gitlab
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.16
-        resources:
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.17.1
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -99,26 +89,26 @@ kind: Deployment
 metadata:
   name: demo-client
   namespace: web
+  labels:
+    svc: client
+    app: demo-man
 spec:
   selector:
     matchLabels:
-      app: demo-client
+      app: demo-man
+      svc: client
   template:
     metadata:
       labels:
+        svc: client
         app: demo-client
     spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: github
-        - name: gitlab
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:1.8
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+        image: docker.pkg.github.com/occloxium/demo-man/client:1.8.2
         ports:
         - containerPort: 80
 ---
@@ -128,27 +118,29 @@ metadata:
   name: demo-watchdog
   namespace: web
   labels:
-    app: demo-watchdog
+    app: demo-man
+    svc: watchdog
 spec:
   selector:
     matchLabels:
-      app: demo-watchdog
+      app: demo-man
+      svc: watchdog
   template:
     metadata:
       labels:
-        app: demo-watchdog
+        app: demo-man
+        svc: watchdog
     spec:
       imagePullSecrets:
       - name: github
-      - name: gitlab
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.8
+        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.9
         env:
         - name: VOLUME
           value: "/app/files"
         - name: PUBLIC_PATH
-          value: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
+          value: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "fs/"}'
         - name: API_ENDPOINT
           value: http://demo-api:8080/api/v1/demo # use service name instead of global public endpoint
         - name: TOKEN 
@@ -156,10 +148,6 @@ spec:
             secretKeyRef:
               name: demo-zoomoid-de-api-token-secret
               key: token
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
         volumeMounts:
         - mountPath: "/app/files"
           name: audio-volume
@@ -167,4 +155,45 @@ spec:
       - name: audio-volume
         persistentVolumeClaim:
           claimName: demo-audio-pvc
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-fileserver
+  namespace: web
+  labels:
+    app: demo-man
+    svc: fileserver
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: fileserver
+  template:
+    metadata:
+      labels:
+        app: demo-man
+        svc: fileserver
+    spec:
+      containers:
+      - name: fileserver
+        image: nginx:alpine
+        resources:
+          limits:
+            cpu: 20m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: "/app/files"
+          name: audio-volume
+          readOnly: true
+        - mountPath: /etc/nginx/conf.d
+          name: nginx-config
+      volumes:
+      - name: audio-volume
+        persistentVolumeClaim:
+          claimName: demo-audio-pvc
+      - name: nginx-config
+        configMap:
+          name: demo-fileserver-config
       restartPolicy: Always
