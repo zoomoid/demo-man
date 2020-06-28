@@ -17,7 +17,7 @@ stages:
   only:
   - tags
   stage: build
-  image: docker:latest
+  image: docker:dind
   before_script:
   - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
   tags:
