@@ -12,8 +12,8 @@ const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo'
 
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: 'https',
-  hostname: 'demo.zoomoid.de', // Use internal fileserver instead of public one!
-  dir: `fs/`, // needs to be slash-terminated!
+  hostname: 'files.zoomoid.de', // Use internal fileserver instead of public one!
+  dir: ``, // needs to be slash-terminated!
 };
 
 if(!process.env.TOKEN){
