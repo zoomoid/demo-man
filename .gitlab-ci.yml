@@ -3,7 +3,7 @@ stages:
   - deploy
 
 variables:
-  DOCKER_HOST: tls://localhost:2376
+  DOCKER_HOST: tcp://localhost:2376
 
 .kubectl:
   image:
