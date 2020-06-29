@@ -17,8 +17,6 @@ variables:
   - kubernetes
 
 .build-pre:
-  only:
-  - tags
   stage: build
   image: docker:dind
   before_script:
