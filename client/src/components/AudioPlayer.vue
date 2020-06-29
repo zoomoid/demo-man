@@ -2,10 +2,7 @@
   <div class="player-wrapper" :class="[this.loaded ? 'loaded' : '']">
     <div class="title-wrapper">
       <div class="title-line">
-        <div class="title" v-html="name">
-
-        </div>
-
+        <div class="title" v-html="name"></div>
       </div>
       <!-- <div class="tags" v-if="tags.length > 0">
         <span class="tag" v-for="tag in tags" v-bind:key="tag">
@@ -79,8 +76,6 @@
         <span class="playback-time-separator"></span>
         <span class="playback-time-total">{{duration}}</span>
       </div>
-
-
     </div>
     <audio
       :src="file"
@@ -289,7 +284,6 @@ $color2: #161616;
 $loading-fade: linear-gradient(135deg,
   $color1 0%, $color1 10%, $color2 30%, $color1 50%,
   $color2 70%, $color1  90%, $color1 100%);
-
 
 .player-wrapper {
   // Loading animation
