@@ -35,10 +35,10 @@ build:all:
     - cd api/
     - docker build -t $CI_REGISTRY_IMAGE/api:latest .
     - docker push $CI_REGISTRY_IMAGE/api:latest
-    - cd client/
+    - cd ../client/
     - docker build -t $CI_REGISTRY_IMAGE/client:latest .
     - docker push $CI_REGISTRY_IMAGE/client:latest
-    - cd watchdog/
+    - cd ../watchdog/
     - docker build -t $CI_REGISTRY_IMAGE/watchdog:latest .
     - docker push $CI_REGISTRY_IMAGE/watchdog:latest
 
