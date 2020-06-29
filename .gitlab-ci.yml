@@ -2,9 +2,10 @@ stages:
   - build
   - deploy
 
-variables:
-  DOCKER_HOST: tcp://localhost:2376
-  DOCKER_TLS_CERTDIR: ""
+# variables:
+#   DOCKER_HOST: tcp://localhost:2376
+#   DOCKER_TLS_CERTDIR: ""
+
 .kubectl:
   image:
     name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:1.18.4
@@ -20,11 +21,26 @@ variables:
   only:
   - tags
   stage: build
-  image: docker:dind
+  image: docker:latest
   before_script:
   - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
   tags:
   - kubernetes
+
+build:all:
+  only:
+    - develop
+  extends: .build-pre
+  script:
+    - cd api/
+    - docker build -t $CI_REGISTRY_IMAGE/api:latest .
+    - docker push $CI_REGISTRY_IMAGE/api:latest
+    - cd client/
+    - docker build -t $CI_REGISTRY_IMAGE/client:latest .
+    - docker push $CI_REGISTRY_IMAGE/client:latest
+    - cd watchdog/
+    - docker build -t $CI_REGISTRY_IMAGE/watchdog:latest .
+    - docker push $CI_REGISTRY_IMAGE/watchdog:latest
 
 build:api:
   extends: .build-pre
