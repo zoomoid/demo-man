@@ -4,7 +4,7 @@ stages:
 
 variables:
   DOCKER_HOST: tcp://localhost:2376
-
+  DOCKER_TLS_CERTDIR: ""
 .kubectl:
   image:
     name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:1.18.4
