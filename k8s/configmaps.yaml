@@ -39,28 +39,3 @@ data:
       "dpi": 600,
       "preserveAspectRatio": "none"
     }
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: demo-fileserver-config
-  namespace: web
-  labels:
-    app: demo-man
-    svc: demo-fileserver
-data:
-  fs.conf: |
-    server {
-      server_name files.zoomoid.de;
-      location /fs {
-          root /var/www/files/demo;
-          autoindex on;
-          sendfile on;
-          sendfile_max_chunk 1m;
-          tcp_nopush on;
-          tcp_nodelay on;
-          keepalive_timeout 65;
-      }
-      listen 80;
-      # listen [::]:80 ipv6only=true;
-    }

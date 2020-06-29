@@ -1,7 +1,6 @@
 VERSION := $(shell git describe | sed -e 's/^v//')
 GH_REG_PREFIX := docker.pkg.github.com/occloxium/demo-man
-
-all: build tag push
+GL_REG_PREFIX := registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de
 
 version:
 	@echo $(VERSION)
@@ -17,18 +16,27 @@ build:
 	docker build -t watchdog:$(VERSION) watchdog/
 	docker build -t client:$(VERSION) client/
 
-tag: build
+tag-gh: build
 	docker tag api:$(VERSION) $(GH_REG_PREFIX)/api:$(VERSION)	
 	docker tag watchdog:$(VERSION) $(GH_REG_PREFIX)/watchdog:$(VERSION)	
 	docker tag client:$(VERSION) $(GH_REG_PREFIX)/client:$(VERSION)
 
-push: build tag
+push-gh: build tag
 	docker push $(GH_REG_PREFIX)/api:$(VERSION)
 	docker push $(GH_REG_PREFIX)/watchdog:$(VERSION)
 	docker push $(GH_REG_PREFIX)/client:$(VERSION)
 
-api:
-	docker build -t api:latest api/
-	docker tag api:latest $(GH_REG_PREFIX)/api:latest
-	docker push $(GH_REG_PREFIX)/api:latest
+tag-gl: build
+	docker tag api:$(VERSION) $(GL_REG_PREFIX)/api:$(VERSION)	
+	docker tag watchdog:$(VERSION) $(GL_REG_PREFIX)/watchdog:$(VERSION)	
+	docker tag client:$(VERSION) $(GL_REG_PREFIX)/client:$(VERSION)
+
+push-gl: build tag
+	docker push $(GL_REG_PREFIX)/api:$(VERSION)
+	docker push $(GL_REG_PREFIX)/watchdog:$(VERSION)
+	docker push $(GL_REG_PREFIX)/client:$(VERSION)
+
+github: build tag-gh push-gh
+
+gitlab: build tag-gl push-gl
 

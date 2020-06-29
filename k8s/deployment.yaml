@@ -19,10 +19,11 @@ spec:
     spec:
       restartPolicy: Always
       imagePullSecrets:
-        - name: github
+      - name: github
+      - name: gitlab
       containers:
       - name: api
-        image: docker.pkg.github.com/occloxium/demo-man/api:1.8.2
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.10
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -65,10 +66,11 @@ spec:
     spec:
       restartPolicy: Always
       imagePullSecrets:
-        - name: github
+      - name: github
+      - name: gitlab
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.17.1
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.18
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -101,14 +103,15 @@ spec:
     metadata:
       labels:
         svc: client
-        app: demo-client
+        app: demo-man
     spec:
       restartPolicy: Always
       imagePullSecrets:
-        - name: github
+      - name: github
+      - name: gitlab
       containers:
       - name: client
-        image: docker.pkg.github.com/occloxium/demo-man/client:1.8.2
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.10
         ports:
         - containerPort: 80
 ---
@@ -133,14 +136,15 @@ spec:
     spec:
       imagePullSecrets:
       - name: github
+      - name: gitlab
       containers:
       - name: watchdog
-        image: docker.pkg.github.com/occloxium/demo-man/watchdog:1.9
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.10
         env:
         - name: VOLUME
           value: "/app/files"
         - name: PUBLIC_PATH
-          value: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "fs/"}'
+          value: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
         - name: API_ENDPOINT
           value: http://demo-api:8080/api/v1/demo # use service name instead of global public endpoint
         - name: TOKEN 
@@ -155,45 +159,4 @@ spec:
       - name: audio-volume
         persistentVolumeClaim:
           claimName: demo-audio-pvc
-      restartPolicy: Always
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: demo-fileserver
-  namespace: web
-  labels:
-    app: demo-man
-    svc: fileserver
-spec:
-  selector:
-    matchLabels:
-      app: demo-man
-      svc: fileserver
-  template:
-    metadata:
-      labels:
-        app: demo-man
-        svc: fileserver
-    spec:
-      containers:
-      - name: fileserver
-        image: nginx:alpine
-        resources:
-          limits:
-            cpu: 20m
-            memory: 100Mi
-        volumeMounts:
-        - mountPath: "/app/files"
-          name: audio-volume
-          readOnly: true
-        - mountPath: /etc/nginx/conf.d
-          name: nginx-config
-      volumes:
-      - name: audio-volume
-        persistentVolumeClaim:
-          claimName: demo-audio-pvc
-      - name: nginx-config
-        configMap:
-          name: demo-fileserver-config
       restartPolicy: Always

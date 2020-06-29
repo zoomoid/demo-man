@@ -4,17 +4,20 @@ metadata:
   namespace: web
   name: demo-mongodb
   labels:
-    app: demo-mongodb
+    app: demo-man
+    svc: mongodb
 spec:
   replicas: 1
-  serviceName: demo-mongodb-svc
+  serviceName: demo-mongodb
   selector:
     matchLabels:
-      app: demo-mongodb
+      app: demo-man
+      svc: mongodb
   template:
     metadata:
       labels:
-        app: demo-mongodb
+        app: demo-man
+        svc: mongodb
     spec:
       terminationGracePeriodSeconds: 60
       nodeSelector:
