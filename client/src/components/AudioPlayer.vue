@@ -396,7 +396,7 @@ $loading-fade: linear-gradient(135deg,
         }
         color: #1a1a1a;
         &:hover, &:active {
-          color: #F58B44;
+          color: var(--accent);
 
         }
       }
@@ -430,7 +430,7 @@ $loading-fade: linear-gradient(135deg,
       }
       color: #1a1a1a;
       &:hover, &:active {
-        color: #F58B44;
+        color: var(--accent);
       }
     }
     .playback-time-wrapper {
@@ -471,6 +471,7 @@ $loading-fade: linear-gradient(135deg,
             z-index: 2;
             background-repeat: no-repeat;
             background-size: 100% 100%;
+            background-position: center center;
             height: 100%;
             &.bg--full {
               display: block;

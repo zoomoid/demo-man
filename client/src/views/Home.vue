@@ -1,38 +1,44 @@
 <template>
-  <div>
-      <div class="error" v-if="!this.directories.length">
-          <h1>There's nothing here...
-          </h1>
-          <p>
-            Either there are currently no demos or we are experiencing
-            issues with our microservices.
-          </p>
-          <p class="err" v-if="this.error">{{ this.error }}</p>
-      </div>
-      <div class="success" v-else>
-        <h1>
-          demo-man
+  <div class="wrapper" :style="'--accent: ' + this.accentColor">
+    <div class="error" v-if="!this.directories.length">
+        <h1>There's nothing here...
         </h1>
-        <ul>
-          <li v-for="directory in directories" :key="directory">
-            <router-link :to="'/' + directory">{{directory}}</router-link>
-          </li>
-        </ul>
-      </div>
-
+        <p>
+          Either there are currently no demos or we are experiencing
+          issues with our microservices.
+        </p>
+        <p class="err" v-if="this.error">{{ this.error }}</p>
+    </div>
+    <div class="success" v-else>
+      <h1>
+        demo-man
+      </h1>
+      <ul>
+        <li v-for="directory in directories" :key="directory">
+          <router-link :to="'/' + directory">{{directory}}</router-link>
+        </li>
+      </ul>
+    </div>
+    <Footer v-if="this.$route.path === '/'"></Footer>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import Footer from '@/components/Footer.vue';
 
 export default {
   data: () => ({
     error: null,
     directories: [],
+    accentColor: '#F58B44',
   }),
+  components: {
+    Footer,
+  },
   mounted() {
-    axios.get('https://demo.zoomoid.de/api/v1/demo').then((response) => {
+    const apiEP = process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://demo.zoomoid.de';
+    axios.get(`${apiEP}/api/v1/demo`).then((response) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
       this.directories = response.data.data.map((v) => v.name);
@@ -103,5 +109,10 @@ export default {
       font-size: 1em;
     }
   }
+}
+
+.wrapper {
+  min-height: 100vh;
+  background-color: var(--accent);
 }
 </style>

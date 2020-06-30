@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" :style="'--accent: ' + this.accentColor">
     <template v-if="this.error">
       <div class="error">
         <h1>404<br>Not Found</h1>
@@ -10,12 +10,12 @@
           <span>Go back</span>
         </router-link>
       </div>
-
     </template>
     <template v-else>
       <Breadcrump></Breadcrump>
+      <div class="spacer"></div>
       <div class="fill">
-        <img :src="`https://demo.zoomoid.de/api/v1/demo/${this.$route.params.id}/cover`"/>
+        <img :src="`${this.apiEP}/api/v1/demo/${this.$route.params.id}/cover`"/>
       </div>
       <div class="release">
         <h2 class="artist">{{album.artist}}</h2>
@@ -23,7 +23,6 @@
       </div>
       <AudioManager class="players" :queue="queue" :accentColor="accentColor"></AudioManager>
     </template>
-
   </div>
 </template>
 
@@ -42,11 +41,12 @@ export default {
       error: null,
       album: {},
       queue: [],
-      accentColor: '#ffd600',
+      accentColor: '#F58B44',
+      apiEP: process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://demo.zoomoid.de',
     };
   },
   mounted() {
-    axios.get(`https://demo.zoomoid.de/api/v1/demo/${this.$route.params.id}`).then((response) => {
+    axios.get(`${this.apiEP}/api/v1/demo/${this.$route.params.id}`).then((response) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
       const f = response.data.data[0];
@@ -62,8 +62,8 @@ export default {
         url: track.url,
         additionalData: track,
         waveformUrl: {
-          full: `https://demo.zoomoid.de/api/v1/demo/waveform/${track._id}/full?color=${this.accentColor}`, // eslint-disable-line
-          small: `https://demo.zoomoid.de/api/v1/demo/waveform/${track._id}/small?color=${this.accentColor}`, // eslint-disable-line
+          full: `${this.apiEP}/api/v1/demo/waveform/${track._id}/full?color=${this.accentColor.replace('#', '')}`, // eslint-disable-line
+          small: `${this.apiEP}/api/v1/demo/waveform/${track._id}/small?color=${this.accentColor.replace('#', '')}`, // eslint-disable-line
         },
         tags: [],
       })).sort((a, b) => (a.no - b.no));
@@ -75,5 +75,99 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/views/frame';
+.release, .fill {
+  padding: 2em 2em;
+  width: 100%;
+  // text-align: center;
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  .spacer {
+    flex-grow: 1;
+  }
+}
+
+.players {
+  width: 100%;
+  // text-align: center;
+  // max-width: 1024px;
+  margin: 0 auto;
+}
+
+.fill {
+  padding-top: 0;
+  img {
+    display: block;
+    margin: 2em auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 450px;
+  }
+}
+
+.release {
+  .artist {
+    letter-spacing: -0.02em;
+    font-size: 2.5em;
+    font-weight: 500;
+    line-height: 1;
+    margin: 0;
+  }
+  .title {
+    letter-spacing: -0.04em;
+    font-weight: 700;
+    font-size: 3em;
+    line-height: 1;
+    margin: 0;
+  }
+}
+
+.error {
+  font-size: 24pt;
+  width: 50%;
+  margin: 8em auto 0;
+  h1 {
+    font-weight: 900;
+    font-size: 3em;
+    margin-bottom: 16pt;
+  }
+  p {
+    opacity: 0.3;
+    font-size: 0.8em;
+    margin: 0;
+    &.err {
+      font-size: 0.6em;
+    }
+  }
+  a {
+    margin-top: 1em;
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    outline: none;
+    i {
+      vertical-align: middle;
+      padding-right: 1ex;
+      font-size: 1em;
+    }
+  }
+}
+.wrapper {
+  background-color: var(--accent);
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  .spacer {
+    flex-grow: 1;
+  }
+}
 </style>

@@ -1,10 +1,9 @@
 <template>
-  <div>
-
-    <div v-if="!queue">
+  <div  :style="'--accent: ' + this.accentColor">
+    <div class="manager" v-if="!queue">
       <span>No tracks added yet...</span>
     </div>
-    <div v-else>
+    <div class="manager" v-else>
       <div v-for="player in queue" v-bind:key="player.id">
         <AudioPlayer
           :id="player.id"
@@ -102,6 +101,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.manager {
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
 .player {
   &:last-child {
     .player-wrapper.loaded {
@@ -141,7 +145,7 @@ export default {
     padding: 4px;
     &:hover, &:active {
       background: rgba(0,0,0,0.15);
-      color: #F58B44;
+      color: var(--accent);
     }
   }
   .metadata {
