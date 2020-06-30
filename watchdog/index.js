@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const logger = require('@zoomoid/log');
 const p = require('path');
 const fs = require('fs');
+const { exception } = require('console');
 
 /**
  * API Server endpoint to query
@@ -51,7 +52,7 @@ const token = process.env.TOKEN;
 const volume = process.env.VOLUME || `.`; // needs to be slash-terminated!
 
 /** FILE Watcher */
-const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
+const fileWatcher = chokidar.watch(`${volume}/[a-zA-Z0-9]*/*.mp3`, {
   cwd: `${volume}`,
   ignoreInitial: true,
   persistent: true, 
@@ -64,7 +65,7 @@ const fileWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
   },
 });
 
-/** FOLDER Watcher */
+/** Directory Watcher */
 const folderWatcher = chokidar.watch(`${volume}/`, {
   cwd: `${volume}`,
   ignored: [/(^|[\/\\])\../, 'private-keys-v1.d'], // exclude some FileZilla bullshit directories
@@ -75,6 +76,8 @@ const folderWatcher = chokidar.watch(`${volume}/`, {
   depth: 1,
 });
 
+logger.info(`Watching directory`, `volume`, volume);
+
 /** 
  * Garbage collector
  * 
@@ -83,7 +86,6 @@ const folderWatcher = chokidar.watch(`${volume}/`, {
 const garbageCollector = chokidar.watch(['.cache', '.gnupg', 'private-keys-v1.d']);
 garbageCollector.on("addDir", async (path) => {
   logger.info(`Cleaning up trash directories`, `directory`, path);
-
   fs.rmdir(path, {recursive: true}, (err) => {
     if (err) {
       logger.error(`Error on rmdir w/ recursive option`, `error`, err);
@@ -93,53 +95,61 @@ garbageCollector.on("addDir", async (path) => {
   });
 });
 
-logger.info(`Watching directory`, `volume`, volume);
-
+/**
+ * Awaits directory addition and requests creation of a new namespace from the API server
+ */
 folderWatcher.on('addDir', async path => {
-
   if(path == `${volume}/`){
     logger.info(`Skipping docker volume mount event`, `directory`, path);
     return
   }
-
-  logger.info(`Directory has been added`, `directory`, path, `timestamp`, new Date().toLocaleString('de-DE'));
-
+  logger.info(`Observed addition of directory`, `directory`, path, `timestamp`, new Date().toLocaleString('de-DE'));
   let folder = p.basename(path);
   logger.info(`Created new folder`, `path`, path, `folder`, folder);
-
-  await postAlbumToAPI(folder);
+  try {
+    await postAlbumToAPI(folder);
+  } catch (err) {
+    logger.error('Received error from API server', `event`, `addDir`, `path`, path, `error`, err);
+    logger.info('Reverting changes to file system', `path`, path);
+    fs.unlink(path, (err) => {
+      logger.error('I/O Error on unlink. Exiting...', `error`, err);
+      process.exit(1);
+    });
+  }
 });
 
 /**
- * Watcher for all new files being added
- * Kicks of the whole process
+ * Awaits new files to be added and requests insertion into the namespace from the API server
  */
 fileWatcher.on('add', async path => {
   logger.info(`File has been added`, `file`, path, `timestamp`, new Date().toLocaleString('de-DE'));
-
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
-
   let meta = await readMetadata(reducedFilename);
-  // TODO: experiment if this is safe to leave in, it should be, if the filename submitted does not contain the volume,
-  // hence creating a cyclic fs 
-  logger.info(`Read metadata of audio file`, `file`, reducedFilename, `data`, meta, `length`, meta.length);
-  
-  logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `publicUrl`, url);
-  await postTrackToAPI(meta);
+  try {
+    logger.info(`Requesting insertion of indexed audio file`, `filename`, p.basename(reducedFilename), `publicUrl`, meta.url);
+    await postTrackToAPI(meta);
+  } catch (err) {
+    logger.error('Received error from API server', `event`, `add`, `path`, path, `error`, err);
+    logger.info('Reverting changes to file system', `path`, path);
+    fs.unlink(path, (err) => {
+      logger.error('I/O Error on unlink. Exiting...', `error`, err);
+      process.exit(1);
+    });
+  }
 });
 
 /**
  * Watcher for file deletions
  */
 fileWatcher.on('unlink', async path => {
-  // TODO: experiment if this is safe to leave in, it should be, if the filename submitted does not contain the volume,
-  // hence creating a cyclic fs
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
-
   logger.info(`File has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
- 
   // API Server querys for full path on delete request
-  await removeTrackFromAPI(reducedFilename);
+  try {
+    await removeTrackFromAPI(reducedFilename);
+  } catch (err) {
+    logger.error('Received error from API server. Manual assessment required', `event`, `unlink`, `path`, path,  `error`, err);
+  }
 });
 
 /**
@@ -147,11 +157,13 @@ fileWatcher.on('unlink', async path => {
  */
 folderWatcher.on('unlinkDir', async path => {
   const reducedFilename = path.replace(`${volume}/`,``); // strips the volume mount prefix from the filename
-
   logger.info(`Directory has been removed`, `file`, reducedFilename, `time`, new Date().toLocaleString('de-DE'));
-  
   // API Server querys for full path on delete request
-  await removeAlbumFromAPI(reducedFilename);
+  try {
+    await removeAlbumFromAPI(reducedFilename)
+  } catch (err) {
+    logger.error('Received error from API server. Manual assessment required.', `event`, `unlinkDir`, `error`, err);
+  }
 });
 
 /**
@@ -290,6 +302,7 @@ async function readMetadata(path){
     } else {
       logger.warn(`Audio file metadata has no cover yet, omitting for now`, `path`, `${path}`);
     }
+    logger.info(`Read metadata off of audio file`, `path`, path);
     return {
       "year": src.common.year,
       "track": src.common.track,
