@@ -15,8 +15,8 @@ RUN npm run build
 # 2nd stage: lightweight alpine container
 FROM nginx:alpine
 
-ADD nginx.conf /etc/nginx/conf.d/default.conf
+ADD nginx.conf /etc/nginx/conf.d/client.conf
 
 RUN nginx -t
 
-COPY --from=builder /app/dist /usr/share/nginx/html/
+COPY --from=builder /app/dist /usr/share/nginx/client/
