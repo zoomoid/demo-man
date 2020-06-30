@@ -122,7 +122,7 @@ demoRouter.route('/file')
    */
   .delete(guard, async (req, res, next) => {
     try {
-      resp = await db.get().deleteOne({ path: req.body.path, type: 'Track' });
+      resp = await db.get().deleteMany({ path: req.body.path, type: 'Track' });
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
       res.status(200).json({
         'response': resp,
@@ -146,7 +146,6 @@ demoRouter.route('/folder')
         name: req.body.album,
         url: `${apiEndpoint}/${req.body.album}`,
       };
-
       resp = await db.get().insertOne(doc);
       res.status(200).json({
         'response': resp,
@@ -165,7 +164,7 @@ demoRouter.route('/folder')
       const c = db.get();
       resp = await Promise.all([
         c.deleteMany({ type: 'Track', namespace: path }),
-        c.deleteOne({ type: 'Album', name: path }),
+        c.deleteMany({ type: 'Album', name: path }),
       ]);
       logger.info(`Successfully deleted document from MongoDB storage`, `deletedAlbum`, `${req.body.path}`);
 
