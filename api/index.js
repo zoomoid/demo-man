@@ -223,7 +223,7 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace });
 
-    res.redirect(resp.cover.url);
+    res.redirect(resp.cover.public_url);
   } catch (err) {
     logger.error('Error while fetching cover image', `namespace`, `${req.params.namespace}`, `error`, err);
     next(err);
@@ -284,10 +284,11 @@ demoRouter.route('/waveform/:track/:mode')
             break;
         }
         let color = '#F58B44'
+        console.log(req.query);
         if (req.query.color) {
           color = req.query.color;
         }
-        waveform = waveform.replace(/{{.color}}/g, color)
+        waveform = waveform.replace(/{{.color}}/g, `#${color}`)
         res.send(waveform)
       } else {
         res.status(404).send("Not found");
