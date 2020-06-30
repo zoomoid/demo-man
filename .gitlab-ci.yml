@@ -2,7 +2,6 @@ stages:
   - build
   - deploy
 
-
 .kubectl:
   image:
     name: registry.git.rwth-aachen.de/zoomoid/docker-kubectl:1.18.4

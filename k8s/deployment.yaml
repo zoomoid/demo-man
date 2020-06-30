@@ -23,7 +23,7 @@ spec:
       - name: gitlab
       containers:
       - name: api
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.10
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.11
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -53,7 +53,7 @@ metadata:
   name: demo-wave-man
   namespace: web
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: demo-man
@@ -70,7 +70,7 @@ spec:
       - name: gitlab
       containers:
       - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.18
+        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.19.4
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -78,6 +78,9 @@ spec:
           mountPath: "/app/tmp"
         - name: wave-man-config
           mountPath: /app/config
+        resources:
+          limits:
+            memory: "2Gi"
       volumes:
       - name: wave-man-volume
         persistentVolumeClaim:
@@ -111,7 +114,7 @@ spec:
       - name: gitlab
       containers:
       - name: client
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.10
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.11
         ports:
         - containerPort: 80
 ---
@@ -139,7 +142,7 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.10
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.11
         env:
         - name: VOLUME
           value: "/app/files"
