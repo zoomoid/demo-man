@@ -2,16 +2,21 @@ version: "3"
 
 services:
   client:
-    build: ../client
+    image: node:latest
     container_name: demo-client
     restart: on-failure
     networks: 
     - frontend
+    - backend
+    volumes: 
+    - ../client:/app
+    working_dir: /app
+    command: [ "npm", "run", "serve" ]
     ports: 
-    - "8081:80"
+    - "8081:8080"
 
   api:
-    build: ../api
+    image: node:alpine
     container_name: demo-api
     restart: on-failure
     depends_on: 
@@ -26,15 +31,18 @@ services:
     networks:
     - backend
     - frontend
+    volumes: 
+    - ../api:/app
+    working_dir: /app
+    command: [ "npm", "start" ]
     ports: 
     - "8080:8080"
 
   watchdog:
-    build: ../watchdog
+    # build: ../watchdog
+    image: node:alpine
     container_name: demo-watchdog
     restart: on-failure
-    ports:
-    - "8082:8080"
     environment: 
       VOLUME: /app/files
       PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
@@ -42,19 +50,26 @@ services:
       API_ENDPOINT: 'http://demo-api:8080/api/v1/demo'
     volumes:
     - ./files:/app/files
+    - ../watchdog:/app
+    working_dir: /app
+    command: [ "npm", "start" ]
     networks:
     - backend
+    ports:
+    - "8082:8080"
 
   waveman:
-    image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.15.1
+    image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.19.2
     container_name: demo-wave-man
     restart: on-failure
     environment: 
       MONGO_INITDB_DATABASE: demo
     networks:
     - backend
+    volumes: 
+    - ../../../web/wave-man/defaults:/app/config
     ports:
-    - "5000:5000"
+    - "8083:5000"
 
   db:
     image: mongo:4.2.5
