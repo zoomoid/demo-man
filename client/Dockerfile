@@ -13,7 +13,7 @@ ADD . .
 RUN npm run build
 
 # 2nd stage: lightweight alpine container
-FROM nginx:alpine
+FROM nginx:1.19.0-alpine
 
 ADD nginx.conf /etc/nginx/conf.d/client.conf
 
