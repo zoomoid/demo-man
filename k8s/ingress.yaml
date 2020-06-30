@@ -1,31 +1,30 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: demo-zoomoid-ingress
+  name: demo-man
   namespace: web
   labels:
     app: demo-man
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    # kubernetes.io/ingress.class: "nginx"
     cert-manager.io/issuer: "letsencrypt-prod"
 spec:
   tls:
   - hosts:
     - demo.zoomoid.de
-    secretName: demo-zoomoid-tls
+    secretName: demo-man-tls
+  # backend:
+  #   serviceName: kube-occloxium-com
+  #   servicePort: 8001
   rules:
   - host: demo.zoomoid.de
     http:
       paths:
-      - path: /
-        backend:
-          serviceName: demo-client
-          servicePort: 8081
       - path: /api
         backend:
           serviceName: demo-api
           servicePort: 8080
-      - path: /fs
+      - path: /
         backend:
-          serviceName: demo-fileserver
-          servicePort: 80
+          serviceName: demo-client
+          servicePort: 8081
