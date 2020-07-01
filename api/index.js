@@ -38,10 +38,10 @@ const guard = (request, response, next) => {
   if(!process.env.TOKEN){
     logger.error(`No token provided as ENV variable`);
     response.status(500).json({"error": "Error while authenticating"});
-    return
+    process.exit(1);
   }
   if(request.body.token && request.body.token === process.env.TOKEN){
-    logger.info(`Sucessfully authenticated request. Detaching token from body`);
+    // logger.info(`Sucessfully authenticated request. Detaching token from body`);
     delete request.body.token;
     next();
   } else {
@@ -50,20 +50,21 @@ const guard = (request, response, next) => {
   }
 }
 
-const waveManHook = (url, name) => {
-  logger.info("Requesting waveform from wave-man", "url", wavemanUrl, "track", name)
+const waveManHook = (ns, fn) => {
+  const path = `${ns}/${fn}`;
+  logger.info("Requesting waveform from wave-man", "url", wavemanUrl, "track", fn, "namespace", ns);
   return new Promise((resolve, reject) => {
     fetch(wavemanUrl, { 
       method: 'POST',
       body:    JSON.stringify({
-        uri: url,
+        uri: path,
       }),
       headers: { 'Content-Type': 'application/json' } 
     }).then((res) => res.json()).then((res) => {
-      logger.info("WaveMan rendered audio waveform", "track", name, "trackUrl", url);
+      logger.info("wave-man rendered audio waveform", "track", fn, "namespace", ns);
       resolve(res);
     }).catch((err) => {
-      logger.error("WaveMan responded unexcepectedly", "error", err, "track", name, "wavemanUrl", wavemanUrl, "trackUrl", url);
+      logger.error("wave-man responded unexpectedly", "error", err, "track", fn, "namespace", ns, "waveman", wavemanUrl);
       reject(err);
     });
   });
@@ -77,43 +78,39 @@ app.get('/healthz', (_, response) => {
   response.status(200).send("ok");
 });
 
-demoRouter.route('/file')
+demoRouter.route('/track')
   /**
    * Add new track to API and queries wave-man for waveforms
    */
   .post(guard, async (req, res, next) => {
-    logger.info('Received POST request on /file route');
+    // logger.info('Received POST request on /file route');
     try {
-      const doc = req.body;
-      doc.type = 'Track';
-      doc._id = new ObjectID()
-
-      // Get SVG waveform from waveman
+      const track = req.body.track;
+      track.type = 'Track';
+      track._id = new ObjectID();
       try {
-        svg = await waveManHook(doc.url, doc.title);
-
-        waveformDoc = {
+        svg = await waveManHook(track.namespace, track.filename);
+        waveform = {
           type: 'Waveform',
-          namespace: doc.namespace,
-          track_id: doc._id,
+          namespace: track.namespace,
+          track_id: track._id,
           full: svg.full,
           small: svg.small,
         }
-  
         resp = await Promise.all([
-          db.get().insertOne(doc),
-          db.get().insertOne(waveformDoc),
+          db.get().insertOne(track),
+          db.get().insertOne(waveform),
         ]);
-        logger.info(`Successfully inserted document into MongoDB storage`, `inserted`, `${JSON.stringify(req.body.track).substr(0, 80)}...`);
+        logger.info('Added track to namespace', 'level', 'POST /track', 'namespace', track.namespace, 'response', resp);
         res.status(200).json({
           'response': resp,
         });
-      } catch (e) {
-        logger.error('wave-man failed to respond with waveform', 'response', err);
+      } catch (err) {
+        logger.error('wave-man failed to respond with waveform', 'level', 'POST /track', 'response', err);
         next(err);
-      }      
+      }
     } catch (err) {
-      logger.error(`Received error from MongoDB (driver)`, `response`, err);
+      logger.error('Received error from MongoDB', 'level', 'POST /track', 'response', err);
       next(err);
     }
   })
@@ -123,35 +120,33 @@ demoRouter.route('/file')
   .delete(guard, async (req, res, next) => {
     try {
       resp = await db.get().deleteMany({ path: req.body.path, type: 'Track' });
-      logger.info(`Successfully deleted document from MongoDB storage`, `deletedTrack`, `${req.body.path}`);
+      logger.info('Deleted track from namespace', 'level', 'DELETE /track', 'track', `${req.body.path}`);
       res.status(200).json({
         'response': resp,
       });
     } catch (err) {
-      logger.error(`Received error from MongoDB (driver)`, `response`, err);
+      logger.error('Received error from MongoDB', 'level', 'DELETE /track', 'response', err);
       next(err);
     }
   });
 
-demoRouter.route('/folder')
+demoRouter.route('/namespace')
   /**
    * ADD new album to API
    */
   .post(guard, async (req, res, next) => {
-    logger.info('Received POST request on /folder route', `path`, req.body);
-
     try {
       const doc = {
-        type: 'Album',
-        name: req.body.album,
-        url: `${apiEndpoint}/${req.body.album}`,
+        type: 'Namespace',
+        name: req.body.namespace,
+        url: `${apiEndpoint}/${req.body.namespace}`,
       };
       resp = await db.get().insertOne(doc);
       res.status(200).json({
         'response': resp,
       });
     } catch (err) {
-      logger.error(`Received error from MongoDB (driver)`, `response`, err);
+      logger.error('Received error from MongoDB', 'level', 'POST /namespace', 'response', err);
       next(err);
     }
   })
@@ -160,19 +155,18 @@ demoRouter.route('/folder')
    */
   .delete(guard, async (req, res, next) => {
     try {
-      const path = req.body.path;
+      const path = req.body.namespace;
       const c = db.get();
       resp = await Promise.all([
         c.deleteMany({ type: 'Track', namespace: path }),
-        c.deleteMany({ type: 'Album', name: path }),
+        c.deleteMany({ type: 'Namespace', name: path }),
       ]);
-      logger.info(`Successfully deleted document from MongoDB storage`, `deletedAlbum`, `${req.body.path}`);
-
+      logger.info('Deleted album', 'level', 'DELETE /namespace', 'namespace', `${req.body.namespace}`);
       res.status(200).json({
         'response': resp,
       });
     } catch (err) {
-      logger.error(`Received error from MongoDB (driver)`, `response`, err);
+      logger.error('Received error from MongoDB', 'level', 'DELETE /namespace', 'response', err);
       next(err);
     }
   });
@@ -181,16 +175,13 @@ demoRouter.route('/folder')
  * GET all namespaces/albums
  */
 demoRouter.get('/', async (req, res, next) => {
-  logger.info(`Received request to /`, `route`, req.route)
-
   try {
-    resp = await db.get().find({ type: 'Album' }).toArray();
-    
+    resp = await db.get().find({ type: 'Namespace' }).toArray();
     res.status(200).json({
       'data': resp
     });
   } catch (err) {
-    logger.error(`Received error from MongoDB (driver)`, `response`, err);
+    logger.error('Received error from MongoDB', 'level', 'GET /', 'response', err);
     next(err);
   }
 });
@@ -205,12 +196,11 @@ demoRouter.get('/:namespace', async (req, res, next) => {
       t.el = `${apiEndpoint}/${req.params.namespace}/${t._id}/`;
       return t
     });
-
     res.status(200).json({
       'data': resp
     });
   } catch (err) {
-    logger.error(`Received error from MongoDB (driver)`, `response`, err);
+    logger.error('Received error from MongoDB', 'level', 'GET /:namespace', 'response', err);
     next(err);
   }
 });
@@ -221,10 +211,9 @@ demoRouter.get('/:namespace', async (req, res, next) => {
 demoRouter.get('/:namespace/cover', async (req, res, next) => {
   try {
     resp = await db.get().findOne({ type: 'Track', namespace: req.params.namespace });
-
     res.redirect(resp.cover.public_url);
   } catch (err) {
-    logger.error('Error while fetching cover image', `namespace`, `${req.params.namespace}`, `error`, err);
+    logger.error('Error while redirecting to cover', 'level', 'GET /:namespace/cover', 'namespace', `${req.params.namespace}`, `error`, err);
     next(err);
   }
 });
@@ -238,21 +227,21 @@ demoRouter.get('/:namespace/:track', async (req, res, next) => {
 
     if(resp){
       resp.waveformUrl = {
-        full: `${apiEndpoint}/waveform/${req.params.track}/full`,
-        small: `${apiEndpoint}/waveform/${req.params.track}/small`
+        full: `${apiEndpoint}/${req.params.namespace}/${req.params.track}/waveform/full`,
+        small: `${apiEndpoint}/${req.params.namespace}/${req.params.track}/waveform/small`
       };
       res.json(resp);  
     } else {
       res.status(404).send("Not found");
     }
   } catch (err) {
-    logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
+    logger.error('Error while loading waveform', 'level', 'GET /:namespace/:track', 'namespace', `${req.params.namespace}`, 'tack.id', `${req.params.track}`, 'error', err);
     next(err);
   }
 });
 
 
-demoRouter.route('/waveform/:track/:mode')
+demoRouter.route('/namespace:/:track/waveform/:mode')
   /**
    * GET a specific waveform for a specific track from the API server
    * :track is supposed to be a string of ObjectId of the track in question
@@ -293,12 +282,12 @@ demoRouter.route('/waveform/:track/:mode')
         res.status(404).send("Not found");
       }
     } catch (err) {
-      logger.error('Error while loading waveform', `namespace`, `${req.params.namespace}`, `Track.id`, `${req.params.track}`, `error`, err);
+      logger.error('Error while loading waveform', 'level', 'GET /namespace:/:track/waveform/:mode', 'namespace', `${req.params.namespace}`, 'track.id', `${req.params.track}`, 'error', err);
       next(err);
     }
   });
 
-demoRouter.route('/waveform/:track')
+demoRouter.route('/:namespace/:track/waveform')
   /** 
    * for a given track, regenerate waveforms by querying the wave-man again. This might be useful
    * if we change the config maps for the wave-man and do not want to remove the existing track to
@@ -316,13 +305,13 @@ demoRouter.route('/waveform/:track')
         { track_id: ObjectID.createFromHexString(req.params.track), type: "Waveform" }, 
         { full: svg.full, small: svg.small }
       );
-      logger.info(`Successfully updated waveform`, `updated`, `${name}`);
+      logger.info('Successfully updated waveform', 'updated', `${name}`);
       res.status(200).json({
         'response': resp,
       });
     } catch (err) {
       console.error(err);
-      logger.error(`Received error along the way of retriggering waveform generation`, `response`, err);
+      logger.error('Received error along the way of retriggering waveform generation', `response`, err);
       next(err);
     }
   });
@@ -330,13 +319,12 @@ demoRouter.route('/waveform/:track')
 db.connect(`${url}/${demoDB}`, demoDB).then(() => {
   app.listen({ port: apiPort, host: "0.0.0.0" }, (err) => {
     if(err){
-      logger.error(`Error occured on API server startup`, `error`, err);
+      logger.error('Error occured on API server startup', 'error', err);
     } else {
-      logger.info(`Started API server`, `port`, apiPort, `time`, new Date().toLocaleString('de-DE'));
+      logger.info('Started API server', 'port', apiPort, 'time', new Date().toLocaleString('de-DE'));
     }
   });
 }).catch((err) => {
-  logger.error(`MongoDB connector failed to connect to database`, `error`, err);
+  logger.error('MongoDB connector failed to connect to database', 'error', err);
   process.exit(1);
 })
-

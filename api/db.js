@@ -10,27 +10,26 @@ const state = {
 exports.connect = (url, collection) => {
   return new Promise((resolve, reject) => {
     if (state.db) {
-      logger.info(`Using cached database connection`);
+      logger.info('Using cached database connection');
       resolve(state.db);
     } 
-
     mongodb.MongoClient.connect(url, { useUnifiedTopology: true }).then((db) => {
       state.__collection = collection;
       state.db = db.db();
       state.collection = state.db.collection(state.__collection);
       // console.log(state.db);
-      logger.info(`Successfully connected to mongodb`, `URI`, url, `collection`, state.__collection);
+      logger.info('Connected to mongodb', 'url', url, 'collection', state.__collection);
       resolve(state.db);
     }).catch((err) => {
       console.log(err);
-      logger.error(`Encountered error while connecting connection`, `error`, err);
+      logger.error('Error while connecting connection', 'level', 'db.connect', 'error', err);
       reject(err);
     });
   });
 }
 
 exports.get = () => {
-  logger.info(`Access to collection recorded`, `collection`, state.__collection);
+  // logger.info('Access to collection recorded', 'collection', state.__collection);
   return state.collection;
 }
 
@@ -41,7 +40,7 @@ exports.close = () => {
         state.db = null
         resolve();
       }).catch((err) => {
-        logger.error(`Encountered error while closing connection`, `error`, err);
+        logger.error('Encountered error while closing connection', 'level', 'db.close', 'error', err);
         reject(err);
       })
     }
