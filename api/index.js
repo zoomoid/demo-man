@@ -20,7 +20,8 @@ const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man/wavify'
 app.use('/api/v1/demo', demoRouter);
 
 if(!process.env.TOKEN){
-  logger.warn(`No auth token provided as ENV variable. POST and DELETE routes will not work`);
+  logger.error(`No auth token provided as ENV variable`);
+  process.exit(1);
 }
 
 /**
@@ -56,7 +57,7 @@ const waveManHook = (ns, fn) => {
   return new Promise((resolve, reject) => {
     fetch(wavemanUrl, { 
       method: 'POST',
-      body:    JSON.stringify({
+      body: JSON.stringify({
         uri: path,
       }),
       headers: { 'Content-Type': 'application/json' } 
