@@ -15,8 +15,8 @@ app.use(express.json({
 
 const url = process.env.MONGOURL || 'mongodb://demo-mongodb:27017';
 const apiPort = process.env.PORT || '8080';
-const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo'
-const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man/wavify'
+const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api:8080/api/v1/demo'
+const wavemanUrl = process.env.WAVE_ENDPOINT || 'http://demo-wave-man:8083/wavify'
 app.use('/api/v1/demo', demoRouter);
 
 if(!process.env.TOKEN){
@@ -77,6 +77,20 @@ app.get('/ping', (_, response) => {
 
 app.get('/healthz', (_, response) => {
   response.status(200).send("ok");
+});
+
+app.get('/test', (_, response) => {
+  fetch(wavemanUrl.replace('wavify', 'healthz'), { method: 'GET' }).then((res) => {
+    if (res.status == 200) {
+      response.status(200).send("ok");
+    } else {
+      logger.error('Error establishing link to wave-man', 'error', res.statusText);
+      response.status(res.status).send(res.statusText);
+    }
+  }).catch((err) => {
+    logger.error('Error establishing link to wave-man', 'error', err);
+    response.status(500).send(err);
+  });
 });
 
 demoRouter.route('/track')
@@ -161,6 +175,7 @@ demoRouter.route('/namespace')
       resp = await Promise.all([
         c.deleteMany({ type: 'Track', namespace: path }),
         c.deleteMany({ type: 'Namespace', name: path }),
+        c.deleteMany({ type: 'Waveform', namespace: path }),
       ]);
       logger.info('Deleted album', 'level', 'DELETE /namespace', 'namespace', `${req.body.namespace}`);
       res.status(200).json({
@@ -219,6 +234,47 @@ demoRouter.get('/:namespace/cover', async (req, res, next) => {
   }
 });
 
+demoRouter.route('/:namespace/waveform').get(async (req, res, next) => {
+  try {
+    let resp = await db.get().aggregate([{ 
+      $match: {
+        type: 'Waveform',
+        namespace: req.params.namespace,
+      }
+    }, {
+      $lookup: {
+        from: "demo",
+        localField: "track_id",
+        foreignField: "_id",
+        as: "track",
+      }
+    }]).toArray();
+    resp = resp.map((waveform) => {
+      switch(req.query.mode){
+        case 'small':
+          return {
+            waveform: waveform.small.replace(/\\/g, ''),
+          }
+        case 'full': 
+          return {
+            waveform: waveform.full.replace(/\\/g, ''),
+          }
+        default:
+          return {
+            waveform: {
+              full: waveform.full.replace(/\\/g, ''),
+              small: waveform.small.replace(/\\/g, ''),
+            },
+          }
+      }
+    });
+    res.json({data: resp});
+  } catch (err) {
+    logger.error('Error while loading waveforms', 'level', 'GET /:namespace/waveform', 'namespace', `${req.params.namespace}`, 'error', err);
+    next(err);
+  }
+});
+
 /**
  * GET a specific track from the API
  */
@@ -236,13 +292,13 @@ demoRouter.get('/:namespace/:track', async (req, res, next) => {
       res.status(404).send("Not found");
     }
   } catch (err) {
-    logger.error('Error while loading waveform', 'level', 'GET /:namespace/:track', 'namespace', `${req.params.namespace}`, 'tack.id', `${req.params.track}`, 'error', err);
+    logger.error('Error while loading track', 'level', 'GET /:namespace/:track', 'namespace', `${req.params.namespace}`, 'track.id', `${req.params.track}`, 'error', err);
     next(err);
   }
 });
 
 
-demoRouter.route('/namespace:/:track/waveform/:mode')
+demoRouter.route('/:namespace/:track/waveform')
   /**
    * GET a specific waveform for a specific track from the API server
    * :track is supposed to be a string of ObjectId of the track in question
@@ -253,23 +309,21 @@ demoRouter.route('/namespace:/:track/waveform/:mode')
     try {
       const resp = await db.get().findOne({ 
         type: 'Waveform', 
-        track_id: ObjectID.createFromHexString(req.params.track) 
+        track_id: ObjectID.createFromHexString(req.params.track),
+        namespace: req.params.namespace,
       });
       if(resp){
-        res.set({
-          "Content-Type": "image/svg+xml"
-        });
         let waveform;
-        switch (req.params.mode) {
+        switch (req.query.mode) {
           case 'small':
-            waveform = resp.small.replace(/\\/g, '')
+            waveform = resp.small.replace(/\\/g, '');
             break;
           case 'full':
-            waveform = resp.full.replace(/\\/g, '')
+            waveform = resp.full.replace(/\\/g, '');
             break;
           default:
-            res.status(405);
-            next("Unsupported mode")
+            res.status(405).send("Unsupported mode");
+            next("Unsupported mode");
             break;
         }
         let color = '#F58B44'
@@ -277,7 +331,10 @@ demoRouter.route('/namespace:/:track/waveform/:mode')
         if (req.query.color) {
           color = req.query.color;
         }
-        waveform = waveform.replace(/{{.color}}/g, `#${color}`)
+        waveform = waveform.replace(/{{.color}}/g, `#${color}`);
+        res.set({
+          "Content-Type": "image/svg+xml"
+        });
         res.send(waveform)
       } else {
         res.status(404).send("Not found");
@@ -286,9 +343,7 @@ demoRouter.route('/namespace:/:track/waveform/:mode')
       logger.error('Error while loading waveform', 'level', 'GET /namespace:/:track/waveform/:mode', 'namespace', `${req.params.namespace}`, 'track.id', `${req.params.track}`, 'error', err);
       next(err);
     }
-  });
-
-demoRouter.route('/:namespace/:track/waveform')
+  })
   /** 
    * for a given track, regenerate waveforms by querying the wave-man again. This might be useful
    * if we change the config maps for the wave-man and do not want to remove the existing track to
@@ -328,4 +383,4 @@ db.connect(`${url}/${demoDB}`, demoDB).then(() => {
 }).catch((err) => {
   logger.error('MongoDB connector failed to connect to database', 'error', err);
   process.exit(1);
-})
+});
