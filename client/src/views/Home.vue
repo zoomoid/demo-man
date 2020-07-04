@@ -83,7 +83,7 @@ export default {
 .error {
   font-size: 24pt;
   width: 66%;
-  padding: 8em;
+  padding-top: 8em;
   margin: 0 auto;
   h1 {
     font-weight: 900;
