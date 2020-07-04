@@ -251,13 +251,13 @@ export default {
       return this.$el.querySelectorAll('audio')[0];
     },
     share() {
+      const prev = window.location.hash;
       window.location.hash = '';
       navigator.clipboard.writeText(`${this.$root.publicEP}/${this.namespace}/#${this.no}`).then(() => {
         window.location.hash = `${this.no}`;
         this.$emit('update:select', this.no);
-        console.log('Copied to clipboard successfully!');
       }, () => {
-        console.error('Unable to write to clipboard. :-(');
+        window.location.hash = prev; // revert changes to hash
       });
     },
   },
