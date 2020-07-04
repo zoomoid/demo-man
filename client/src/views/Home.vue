@@ -51,7 +51,9 @@ export default {
 
 <style lang="scss" scoped>
 .success {
-  padding: 4em;
+  padding-top: 8em;
+  width: 66%;
+  margin: 0 auto;
   h1 {
     font-size: 4em;
     font-weight: 700;
@@ -74,7 +76,6 @@ export default {
           background: #1a1a1a;
         }
       }
-
     }
   }
 }
@@ -82,7 +83,8 @@ export default {
 .error {
   font-size: 24pt;
   width: 66%;
-  margin: 8em auto 0;
+  padding: 8em;
+  margin: 0 auto;
   h1 {
     font-weight: 900;
     font-size: 3em;

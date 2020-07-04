@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper" :style="'--accent: ' + this.accentColor">
+  <div class="wrapper" :style="`--accent: ${this.accent}; --primary: ${this.primary}`">
     <template v-if="this.error">
       <div class="error">
         <h1>404<br>Not Found</h1>
@@ -15,13 +15,13 @@
       <Breadcrump></Breadcrump>
       <div class="spacer"></div>
       <div class="fill">
-        <img :src="`${this.apiEP}/api/v1/demo/${this.$route.params.id}/cover`"/>
+        <img :src="`${this.$root.apiEP}/api/v1/demo/${this.$route.params.id}/cover`"/>
       </div>
       <div class="release">
         <h2 class="artist">{{album.artist}}</h2>
         <h1 class="title">{{album.title}}</h1>
       </div>
-      <AudioManager class="players" :queue="queue" :accentColor="accentColor"></AudioManager>
+      <AudioManager class="players" :queue="queue" :accentColor="'#1a1a1a'"></AudioManager>
     </template>
   </div>
 </template>
@@ -41,12 +41,12 @@ export default {
       error: null,
       album: {},
       queue: [],
-      accentColor: '#F58B44',
-      apiEP: process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://demo.zoomoid.de',
+      accent: '#F58B44',
+      primary: '#242424',
     };
   },
   mounted() {
-    axios.get(`${this.apiEP}/api/v1/demo/${this.$route.params.id}`).then((response) => {
+    axios.get(`${this.$root.apiEP}/api/v1/demo/${this.$route.params.id}`).then((response) => {
       // at this point, v is an array of tracks. We assume they share the same
       // metadata, hence we just pick the first one and roll with it
       const f = response.data.data[0];
@@ -62,9 +62,10 @@ export default {
         url: track.url,
         additionalData: track,
         waveformUrl: {
-          full: `${this.apiEP}/api/v1/demo/waveform/${track._id}/full?color=${this.accentColor.replace('#', '')}`, // eslint-disable-line
-          small: `${this.apiEP}/api/v1/demo/waveform/${track._id}/small?color=${this.accentColor.replace('#', '')}`, // eslint-disable-line
+          full: `${this.$root.apiEP}/api/v1/demo/${track.namespace}/${track._id}/waveform?mode=full&color=efefef`, // eslint-disable-line
+          small: `${this.$root.apiEP}/api/v1/demo/${track.namespace}/${track._id}/waveform?mode=small&color=efefef`, // eslint-disable-line
         },
+        namespace: track.namespace,
         tags: [],
       })).sort((a, b) => (a.no - b.no));
     }).catch((err) => {
@@ -160,12 +161,13 @@ export default {
   }
 }
 .wrapper {
-  background-color: var(--accent);
+  background-color: var(--primary);
   min-height: 100vh;
   width: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
+  color: #ffffff;
   .spacer {
     flex-grow: 1;
   }

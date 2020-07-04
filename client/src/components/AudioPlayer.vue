@@ -1,5 +1,5 @@
 <template>
-  <div class="player-wrapper" :class="[this.loaded ? 'loaded' : '']">
+  <div :id="this.no" class="player-wrapper" :class="this.class">
     <div class="title-wrapper">
       <div class="title-line">
         <div class="title" v-html="name"></div>
@@ -31,6 +31,13 @@
           </span>
         </div>
         <div class="hfill"></div>
+        <div class="share">
+          <a @click="share" target="_blank">
+            <i class="material-icons-sharp">
+              share
+            </i>
+          </a>
+        </div>
         <div class="download">
           <a :href="file" target="_blank">
             <i class="material-icons-sharp">
@@ -128,9 +135,17 @@ export default {
       type: Object,
       default: null,
     },
-    accentColor: {
+    namespace: {
+      type: String,
+      required: true,
+    },
+    accent: {
       type: String,
       default: '#FFD600',
+    },
+    highlighted: {
+      type: Boolean,
+      default: false,
     },
     waveformUrl: {
       type: Object,
@@ -142,18 +157,19 @@ export default {
   },
   watch: {
     playStateOverrideBy() {
-      // eslint-disable-next-line eqeqeq
-      if (this.playStateOverrideBy != this.no || this.playStateOverrideBy == -1) {
+      if (this.playStateOverrideBy !== this.no || this.playStateOverrideBy === -1) {
         this.pause();
         this.$emit('pause', this.playStateOverrideBy);
       }
     },
+    // highlighted() {
+    //   return this.$parent.selected === this.no;
+    // },
   },
   methods: {
     setPosition: function name(e) {
       try {
         const tag = e.target;
-
         const pos = tag.getBoundingClientRect();
         const seekPos = (e.clientX - pos.left) / pos.width;
         const { seekable } = this.audio;
@@ -229,9 +245,20 @@ export default {
       this.audio.addEventListener('play', this.handlePlayPause);
       this.audio.addEventListener('ended', this.handleFinished);
       this.loaded = true;
+      // this.highlighted = window.location.hash.replace('#', '') === `${this.no}`;
     },
     getAudio() {
       return this.$el.querySelectorAll('audio')[0];
+    },
+    share() {
+      window.location.hash = '';
+      navigator.clipboard.writeText(`${this.$root.publicEP}/${this.namespace}/#${this.no}`).then(() => {
+        window.location.hash = `${this.no}`;
+        this.$emit('update:select', this.no);
+        console.log('Copied to clipboard successfully!');
+      }, () => {
+        console.error('Unable to write to clipboard. :-(');
+      });
     },
   },
   data() {
@@ -252,6 +279,12 @@ export default {
     duration() {
       return this.audio ? convertTimeHHMMSS(this.totalDuration) : '';
     },
+    class() {
+      return `${this.loaded ? 'is-loaded' : ''} ${this.highlighted ? 'is-highlighted' : ''}`;
+    },
+    // highlighted() {
+    //   return this.$parent.selected === this.no;
+    // },
   },
   mounted() {
     this.audio = this.getAudio();
@@ -278,7 +311,6 @@ export default {
   }
 }
 
-$base-color: rgba(255,255,255,0.2);
 $color1: #000000;
 $color2: #161616;
 $loading-fade: linear-gradient(135deg,
@@ -286,8 +318,7 @@ $loading-fade: linear-gradient(135deg,
   $color2 70%, $color1  90%, $color1 100%);
 
 .player-wrapper {
-  // Loading animation
-  &:not(.loaded) {
+  &:not(.is-loaded) {
     position: relative;
     margin: 32pt 0 1em;
     height: 32pt;
@@ -325,14 +356,24 @@ $loading-fade: linear-gradient(135deg,
       background: $color1;
     }
   }
-  &.loaded {
+  &.is-loaded {
     display: block;
-    background: #ffffff;
+    background: var(--primary);
     border-top-left-radius: 16pt;
     border-top-right-radius: 16pt;
     box-shadow: 0 2px 16px rgba(0,0,0,0.2);
     padding: 2em 2em 4em;
     margin-bottom: -16pt;
+  }
+  &.is-highlighted {
+    background: var(--accent);
+    div.fg {
+      background: var(--accent) !important;
+    }
+    a:hover, a:active,
+    .play-state:active, .play-state:hover {
+      color: var(--primary) !important;
+    }
   }
   .title-wrapper {
     padding-bottom: 16px;
@@ -380,7 +421,7 @@ $loading-fade: linear-gradient(135deg,
           display: none;
         }
       }
-      .download {
+      .download, .share {
         width: 32px;
         height: 32px;
         cursor: pointer;
@@ -394,10 +435,8 @@ $loading-fade: linear-gradient(135deg,
         a, i {
           color: inherit;
         }
-        color: #1a1a1a;
         &:hover, &:active {
           color: var(--accent);
-
         }
       }
     }
@@ -428,7 +467,6 @@ $loading-fade: linear-gradient(135deg,
       a, i {
         color: inherit;
       }
-      color: #1a1a1a;
       &:hover, &:active {
         color: var(--accent);
       }
@@ -439,7 +477,6 @@ $loading-fade: linear-gradient(135deg,
         flex-grow: 1;
         position: relative;
         display: block;
-        // background: $base-color;
         min-height: 64px;
         height: 64px;
         @media screen and (min-width: 768px) {
@@ -487,12 +524,11 @@ $loading-fade: linear-gradient(135deg,
                 display: block;
               }
             }
-
           }
           &.fg {
             z-index: 3;
             right: 0;
-            background-color: #ffffff;
+            background-color: var(--primary);
             opacity: 0.66;
             // transition: width linear 1s;
           }
@@ -526,23 +562,6 @@ $loading-fade: linear-gradient(135deg,
         }
       }
     }
-    .volume-control {
-      margin-left: 8px;
-      width: 32px;
-      height: 32px;
-      cursor: pointer;
-      .material-icons-sharp {
-        line-height: 32px;
-        width: 32px;
-        height: 32px;
-        text-align: center;
-      }
-      &:hover, &:active, .muted {
-        background: $base-color;
-        border-radius: 32px;
-      }
-    }
-
   }
 }
 

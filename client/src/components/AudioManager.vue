@@ -1,5 +1,5 @@
 <template>
-  <div  :style="'--accent: ' + this.accentColor">
+  <div :style="`--accent: ${this.accent}; --primary: ${this.primary}`">
     <div class="manager" v-if="!queue">
       <span>No tracks added yet...</span>
     </div>
@@ -14,10 +14,13 @@
           v-on:finish="resetPlayStateOverride"
           v-on:progress="updateProgress"
           :tags="player.tags || []"
-          :accentColor="accentColor"
+          :accent="accent"
           :waveformUrl="player.waveformUrl"
           :no="player.no"
           :additionalData="player.additionalData"
+          :namespace="player.namespace"
+          :highlighted="`${selected}` === `${player.no}`"
+          v-on:update:select="select"
         ></AudioPlayer>
       </div>
       <div class="footer">
@@ -65,9 +68,13 @@ export default {
       type: Array,
       default: undefined,
     },
-    accentColor: {
+    accent: {
       type: String,
       default: '#F58B44',
+    },
+    primary: {
+      type: String,
+      default: '#1a1a1a',
     },
   },
   data() {
@@ -77,6 +84,7 @@ export default {
       progress: -1,
       currentTime: '',
       totalDuration: '',
+      selected: -1,
     };
   },
   methods: {
@@ -96,6 +104,12 @@ export default {
       this.currentlyPlayingPlayer = -1;
       this.currentlyPlaying = null;
     },
+    select(no) {
+      this.selected = no;
+    },
+  },
+  mounted() {
+    this.select(window.location.hash.replace('#', ''));
   },
 };
 </script>
@@ -116,7 +130,7 @@ export default {
   }
 }
 .footer {
-  background: #ffffff;
+  background: var(--primary);
   border-top: solid 1px rgba(0,0,0,0.33);
   padding: 3em 0;
 }
@@ -128,7 +142,7 @@ export default {
   right: 0;
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--primary);
   // height: 4em;
   padding: 1em 2em;
   z-index: 5;
@@ -181,7 +195,7 @@ export default {
       height: 100%;
       z-index: 3;
       right: 0;
-      background-color: #ffffff;
+      background-color: var(--primary);
       opacity: 0.8;
     }
     .waveform {

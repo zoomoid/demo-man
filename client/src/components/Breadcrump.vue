@@ -18,7 +18,7 @@ export default {
 .breadcrump {
   padding: 1em 2em 1em 2em;
   a {
-    color: #1a1a1a;
+    color: inherit;
     .material-icons-sharp {
       vertical-align: middle;
       line-height: 32px;

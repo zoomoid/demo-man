@@ -26,4 +26,10 @@ Vue.config.productionTip = false;
 new Vue({
   router,
   render: (h) => h(App),
+  data() {
+    return {
+      apiEP: process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://demo.zoomoid.de',
+      publicEP: process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : 'https://demo.zoomoid.de',
+    };
+  },
 }).$mount('#app');
