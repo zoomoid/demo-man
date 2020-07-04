@@ -6,8 +6,7 @@ services:
     container_name: demo-client
     restart: on-failure
     networks: 
-    - frontend
-    - backend
+    - demo-man
     volumes: 
     - ../client:/app
     working_dir: /app
@@ -24,13 +23,12 @@ services:
     environment: 
       PORT: "8080"
       MONGOURL: mongodb://demo-mongodb:27017
-      WAVE_ENDPOINT: 'http://demo-wave-man:5000/wavify'
-      API_ENDPOINT: 'http://demo-api:8080/api/v1/demo'
+      WAVE_ENDPOINT: 'http://waveman:5000/wavify'
+      API_ENDPOINT: 'http://api:8080/api/v1/demo'
       DB: demo
       TOKEN: demotoken
     networks:
-    - backend
-    - frontend
+    - demo-man
     volumes: 
     - ../api:/app
     working_dir: /app
@@ -47,29 +45,30 @@ services:
       VOLUME: /app/files
       PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
       TOKEN: demotoken
-      API_ENDPOINT: 'http://demo-api:8080/api/v1/demo'
+      API_ENDPOINT: 'http://api:8080/api/v1/demo'
     volumes:
     - ./files:/app/files
     - ../watchdog:/app
     working_dir: /app
     command: [ "npm", "start" ]
     networks:
-    - backend
+    - demo-man
     ports:
     - "8082:8080"
 
   waveman:
-    image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.19.3
+    image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.20.2
     container_name: demo-wave-man
     restart: on-failure
     environment: 
       MONGO_INITDB_DATABASE: demo
     networks:
-    - backend
+    - demo-man
     volumes: 
     - ../../../web/wave-man/defaults:/app/config
+    - ./files:/app/files
     ports:
-    - "8083:8080"
+    - "5000:5000"
 
   db:
     image: mongo:4.2.5
@@ -80,13 +79,12 @@ services:
     environment: 
       MONGO_INITDB_DATABASE: demo
     networks:
-    - backend
+    - demo-man
     ports:
     - "27017:27017"
 
 networks:
-  frontend:
-  backend:
+  demo-man:
 
 volumes:
   db-data:
