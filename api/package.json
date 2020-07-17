@@ -14,5 +14,10 @@
     "express": "^4.17.1",
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "prettier": "^2.0.5"
   }
 }
