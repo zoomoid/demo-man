@@ -13,5 +13,8 @@
     "chokidar": "^3.4.0",
     "music-metadata": "^6.3.7",
     "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.4.0"
   }
 }
