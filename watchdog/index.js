@@ -1,15 +1,14 @@
 const chokidar = require('chokidar');
 const metadata = require('music-metadata');
-const fetch = require('node-fetch'); 
+const fetch = require('node-fetch');
 const logger = require('@zoomoid/log');
 const p = require('path');
 const fs = require('fs');
-const { exception } = require('console');
 
 /**
  * API Server endpoint to query
  */
-const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo'
+const apiEndpoint = process.env.API_ENDPOINT || 'http://demo-api/api/v1/demo';
 
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: 'https',
@@ -17,7 +16,7 @@ const url = JSON.parse(process.env.PUBLIC_PATH) || {
   dir: '',
 };
 
-if(!process.env.TOKEN){
+if (!process.env.TOKEN) {
   logger.warn('No API token provided. Protected routes will not work properly.');
 }
 
@@ -55,8 +54,8 @@ const volume = process.env.VOLUME || '.';
 const fileWatcher = chokidar.watch(`${volume}/[a-zA-Z0-9]*/*.mp3`, {
   cwd: `${volume}`,
   ignoreInitial: true,
-  persistent: true, 
-  atomic: true, 
+  persistent: true,
+  atomic: true,
   usePolling: true,
   depth: 2,
   awaitWriteFinish: {
@@ -68,10 +67,10 @@ const fileWatcher = chokidar.watch(`${volume}/[a-zA-Z0-9]*/*.mp3`, {
 /** Directory Watcher */
 const folderWatcher = chokidar.watch(`${volume}/`, {
   cwd: `${volume}`,
-  ignored: [/(^|[\/\\])\../, 'private-keys-v1.d'], // exclude some FileZilla bullshit directories
+  ignored: [/(^|[/\\])\../, 'private-keys-v1.d'], // exclude some FileZilla bullshit directories
   ignoreInitial: true,
-  persistent: true, 
-  atomic: true, 
+  persistent: true,
+  atomic: true,
   usePolling: true,
   depth: 1,
 });
@@ -86,11 +85,11 @@ logger.info('Watching directory', 'volume', volume);
 const garbageCollector = chokidar.watch(['.cache', '.gnupg', 'private-keys-v1.d']);
 garbageCollector.on('addDir', async (path) => {
   logger.info('Cleaning up trash directories', 'directory', path);
-  fs.rmdir(path, {recursive: true}, (err) => {
+  fs.rmdir(path, { recursive: true }, (err) => {
     if (err) {
       logger.error('Error on rmdir w/ recursive option', 'error', err);
-      return
-    } 
+      return;
+    }
     logger.info('Finish cleanup round', 'directory', path);
   });
 });
@@ -101,7 +100,7 @@ garbageCollector.on('addDir', async (path) => {
 fileWatcher.on('add', async path => {
   try {
     logger.info('File added', 'file', path, 'timestamp', new Date().toLocaleString('de-DE'));
-    const reducedFilename = path.replace(`${volume}/`,''); // strips the volume mount prefix from the filename
+    const reducedFilename = path.replace(`${volume}/`, ''); // strips the volume mount prefix from the filename
     let track = await readMetadata(reducedFilename);
     await postTrackToAPI(track);
   } catch (err) {
@@ -119,9 +118,9 @@ fileWatcher.on('add', async path => {
  */
 folderWatcher.on('addDir', async path => {
   try {
-    if(path == `${volume}/`){
+    if (path == `${volume}/`) {
       logger.info('Skipping docker volume mount event', 'directory', path);
-      return
+      return;
     }
     logger.info('Directory added', 'directory', path, 'timestamp', new Date().toLocaleString('de-DE'));
     let namespace = p.basename(path);
@@ -140,13 +139,13 @@ folderWatcher.on('addDir', async path => {
  * Watcher for file deletions
  */
 fileWatcher.on('unlink', async path => {
-  const reducedFilename = path.replace(`${volume}/`,''); // strips the volume mount prefix from the filename
+  const reducedFilename = path.replace(`${volume}/`, ''); // strips the volume mount prefix from the filename
   logger.info('File removed', 'file', reducedFilename, 'time', new Date().toLocaleString('de-DE'));
   // API Server querys for full path on delete request
   try {
     await removeTrackFromAPI(reducedFilename);
   } catch (err) {
-    logger.error('Received error from API server. Manual assessment required', 'event', 'unlink', 'path', path,  'error', err);
+    logger.error('Received error from API server. Manual assessment required', 'event', 'unlink', 'path', path, 'error', err);
   }
 });
 
@@ -154,11 +153,11 @@ fileWatcher.on('unlink', async path => {
  * Watcher for album deletions
  */
 folderWatcher.on('unlinkDir', async path => {
-  const reducedFilename = path.replace(`${volume}/`,''); // strips the volume mount prefix from the filename
+  const reducedFilename = path.replace(`${volume}/`, ''); // strips the volume mount prefix from the filename
   logger.info('Directory removed', 'directory', reducedFilename, 'time', new Date().toLocaleString('de-DE'));
   // API Server querys for full path on delete request
   try {
-    await removeNamespaceFromAPI(reducedFilename)
+    await removeNamespaceFromAPI(reducedFilename);
   } catch (err) {
     logger.error('Received error from API server. Manual assessment required.', 'event', 'unlinkDir', 'error', err);
   }
@@ -170,7 +169,7 @@ folderWatcher.on('unlinkDir', async path => {
  */
 async function postTrackToAPI(track) {
   logger.info('Adding track...', 'track', track.filename, 'endpoint', apiEndpoint);
-  const resp = await post(`${apiEndpoint}/track`, {'track': track});
+  const resp = await post(`${apiEndpoint}/track`, { 'track': track });
   if (resp && resp.status == 200) {
     logger.info('Added track', 'track', track.filename, 'response', resp);
   } else {
@@ -184,7 +183,7 @@ async function postTrackToAPI(track) {
  */
 async function postNamespaceToAPI(ns) {
   logger.info('Adding namespace...', 'namespace', ns, 'endpoint', apiEndpoint);
-  const resp = await post(`${apiEndpoint}/namespace`, {'namespace': ns});
+  const resp = await post(`${apiEndpoint}/namespace`, { 'namespace': ns });
   if (resp && resp.status == 200) {
     logger.info('Added namespace', 'namespace', ns, 'response', resp);
   } else {
@@ -198,7 +197,7 @@ async function postNamespaceToAPI(ns) {
  */
 async function removeTrackFromAPI(path) {
   logger.info('Deleting track...', 'track', path, 'endpoint', apiEndpoint);
-  const resp = await del(`${apiEndpoint}/track`, {'path': path});
+  const resp = await del(`${apiEndpoint}/track`, { 'path': path });
   if (resp && resp.status == 200) {
     logger.info('Deleted track', 'track', `${p.basename(path)}`, 'response', resp);
   } else {
@@ -211,8 +210,8 @@ async function removeTrackFromAPI(path) {
  * @param {*} path directory name that we need to delete
  */
 async function removeNamespaceFromAPI(ns) {
-  logger.info('Deleting namespace...', 'namespace', ns,'endpoint', apiEndpoint);
-  const resp = await del(`${apiEndpoint}/namespace`, {'namespace': ns});
+  logger.info('Deleting namespace...', 'namespace', ns, 'endpoint', apiEndpoint);
+  const resp = await del(`${apiEndpoint}/namespace`, { 'namespace': ns });
   if (resp && resp.status == 200) {
     logger.info('Deleted namespace', 'namespace', ns, 'response', resp);
   } else {
@@ -225,7 +224,7 @@ async function removeNamespaceFromAPI(ns) {
  * @param {string} ep Endpoint URL
  * @param {*} data data to post
  */
-async function post(ep, data){
+async function post(ep, data) {
   return __request('POST', ep, data);
 }
 
@@ -234,7 +233,7 @@ async function post(ep, data){
  * @param {string} ep endpoint url
  * @param {*} data data to delete
  */
-async function del(ep, data){
+async function del(ep, data) {
   return __request('DELETE', ep, data);
 }
 
@@ -244,9 +243,9 @@ async function del(ep, data){
  * @param {string} ep endpoint url
  * @param {*} data data object to be posted
  */
-async function __request(method, ep, data){
+async function __request(method, ep, data) {
   try {
-    if(!process.env.DRY_RUN){
+    if (!process.env.DRY_RUN) {
       data.token = token;
       const resp = await fetch(ep, {
         mode: 'cors',
@@ -264,7 +263,7 @@ async function __request(method, ep, data){
         'success': true,
         'note': 'dry_run',
         'data': data,
-      }
+      };
     }
   } catch (err) {
     logger.error('Received error from API server', 'level', '__request', 'response', err, 'endpoint', `${ep}`);
@@ -275,7 +274,7 @@ async function __request(method, ep, data){
  * Reads a newly added mp3 file for its metadata and returns an object with all relevant information
  * @param {string} path to new file 
  */
-async function readMetadata(path){
+async function readMetadata(path) {
   console.log(path);
   try {
     logger.info('Reading IDv3 off of audio file', 'path', path);
@@ -284,10 +283,10 @@ async function readMetadata(path){
     let mimeType = '';
     let abspath = '';
     let cover = {};
-    if(src.common.picture){
+    if (src.common.picture) {
       mimeType = src.common.picture[0].format;
       abspath = p.join(volume, p.dirname(path), `cover.${mimeType.replace('image/', '')}`);
-      logger.info('Writing cover to file', 'filename', abspath, 'mimeType', mimeType);  
+      logger.info('Writing cover to file', 'filename', abspath, 'mimeType', mimeType);
       fs.writeFileSync(abspath, src.common.picture[0].data);
       cover = {
         'mimeType': mimeType,
@@ -299,7 +298,7 @@ async function readMetadata(path){
     logger.info('Read metadata off of audio file', 'path', path);
     return {
       'year': src.common.year,
-      'track': src.common.track,
+      'no': src.common.track.no,
       'title': src.common.title,
       'artist': src.common.artist,
       'albumartist': src.common.albumartist,
@@ -316,8 +315,8 @@ async function readMetadata(path){
       'path': path, // full path of file INSIDE volume, this can be sent to the waveman
       'filename': p.basename(path),
       'namespace': p.basename(p.dirname(path)),
-      'url': `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}`
-    }    
+      'mp3': `${url.prefix}://${url.hostname}/${url.dir}${p.basename(p.dirname(path))}${p.sep}${p.basename(path)}`
+    };
   } catch (err) {
     console.log(err);
     logger.error('Error while parsing audio metadata', 'error', err, 'file', path, 'level', 'readMetadata');
