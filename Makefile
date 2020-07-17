@@ -21,7 +21,7 @@ tag-gh: build
 	docker tag watchdog:$(VERSION) $(GH_REG_PREFIX)/watchdog:$(VERSION)	
 	docker tag client:$(VERSION) $(GH_REG_PREFIX)/client:$(VERSION)
 
-push-gh: build tag
+push-gh: build tag-gh
 	docker push $(GH_REG_PREFIX)/api:$(VERSION)
 	docker push $(GH_REG_PREFIX)/watchdog:$(VERSION)
 	docker push $(GH_REG_PREFIX)/client:$(VERSION)
@@ -31,7 +31,7 @@ tag-gl: build
 	docker tag watchdog:$(VERSION) $(GL_REG_PREFIX)/watchdog:$(VERSION)	
 	docker tag client:$(VERSION) $(GL_REG_PREFIX)/client:$(VERSION)
 
-push-gl: build tag
+push-gl: build tag-gh
 	docker push $(GL_REG_PREFIX)/api:$(VERSION)
 	docker push $(GL_REG_PREFIX)/watchdog:$(VERSION)
 	docker push $(GL_REG_PREFIX)/client:$(VERSION)

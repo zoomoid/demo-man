@@ -1,11 +1,10 @@
 # Demo Man - Your audio demo provider 
 
-Microservice architecture for rapidly providing new demo tracks by Zoomoid.
+Micro-service architecture for rapidly providing new demo tracks by Zoomoid.
 
 The four components of the architecture are 
 
-1.  **pusher**: Receiver for audio files via HTTP POST. This removes external dependencies such as an FTP server for files to be deposited and
-    also allows us to be container-native, as *pusher* runs in its own microservice as well.
+1.  **waveman**: Creates beautiful audio spectrums from the mp3s uploaded to display a visual progress indicator on the client
 2.  **watchdog**: Watching a local file system mounted into the container containing demo audio files. When a new file is created or
     a new directory is created, the watchdog triggers an event to add the new material to the database.
 3.  **api**: The API Server provides RESTful endpoints to get, add and remove resources from (to) a MongoDB back-end storage
@@ -20,7 +19,7 @@ $ kubectl apply -f k8s/
 
 ## Building
 
-Build the docker images for `pusher/`, `api/`, `client/` and `watchdog/` and adapt the k8s YAMLs accordingly. Note that you also
+Build the docker images for `api/`, `client/`, and `watchdog/` and adapt the k8s YAMLs accordingly. Note that you also
 might need to adapt any sort of volume mounts created to fit to your own Kubernetes cluster and Storage Provider.
 
 ## Notes regarding guarded routes
