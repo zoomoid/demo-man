@@ -1,61 +1,52 @@
 <template>
-  <div :id="this.no" class="player-wrapper" :class="this.class">
+  <div :id="track.no" class="player-wrapper" ref="player" :class="this.class">
     <div class="title-wrapper">
       <div class="title-line">
-        <div class="title" v-html="name"></div>
+        <div class="title">
+          {{track.title}}
+        </div>
       </div>
-      <!-- <div class="tags" v-if="tags.length > 0">
-        <span class="tag" v-for="tag in tags" v-bind:key="tag">
-          {{tag}}
-        </span>
-      </div> -->
       <div class="metadata">
-        <div class="no" v-if="no">
+        <div class="no" v-if="track.no">
           <span>
-            {{no}}
+            {{track.no}}
           </span>
         </div>
-        <div class="comments" v-if="additionalData.comment">
-          <span class="comment" v-for="comment in additionalData.comment" v-bind:key="comment">
+        <div class="comments" v-if="track.comment">
+          <span class="comment" v-for="comment in track.comment" v-bind:key="comment">
             {{comment}}
           </span>
         </div>
-        <div class="genre" v-if="additionalData.genre">
-          <span v-for="genre in additionalData.genre" v-bind:key="genre">
+        <div class="genre" v-if="track.genre">
+          <span v-for="genre in track.genre" v-bind:key="genre">
             {{genre}}
           </span>
         </div>
-        <div class="bpm" v-if="additionalData.bpm">
+        <div class="bpm" v-if="track.bpm">
           <span>
-            {{additionalData.bpm}}
+            {{track.bpm}}
           </span>
         </div>
         <div class="hfill"></div>
-        <div class="share">
-          <a @click="share" target="_blank">
-            <i class="material-icons-sharp">
-              share
-            </i>
-          </a>
-        </div>
-        <div class="download">
-          <a :href="file" target="_blank">
-            <i class="material-icons-sharp">
-              get_app
-            </i>
-          </a>
+        <div class="actions">
+          <div class="share">
+            <a @click="share" target="_blank">
+              <i class="material-icons-sharp">
+                share
+              </i>
+            </a>
+          </div>
+          <div class="download">
+            <a :href="track.url" target="_blank">
+              <i class="material-icons-sharp">
+                get_app
+              </i>
+            </a>
+          </div>
         </div>
       </div>
     </div>
     <div class="player">
-      <!-- <div class="skip">
-        <i @click="skipToBeginning" class="material-icons-sharp">
-          skip_previous
-        </i>
-        <i @click="skipToEnd" class="material-icons-sharp">
-          skip_next
-        </i>
-      </div> -->
       <div class="play-state">
         <i @click="pause" v-if="playing && !finished" class="material-icons-sharp">
           pause
@@ -72,9 +63,9 @@
         <div class="playback-time-bar">
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
           <div class="bg bg--full" v-bind:style="{
-            backgroundImage: `url('${waveformUrl.full}')`}"></div>
+            backgroundImage: `url('${waveforms.full}')`}"></div>
           <div class="bg bg--small" v-bind:style="{
-            backgroundImage: `url('${waveformUrl.small}')`}"></div>
+            backgroundImage: `url('${waveforms.small}')`}"></div>
           <div class="fg" v-bind:style="{ width: `${100 - progress}%` }"></div>
         </div>
       </div>
@@ -85,10 +76,28 @@
       </div>
     </div>
     <audio
-      :src="file"
+      :src="track.mp3"
       ref="audiofile"
       preload="none">
     </audio>
+    <transition name="slide">
+      <div class="playerbar" v-if="this.playing && !this.intersecting">
+        <div class="metadata">
+          <span class="artist">{{track.artist}}</span>
+          <a :href="`#${track.no}`"><span class="title">{{track.title}}</span></a>
+        </div>
+        <div class="waveform-container">
+          <div class="overlay" :style="{ width: `${100 - progress}%` }"></div>
+          <div class="waveform"></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="timestamp">
+          <span class="current">{{this.currentTime}}</span>
+          <span class="separator"> : </span>
+          <span class="total">{{duration}}</span>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -102,42 +111,57 @@ export const convertTimeHHMMSS = (val) => {
 
 export default {
   name: 'AudioPlayer',
+  data() {
+    return {
+      playing: false,
+      finished: false,
+      isMuted: false,
+      currentTime: '00:00',
+      audio: undefined,
+      totalDuration: 0,
+      volumeValue: baseVolumeValue,
+      progressStyle: '',
+      progress: 0,
+      intersecting: false,
+    };
+  },
+  computed: {
+    duration() {
+      return this.audio ? convertTimeHHMMSS(this.totalDuration) : '';
+    },
+    class() {
+      return `${this.highlighted ? 'is-highlighted' : ''}`;
+    },
+    waveforms() {
+      return {
+        full: `${this.track.waveform}?mode=full&color=efefef`,
+        small: `${this.track.waveform}?mode=small&color=efefef`,
+      };
+    },
+  },
   props: {
-    name: {
-      type: String,
-      default: null,
+    track: {
+      type: Object,
+      default: () => ({
+        url: '',
+        name: '',
+        _id: '',
+        no: -1,
+        tags: [],
+        namespace: '',
+        waveformUrlUrl: {
+          full: '',
+          small: '',
+        },
+      }),
     },
-    file: {
-      type: String,
-      default: null,
-    },
-    loop: {
+    overridePlayState: {
       type: Boolean,
       default: false,
     },
-    id: {
-      type: String,
-      default: -1,
-    },
-    no: {
+    index: {
       type: Number,
       default: -1,
-    },
-    playStateOverrideBy: {
-      type: Number,
-      default: -1,
-    },
-    tags: {
-      type: Array,
-      default: undefined,
-    },
-    additionalData: {
-      type: Object,
-      default: null,
-    },
-    namespace: {
-      type: String,
-      required: true,
     },
     accent: {
       type: String,
@@ -147,24 +171,17 @@ export default {
       type: Boolean,
       default: false,
     },
-    waveformUrl: {
-      type: Object,
-      default: () => ({
-        full: '',
-        small: '',
-      }),
-    },
   },
   watch: {
-    playStateOverrideBy() {
-      if (this.playStateOverrideBy !== this.no || this.playStateOverrideBy === -1) {
-        this.pause();
-        this.$emit('pause', this.playStateOverrideBy);
+    overridePlayState(newState) {
+      if (this.finished) {
+        this.finished = false;
+      } else if (newState && !this.playing) {
+        this.play();
+      } else if (!newState && this.playing) {
+        this.pause(undefined, true);
       }
     },
-    // highlighted() {
-    //   return this.$parent.selected === this.no;
-    // },
   },
   methods: {
     setPosition: function name(e) {
@@ -189,19 +206,23 @@ export default {
       this.finished = true;
       this.audio.pause();
       this.audio.currentTime = 0;
-      this.$emit('pause');
+      this.$emit('pause', 'pause', this.index);
     },
-    play() {
+    play(e, suppressEvent = false) {
       this.finished = false;
       this.playing = true;
       this.audio.play();
-      this.$emit('play', this.no);
+      if (!suppressEvent) {
+        this.$emit('play', 'play', this.index);
+      }
     },
-    pause() {
+    pause(e, suppressEvent = false) {
       this.playing = false;
       this.finished = false;
       this.audio.pause();
-      this.$emit('pause');
+      if (!suppressEvent) {
+        this.$emit('pause', 'pause', this.index);
+      }
     },
     replay() {
       if (!this.playing && !this.paused && this.finished) {
@@ -222,11 +243,11 @@ export default {
       this.progress = (currTime / this.totalDuration) * 100;
       this.currentTime = convertTimeHHMMSS(parseInt(this.audio.currentTime, 10));
 
-      this.$emit('progress', {
-        progress: this.progress,
-        currentTime: this.currentTime,
-        totalDuration: this.duration,
-      });
+      // this.$emit('progress', {
+      //   progress: this.progress,
+      //   currentTime: this.currentTime,
+      //   totalDuration: this.duration,
+      // });
     },
     handlePlayPause(e) {
       if (e.type === 'pause' && this.playing === false) {
@@ -234,9 +255,9 @@ export default {
       }
     },
     handleFinished() {
-      this.$emit('finish');
       this.playing = false;
       this.finished = true;
+      this.$emit('finish', 'finish', this.index);
     },
     init() {
       this.audio.addEventListener('timeupdate', this.handlePlayingUI);
@@ -244,8 +265,6 @@ export default {
       this.audio.addEventListener('pause', this.handlePlayPause);
       this.audio.addEventListener('play', this.handlePlayPause);
       this.audio.addEventListener('ended', this.handleFinished);
-      this.loaded = true;
-      // this.highlighted = window.location.hash.replace('#', '') === `${this.no}`;
     },
     getAudio() {
       return this.$el.querySelectorAll('audio')[0];
@@ -253,40 +272,21 @@ export default {
     share() {
       const prev = window.location.hash;
       window.location.hash = '';
-      navigator.clipboard.writeText(`${this.$root.publicEP}/${this.namespace}/#${this.no}`).then(() => {
-        window.location.hash = `${this.no}`;
-        this.$emit('update:select', this.no);
+      navigator.clipboard.writeText(`${this.$root.publicEP}/${this.track.namespace}/#${this.track.no}`).then(() => {
+        window.location.hash = `${this.track.no}`;
+        this.$emit('update:select', this.track.no);
       }, () => {
         window.location.hash = prev; // revert changes to hash
       });
     },
   },
-  data() {
-    return {
-      playing: false,
-      finished: false,
-      isMuted: false,
-      loaded: false,
-      currentTime: '00:00',
-      audio: undefined,
-      totalDuration: 0,
-      volumeValue: baseVolumeValue,
-      progressStyle: '',
-      progress: 0,
-    };
-  },
-  computed: {
-    duration() {
-      return this.audio ? convertTimeHHMMSS(this.totalDuration) : '';
-    },
-    class() {
-      return `${this.loaded ? 'is-loaded' : ''} ${this.highlighted ? 'is-highlighted' : ''}`;
-    },
-    // highlighted() {
-    //   return this.$parent.selected === this.no;
-    // },
-  },
   mounted() {
+    this.observer = new IntersectionObserver((entries) => {
+      this.intersecting = entries[0].isIntersecting;
+    }, {
+      threshold: 0.5,
+    });
+    this.observer.observe(this.$refs.player);
     this.audio = this.getAudio();
     this.init();
   },
@@ -318,53 +318,13 @@ $loading-fade: linear-gradient(135deg,
   $color2 70%, $color1  90%, $color1 100%);
 
 .player-wrapper {
-  &:not(.is-loaded) {
-    position: relative;
-    margin: 32pt 0 1em;
-    height: 32pt;
-    width: 100%;
-    opacity: 0.5;
-    & > .player, .title-wrapper {
-      opacity: 0;
-      display: none;
-    }
-    &::after {
-      border-radius: 64px;
-      z-index: 100;
-      position: absolute;
-      content: '';
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      background: $loading-fade repeat scroll 0% 0% / 200% 100%;
-      animation: 1s ease-in-out 0s infinite none running loading;
-    }
-    &::before {
-      border-radius: 64px;
-      z-index: 99;
-      position: absolute;
-      content: '';
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      background: $color1;
-    }
-  }
-  &.is-loaded {
-    display: block;
-    background: var(--primary);
-    border-top-left-radius: 16pt;
-    border-top-right-radius: 16pt;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-    padding: 2em 2em 4em;
-    margin-bottom: -16pt;
-  }
+  display: block;
+  background: var(--primary);
+  border-top-left-radius: 16pt;
+  border-top-right-radius: 16pt;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  padding: 2em 2em 4em;
+  margin-bottom: -16pt;
   &.is-highlighted {
     background: var(--accent);
     div.fg {
@@ -399,19 +359,25 @@ $loading-fade: linear-gradient(135deg,
       }
       .no::before {
         opacity: 0.5;
-        content: "Track \2116"
+        content: "Track \2116";
+        // @media screen and (max-width: 768px) {
+        //   content: "\2116";
+        // }
       }
       .comments::before {
         opacity: 0.5;
-        content: "Comment:"
+        content: "Comment:";
+        @media screen and (max-width: 768px) {
+          content: "";
+        }
       }
       .bpm::before {
         opacity: 0.5;
-        content: "BPM:"
+        content: "BPM:";
       }
       .genre::before {
         opacity: 0.5;
-        content: "Genre:"
+        content: "Genre:";
       }
       .hfill {
         flex-grow: 1;
@@ -421,22 +387,25 @@ $loading-fade: linear-gradient(135deg,
           display: none;
         }
       }
-      .download, .share {
-        width: 32px;
-        height: 32px;
-        cursor: pointer;
-        .material-icons-sharp {
-          line-height: 32px;
+      .actions {
+        display: flex;
+        .download, .share {
           width: 32px;
           height: 32px;
-          text-align: center;
-          font-size: 150%;
-        }
-        a, i {
-          color: inherit;
-        }
-        &:hover, &:active {
-          color: var(--accent);
+          cursor: pointer;
+          .material-icons-sharp {
+            line-height: 32px;
+            width: 32px;
+            height: 32px;
+            text-align: center;
+            font-size: 150%;
+          }
+          a, i {
+            color: inherit;
+          }
+          &:hover, &:active {
+            color: var(--accent);
+          }
         }
       }
     }
@@ -563,6 +532,135 @@ $loading-fade: linear-gradient(135deg,
       }
     }
   }
+}
+.playerbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  background: var(--primary);
+  // height: 4em;
+  padding: 0.25em 1em 0.5em;
+  z-index: 5;
+  flex-wrap: wrap;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.33);
+  .action {
+    background: none;
+    border: none;
+    outline: none;
+    margin-right: 16px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 32px;
+    padding: 4px;
+    &:hover, &:active {
+      background: rgba(0,0,0,0.15);
+      color: var(--accent);
+    }
+  }
+  .metadata {
+    span {
+      display: block;
+    }
+    .artist {
+      font-size: 0.8em;
+      opacity: 0.66;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+      &:hover, &:active {
+        color: var(--accent);
+      }
+    }
+    .title {
+      font-weight: bold;
+    }
+    padding-right: 8px;
+    @media screen and (max-width: 768px) {
+      padding: 0.5em 1em;
+    }
+  }
+  .timestamp {
+    padding-right: 8px;
+  }
+  .spacer {
+    flex-grow: 1;
+    display: none;
+  }
+  .waveform-container {
+    position: relative;
+    height: 4px;
+    flex-grow: 1;
+    margin: 0 1em;
+    .overlay {
+      position: absolute;
+      height: 100%;
+      z-index: 3;
+      right: 0;
+      background-color: var(--primary);
+      opacity: 0.8;
+    }
+    .waveform {
+      height: 100%;
+      z-index: 2;
+      opacity: 0.5;
+      width: 100%;
+      border-radius: 4px;
+      background-size: 100% 100%;
+      opacity: 1;
+      background-color: var(--accent);
+    }
+    @media screen and (max-width: 768px) {
+      width: 100%;
+      position: fixed;
+      display: block;
+      bottom: 0;
+      margin: 0.25em 0 0;
+      .spacer {
+        display: block;
+      }
+      .waveform {
+        border-radius: 0px;
+      }
+    }
+  }
+  @media screen and (max-width: 768px) {
+    padding: 0 0 6px;
+    .spacer {
+      display: block;
+    }
+  }
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.slide-enter-active {
+  animation: slide-in ease .2s;
+  animation-fill-mode: forwards;
+}
+.slide-leave-active {
+  animation: slide-out ease .2s;
+  animation-fill-mode: forwards;
 }
 
 </style>

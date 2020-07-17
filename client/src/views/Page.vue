@@ -21,7 +21,7 @@
         <h2 class="artist">{{album.artist}}</h2>
         <h1 class="title">{{album.title}}</h1>
       </div>
-      <AudioManager class="players" :queue="queue" :accentColor="'#1a1a1a'"></AudioManager>
+      <AudioManager class="players" :queue="queue"></AudioManager>
     </template>
   </div>
 </template>
@@ -55,19 +55,7 @@ export default {
         artist: f.albumartist,
         cover: f.cover,
       };
-      this.queue = response.data.data.map((track) => ({
-        id: track._id, // eslint-disable-line
-        no: track.track.no,
-        name: track.title,
-        url: track.url,
-        additionalData: track,
-        waveformUrl: {
-          full: `${this.$root.apiEP}/api/v1/demo/${track.namespace}/${track._id}/waveform?mode=full&color=efefef`, // eslint-disable-line
-          small: `${this.$root.apiEP}/api/v1/demo/${track.namespace}/${track._id}/waveform?mode=small&color=efefef`, // eslint-disable-line
-        },
-        namespace: track.namespace,
-        tags: [],
-      })).sort((a, b) => (a.no - b.no));
+      this.queue = response.data.data.sort((a, b) => (a.no - b.no));
     }).catch((err) => {
       this.error = err;
     });

@@ -4,52 +4,59 @@
       <span>No tracks added yet...</span>
     </div>
     <div class="manager" v-else>
-      <div v-for="player in queue" v-bind:key="player.id">
+      <header class="settings">
+        <div class="autoplay">
+          <label for="autoplay" @click="autoplayControl" :class="[
+            this.autoplay ? 'is-active autoplay__label' : 'autoplay__label'
+          ]">
+            <span class="material-icons-sharp">
+              playlist_play
+            </span>
+            <span class="label">
+              Autoplay
+            </span>
+          </label>
+        </div>
+        <div class="loop">
+          <label for="loop" @click="loopControl" :class="[
+            this.loop ? 'is-active loop__label' : 'loop__label'
+          ]">
+            <span class="material-icons-sharp">
+              repeat
+            </span>
+            <span class="label">
+              Loop
+            </span>
+          </label>
+        </div>
+        <div class="spacer"></div>
+        <div class="play-all" :class="[this.playState === 'playing' ? 'is-disabled' : '']"
+          @click="playAll">
+          <span class="material-icons-sharp">
+            play_arrow
+          </span>
+          <span>
+            Play all
+          </span>
+        </div>
+      </header>
+      <div v-for="(track, index) in queue" v-bind:key="track._id">
         <AudioPlayer
-          :id="player.id"
-          :name="player.name"
-          :file="player.url"
-          :playStateOverrideBy="currentlyPlayingPlayer"
-          v-on:play="setPlayStateOverride"
-          v-on:finish="resetPlayStateOverride"
+          :track="track"
+          :index="index"
+          v-on:play="setState"
+          v-on:pause="setState"
+          v-on:finish="setState"
           v-on:progress="updateProgress"
-          :tags="player.tags || []"
+          :overridePlayState="playIndex === index"
           :accent="accent"
-          :waveformUrl="player.waveformUrl"
-          :no="player.no"
-          :additionalData="player.additionalData"
-          :namespace="player.namespace"
-          :highlighted="`${selected}` === `${player.no}`"
+          :highlighted="`${selected}` === `${index}`"
           v-on:update:select="select"
         ></AudioPlayer>
       </div>
       <div class="footer">
         <Footer></Footer>
       </div>
-      <transition name="slide">
-        <div class="playerbar" v-if="this.currentlyPlayingPlayer != -1">
-          <button class="action">
-            <i @click="stopPlayback" class="material-icons-sharp">
-              stop
-            </i>
-          </button>
-          <div class="metadata">
-            <span class="artist">{{this.currentlyPlaying.additionalData.artist}}</span>
-            <span class="title">{{this.currentlyPlaying.name}}</span>
-          </div>
-          <div class="spacer"></div>
-          <div class="timestamp">
-            <span class="current">{{this.currentTime}}</span>
-            <span class="separator"> : </span>
-            <span class="total">{{this.totalDuration}}</span>
-
-          </div>
-          <div class="waveform-container">
-            <div class="overlay" :style="{ width: `${100 - progress}%` }"></div>
-            <img class="waveform" :src="this.currentlyPlaying.waveformUrl.small"/>
-          </div>
-        </div>
-      </transition>
     </div>
   </div>
 </template>
@@ -79,33 +86,61 @@ export default {
   },
   data() {
     return {
-      currentlyPlayingPlayer: -1,
-      currentlyPlaying: null,
+      playIndex: -1,
       progress: -1,
       currentTime: '',
       totalDuration: '',
       selected: -1,
+      autoplay: true,
+      loop: false,
+      playState: '',
     };
   },
   methods: {
-    setPlayStateOverride(no) {
-      this.currentlyPlayingPlayer = no;
-      this.currentlyPlaying = this.queue.find((t) => t.no === no);
-    },
-    resetPlayStateOverride() {
-      this.currentlyPlayingPlayer = -1;
-    },
     updateProgress({ progress, currentTime, totalDuration }) {
       this.progress = progress;
       this.currentTime = currentTime;
       this.totalDuration = totalDuration;
     },
-    stopPlayback() {
-      this.currentlyPlayingPlayer = -1;
-      this.currentlyPlaying = null;
-    },
     select(no) {
       this.selected = no;
+    },
+    setState(state, no) {
+      switch (state) {
+        case 'play':
+          this.playState = 'playing';
+          this.playIndex = no;
+          break;
+        case 'pause':
+          this.playState = 'paused';
+          this.playIndex = -1;
+          break;
+        case 'finish':
+          this.playState = 'finished';
+          if (this.autoplay) {
+            if (this.loop) {
+              this.playIndex = (this.playIndex + 1) % this.queue.length;
+            } else {
+              this.playIndex = (this.playIndex + 1 < this.queue.length ? this.playIndex + 1 : -1);
+            }
+          } else {
+            this.playIndex = -1;
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    loopControl() {
+      this.loop = !this.loop;
+    },
+    autoplayControl() {
+      this.autoplay = !this.autoplay;
+    },
+    playAll() {
+      if (this.playState !== 'playing') {
+        this.setState('play', 0);
+      }
     },
   },
   mounted() {
@@ -118,6 +153,83 @@ export default {
 .manager {
   max-width: 1024px;
   margin: 0 auto;
+  .settings {
+    background: var(--primary);
+    border-top-left-radius: 16pt;
+    border-top-right-radius: 16pt;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    padding: 1em 2em 3em;
+    margin-bottom: -28pt;
+    display: flex;
+    align-items: center;
+    .autoplay, .loop {
+      padding: 1em 1em 0 0;
+      label {
+        user-select: none;
+        cursor: pointer;
+        align-items: center;
+        &.is-active {
+          color: var(--accent);
+        }
+        span:first-child {
+          margin-right: 4px;
+          display: block;
+          text-align: center;
+        }
+        span:last-child {
+          opacity: 0;
+          text-align: center;
+          transform: translateY(6px);
+          display: block;
+          transition: opacity 0.1s ease, transform 0.1s ease;
+        }
+        &:hover, &:active {
+          span:last-child {
+            opacity: 1;
+            width: auto;
+            transform: translateY(0);
+          }
+        }
+      }
+    }
+    &.loop label {
+      padding-left: 12px;
+    }
+    .spacer {
+      flex-grow: 1;
+    }
+    .play-all {
+      border-radius: 32px;
+      border: none;
+      outline: none;
+      color: var(--accent);
+      font-size: 0.8em;
+      text-transform: uppercase;
+      font-weight: bold;
+      padding: 1em 1em 0 0;
+      text-align: center;
+      transition: background-color 0.1s ease;
+      span:last-child {
+        opacity: 0;
+        text-align: center;
+        transform: translateY(6px);
+        display: block;
+        transition: opacity 0.1s ease, transform 0.1s ease;
+      }
+      &:hover, &:active {
+        span:last-child {
+          opacity: 1;
+          width: auto;
+          transform: translateY(0);
+        }
+      }
+      cursor: pointer;
+      &.is-disabled {
+        cursor: initial;
+        color: rgba(128,128,128,0.5);
+      }
+    }
+  }
 }
 
 .player {
@@ -131,107 +243,10 @@ export default {
 }
 .footer {
   background: var(--primary);
+  border-top-left-radius: 16pt;
+  border-top-right-radius: 16pt;
   border-top: solid 1px rgba(0,0,0,0.33);
   padding: 3em 0;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
 }
-.playerbar {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  background: var(--primary);
-  // height: 4em;
-  padding: 1em 2em;
-  z-index: 5;
-  flex-wrap: wrap;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.33);
-  .action {
-    background: none;
-    border: none;
-    outline: none;
-    margin-right: 16px;
-    line-height: 1;
-    cursor: pointer;
-    border-radius: 32px;
-    padding: 4px;
-    &:hover, &:active {
-      background: rgba(0,0,0,0.15);
-      color: var(--accent);
-    }
-  }
-  .metadata {
-    span {
-      display: block;
-    }
-    .artist {
-      font-size: 0.8em;
-      opacity: 0.66;
-    }
-    .title {
-      font-weight: bold;
-    }
-    padding-right: 8px;
-  }
-  .timestamp {
-    padding-right: 8px;
-  }
-  .spacer {
-    flex-grow: 1;
-  }
-  .waveform-container {
-    position: relative;
-    height: 48px;
-    width: 240px;
-    @media screen and (max-width: 768px) {
-      width: 100%;
-      padding: 1em 2em 0;
-      margin-bottom: 1em;
-    }
-    .overlay {
-      position: absolute;
-      height: 100%;
-      z-index: 3;
-      right: 0;
-      background-color: var(--primary);
-      opacity: 0.8;
-    }
-    .waveform {
-      height: 100%;
-      z-index: 2;
-      opacity: 0.5;
-      width: 100%;
-    }
-  }
-}
-
-@keyframes slide-in {
-  0% {
-    transform: translateY(100%);
-  }
-  100% {
-    transform: translateY(0%);
-  }
-}
-
-@keyframes slide-out {
-  0% {
-    transform: translateY(0%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-.slide-enter-active {
-  animation: slide-in ease .2s;
-  animation-fill-mode: forwards;
-}
-.slide-leave-active {
-  animation: slide-out ease .2s;
-  animation-fill-mode: forwards;
-}
-
 </style>
