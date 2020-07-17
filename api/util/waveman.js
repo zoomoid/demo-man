@@ -53,7 +53,7 @@ const waveform = async (ns, fn, id, url) => {
     "namespace",
     ns
   );
-  let svg = await wavemanHook(path);
+  let svg = await wavemanHook(path, url);
   let waveform = {
     type: "Waveform",
     namespace: ns,
