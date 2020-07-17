@@ -1,7 +1,7 @@
 const { guard, waveform, db } = require("../../util/");
 const { ObjectID } = require("mongodb");
 const logger = require("@zoomoid/log");
-const { api } = require("../../endpoints");
+const { api, waveman } = require("../../endpoints");
 
 module.exports = function (router) {
   router
@@ -15,7 +15,7 @@ module.exports = function (router) {
         const track = req.body.track;
         track.type = "Track";
         track._id = new ObjectID();
-        waveform(track.namespace, track.filename, track._id);
+        waveform(track.namespace, track.filename, track._id, waveman.url);
         const resp = await db.get().insertOne(track);
         logger.info(
           "Added track to namespace",
