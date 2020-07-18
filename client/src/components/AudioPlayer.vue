@@ -37,7 +37,7 @@
             </a>
           </div>
           <div class="download">
-            <a :href="track.url" target="_blank">
+            <a :href="track.mp3" target="_blank">
               <i class="material-icons-sharp">
                 get_app
               </i>
