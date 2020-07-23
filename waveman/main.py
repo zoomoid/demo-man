@@ -55,48 +55,51 @@ config = Config(path="config/config.json")
 
 @app.route("/", methods=["POST"])
 def wavify(): 
-  url = request.json["url"]
-  Logger.info("Received new wave-man request", url=url)
-  wave_fn = transcode(url, vol="files")
-  
-  chunks = []
-  Logger.info("Creating stream from wav", fn=wave_fn)
-  f = open(wave_fn, "rb")
-  with soundfile.SoundFile(wave_fn, "rb") as f:
-    block_length = int(f.frames // config.full.steps)
-    i = 0
-    chunk_window = 2048
-    interpolation = 8
-    while i < config.full.steps and f.tell() < f.frames:
-      data = f.read(chunk_window * interpolation)[::interpolation] 
-      mono_block = [(abs(s1)+abs(s2)) / 2 for (s1,s2) in data]
-      """Create a new chunk sample by calculating rounded-avg of the first 512 samples in a block"""
-      chunk = round(sum(mono_block) / chunk_window, 2)
-      chunks.append(chunk)
-      f.seek(i * block_length)
-      i += 1
-  print()
-  chunks_full = normalize(chunks)
-  Logger.info("Reduced and normalized audio chunks", chunks=len(chunks_full))
-  """Assumption that the small waveform contains exactly half the number of steps than the full one"""
-  chunks_small = [(x1 + x2) / 2 for (x1,x2) in zip(chunks_full[0::2], chunks_full[1::2])]
-  blocks = { "full": [], "small": [] }
-  """Generate lists of SVG strings for all audio chunks"""
-  for i, v in enumerate(chunks_full):
-    pos, size = pos_size_tuple(i, v, config.full)
-    blocks["full"] += [drawHook(pos[0], pos[1], size[0], size[1], config.full.rounded)]
+  try:
+    url = request.json["url"]
+    Logger.info("Received new wave-man request", url=url)
+    wave_fn = transcode(url, vol="files")
     
-  Logger.info("Rendered full SVG waveform")
-  for i, v in enumerate(chunks_small):
-    pos, size = pos_size_tuple(i, v, config.small)
-    blocks["small"] += [drawHook(pos[0], pos[1], size[0], size[1], config.small.rounded)]
-  Logger.info("Rendered small SVG waveform")
-  cleanup(wave_fn)
-  Logger.info("Cleaned up and removed wav file")
-  return {
-    "full": template(config.full.width, config.full.height, "".join(blocks["full"])),
-    "small": template(config.small.width, config.small.height, "".join(blocks["small"]))
-  }
+    chunks = []
+    Logger.info("Creating stream from wav", fn=wave_fn)
+    f = open(wave_fn, "rb")
+    with soundfile.SoundFile(wave_fn, "rb") as f:
+      block_length = int(f.frames // config.full.steps)
+      i = 0
+      chunk_window = 2048
+      interpolation = 8
+      while i < config.full.steps and f.tell() < f.frames:
+        data = f.read(chunk_window * interpolation)[::interpolation] 
+        mono_block = [(abs(s1)+abs(s2)) / 2 for (s1,s2) in data]
+        """Create a new chunk sample by calculating rounded-avg of the first 512 samples in a block"""
+        chunk = round(sum(mono_block) / chunk_window, 2)
+        chunks.append(chunk)
+        f.seek(i * block_length)
+        i += 1
+    print()
+    chunks_full = normalize(chunks)
+    Logger.info("Reduced and normalized audio chunks", chunks=len(chunks_full))
+    """Assumption that the small waveform contains exactly half the number of steps than the full one"""
+    chunks_small = [(x1 + x2) / 2 for (x1,x2) in zip(chunks_full[0::2], chunks_full[1::2])]
+    blocks = { "full": [], "small": [] }
+    """Generate lists of SVG strings for all audio chunks"""
+    for i, v in enumerate(chunks_full):
+      pos, size = pos_size_tuple(i, v, config.full)
+      blocks["full"] += [drawHook(pos[0], pos[1], size[0], size[1], config.full.rounded)]
+      
+    Logger.info("Rendered full SVG waveform")
+    for i, v in enumerate(chunks_small):
+      pos, size = pos_size_tuple(i, v, config.small)
+      blocks["small"] += [drawHook(pos[0], pos[1], size[0], size[1], config.small.rounded)]
+    Logger.info("Rendered small SVG waveform")
+    cleanup(wave_fn)
+    Logger.info("Cleaned up and removed wav file")
+    return {
+      "full": template(config.full.width, config.full.height, "".join(blocks["full"])),
+      "small": template(config.small.width, config.small.height, "".join(blocks["small"]))
+    }
+  except:
+    return {"error": "issue with request object", "request": request.json}
 
 """
 Cosmetic GET route to health-check the service. Used by Kubernetes' pod controller to check pod
