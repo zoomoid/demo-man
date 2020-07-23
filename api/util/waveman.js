@@ -10,7 +10,7 @@ const wavemanHook = async (path, url) => {
     fetch(url, {
       method: "POST",
       body: JSON.stringify({
-        uri: path,
+        url: path,
       }),
       headers: { "Content-Type": "application/json" },
     })
@@ -40,7 +40,6 @@ const wavemanHook = async (path, url) => {
  * @param {String} fn filename of the mp3
  * @param {mongodb.ObjectID} id mongodb track id
  * @param {String} url waveman API endpoint
- * @param {*} db database backend to send the waveform data to
  */
 const waveform = async (ns, fn, id, url) => {
   const path = `${ns}/${fn}`;

@@ -451,6 +451,7 @@ async function readMetadata(path) {
       bpm: src.common.bpm,
       type: src.format.container,
       duration: src.format.duration,
+      sr: src.format.sampleRate,
       lossless: src.format.lossless,
       bitrate: src.format.bitrate,
       cover: cover,
