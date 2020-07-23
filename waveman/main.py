@@ -145,7 +145,7 @@ Binds the calculated svg elements into the SVG canvas, which is the final templa
 This string is then responded to the client
 """
 def template(w, h, d):
-  return f'<svg baseProfile="tiny" height="100%" preserveAspectRatio="none" version="1.2" viewBox="0 0 {w} {h}" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">< defs/>{d}</svg>'
+  return f'<svg baseProfile="tiny" height="100%" preserveAspectRatio="none" version="1.2" viewBox="0 0 {w} {h}" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink"><defs/>{d}</svg>'
 
 """
 Normalizes a given list of numbers
