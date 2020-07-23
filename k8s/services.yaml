@@ -33,18 +33,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-wave-man
+  name: demo-waveman
   namespace: web
   labels:
     app: demo-man
-    svc: wave-man
+    svc: waveman
 spec:
   selector:
     app: demo-man
-    svc: wave-man
+    svc: waveman
   ports:
   - port: 8080
-    targetPort: 5000
+    targetPort: 8080
 ---
 apiVersion: v1
 kind: Service

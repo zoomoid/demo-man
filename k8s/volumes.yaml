@@ -44,7 +44,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 8Gi
+    storage: 10Gi
   accessModes:
     - ReadWriteMany
   hostPath:
@@ -53,10 +53,29 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: demo-audio-pvc
+  name: demo-watchdog-pvc
   namespace: web
   labels:
     app: demo-man
+    svc: watchdog
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 5Gi
+    limits:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-waveman-pvc
+  namespace: web
+  labels:
+    app: demo-man
+    svc: waveman
 spec:
   storageClassName: manual
   accessModes:
@@ -66,38 +85,3 @@ spec:
       storage: 5Gi
     limits:
       storage: 10Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: demo-wave-man-pv
-  namespace: web
-  labels:
-    app: demo-man
-    svc: wave-man
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  hostPath:
-    path: "/mnt/k8s/demo-wave-man"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: demo-wave-man-pvc
-  namespace: web
-  labels:
-    app: demo-man
-    svc: wave-man
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Gi
-    limits:
-      storage: 1Gi

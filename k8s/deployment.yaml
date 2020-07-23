@@ -23,14 +23,14 @@ spec:
       - name: gitlab
       containers:
       - name: api
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.13.1
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.14
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
         - name: DB
           value: "demo"
         - name: WAVE_ENDPOINT
-          value: http://demo-wave-man:8080/wavify
+          value: http://demo-waveman:8080/
         - name: API_ENDPOINT
           value: https://demo.zoomoid.de/api/v1/demo
         - name: PORT
@@ -50,45 +50,45 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-wave-man
+  name: demo-waveman
   namespace: web
 spec:
   selector:
     matchLabels:
       app: demo-man
-      svc: wave-man
+      svc: waveman
   template:
     metadata:
       labels:
         app: demo-man
-        svc: wave-man
+        svc: waveman
     spec:
       restartPolicy: Always
       imagePullSecrets:
       - name: github
       - name: gitlab
       containers:
-      - name: wave-man
-        image: docker.pkg.github.com/occloxium/wave-man/wave-man:2.20.2
+      - name: waveman
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:v1.14
         ports:
-        - containerPort: 5000
+        - containerPort: 8080
         volumeMounts:
         - name: audio-volume
           mountPath: "/app/files"
-        - name: wave-man-config
+        - name: waveman-config
           mountPath: /app/config
         resources:
           limits:
-            memory: "2Gi"
+            memory: "1Gi"
           requests:
-            cpu: "1000m"
+            cpu: "500m"
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
-          claimName: demo-audio-pvc
-      - name: wave-man-config
+          claimName: demo-waveman-pvc
+      - name: waveman-config
         configMap:
-          name: demo-wave-man-config
+          name: demo-waveman-config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -115,7 +115,7 @@ spec:
       - name: gitlab
       containers:
       - name: client
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.13.1
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.14
         ports:
         - containerPort: 80
 ---
@@ -143,14 +143,14 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.13.1
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.14
         env:
         - name: VOLUME
           value: "/app/files"
         - name: PUBLIC_PATH
           value: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
         - name: API_ENDPOINT
-          value: http://demo-api:8080/api/v1/demo # use service name instead of global public endpoint
+          value: http://demo-api:8080/api/v1/demo
         - name: TOKEN 
           valueFrom:
             secretKeyRef:
@@ -162,5 +162,6 @@ spec:
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
-          claimName: demo-audio-pvc
+          readOnly: true
+          claimName: demo-watchdog-pvc
       restartPolicy: Always
