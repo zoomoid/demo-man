@@ -55,7 +55,6 @@ config = Config(path="config/config.json")
 
 @app.route("/", methods=["POST"])
 def wavify(): 
-  try:
   url = request.json["url"]
   Logger.info("Received new wave-man request", url=url)
   wave_fn = transcode(url, vol="files")
