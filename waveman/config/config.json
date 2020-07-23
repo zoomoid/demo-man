@@ -1,0 +1,16 @@
+{
+  "full": {
+    "step_width": 20,
+    "height": 200,
+    "rounded": 10,
+    "steps": 50,
+    "gap": 10
+  },
+  "small": {
+    "step_width": 16,
+    "height": 200,
+    "rounded": 8,
+    "steps": 25,
+    "gap": 8
+  }
+}
