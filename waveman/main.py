@@ -119,9 +119,9 @@ Transcodes an mp3 file located at vol/fn to a waveform which we can process usin
 def transcode(fn, vol="files"):
   output_fn = str(uuid.uuid4())
   sound = AudioSegment.from_mp3(f"{vol}/{fn}")
-  sound.export(f"{vol}/{output_fn}.wav", format="wav")
+  sound.export(f"/tmp/{output_fn}.wav", format="wav")
   Logger.info("Finished transcoding mp3 to wav", source=fn, target=output_fn, vol=vol)
-  return f"{vol}/{output_fn}.wav"
+  return f"/tmp/{output_fn}.wav"
 
 """
 Calculates pair of position and size for the currently (i-th) inspected value of 
