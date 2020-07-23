@@ -2,6 +2,7 @@ const cors = require("cors");
 const express = require("express");
 const logger = require("@zoomoid/log");
 const fetch = require("node-fetch");
+const endpoints = require("./endpoints");
 
 const { db } = require("./util");
 
@@ -15,20 +16,6 @@ app.use(
     limit: "3mb",
   })
 );
-
-const endpoints = {
-  mongo: {
-    url: process.env.MONGOURL || "mongodb://demo-mongodb:27017",
-    database: process.env.DB || "demo",
-  },
-  waveman: {
-    url: process.env.WAVE_ENDPOINT || "http://demo-wave-man:8083/wavify",
-  },
-  api: {
-    url: process.env.API_ENDPOINT || "http://demo-api:8080/api/v1/demo",
-    port: process.env.PORT || "8080",
-  },
-};
 
 app.use("/api/v1/demo", demoRouter);
 
@@ -97,4 +84,4 @@ db.connect(
     process.exit(1);
   });
 
-module.exports = endpoints;
+module.exports = app;

@@ -31,7 +31,7 @@ module.exports = function (router) {
               res.status(405).send("Unsupported mode");
               return;
           }
-          let color = "F58B44";
+          let color = "000000";
           if (req.query.color) {
             color = req.query.color;
           }
