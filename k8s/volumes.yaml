@@ -53,29 +53,11 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: demo-watchdog-pvc
+  name: demo-audio-pvc
   namespace: web
   labels:
     app: demo-man
     svc: watchdog
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadOnlyMany
-  resources:
-    requests:
-      storage: 5Gi
-    limits:
-      storage: 10Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: demo-waveman-pvc
-  namespace: web
-  labels:
-    app: demo-man
-    svc: waveman
 spec:
   storageClassName: manual
   accessModes:

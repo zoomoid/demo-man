@@ -7,21 +7,22 @@ metadata:
     app: demo-man
     svc: waveman
 data:
-  small.json: |
+  config.json: |
     {
-      "step_width": 16,
-      "height": 200,
-      "color": "{{.color}}",
-      "rounded": 8,
-      "steps": 25,
-      "gap": 8,
-    }
-  full.json: |
-    {
-      "step_width": 20,
-      "height": 200,
-      "color": "{{.color}}",
-      "rounded": 10,
-      "steps": 50,
-      "gap": 10,
+      "full": {
+        "step_width": 16,
+        "height": 200,
+        "color": "{{.color}}",
+        "rounded": 8,
+        "steps": 25,
+        "gap": 8
+      },
+      "small": {
+        "step_width": 20,
+        "height": 200,
+        "color": "{{.color}}",
+        "rounded": 10,
+        "steps": 50,
+        "gap": 10
+      }
     }
