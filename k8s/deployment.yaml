@@ -23,7 +23,7 @@ spec:
       - name: gitlab
       containers:
       - name: api
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.14
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.14.4
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -69,7 +69,7 @@ spec:
       - name: gitlab
       containers:
       - name: waveman
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:v1.14
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:v1.14.4
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -85,7 +85,7 @@ spec:
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
-          claimName: demo-waveman-pvc
+          claimName: demo-audio-pvc
       - name: waveman-config
         configMap:
           name: demo-waveman-config
@@ -115,7 +115,7 @@ spec:
       - name: gitlab
       containers:
       - name: client
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.14
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.14.4
         ports:
         - containerPort: 80
 ---
@@ -143,7 +143,7 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.14
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.14.4
         env:
         - name: VOLUME
           value: "/app/files"
@@ -162,6 +162,5 @@ spec:
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
-          readOnly: true
-          claimName: demo-watchdog-pvc
+          claimName: demo-audio-pvc
       restartPolicy: Always
