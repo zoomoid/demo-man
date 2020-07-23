@@ -10,7 +10,7 @@ const wavemanHook = async (path, url) => {
     fetch(url, {
       method: "POST",
       body: JSON.stringify({
-        uri: path,
+        url: path,
       }),
       headers: { "Content-Type": "application/json" },
     })
