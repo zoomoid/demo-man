@@ -2,6 +2,7 @@ FROM node:alpine
 
 ARG VERSION
 ENV VERSION ${VERSION:-0.0.0}
+RUN echo $VERSION
 
 WORKDIR /app
 
