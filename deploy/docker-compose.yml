@@ -9,6 +9,8 @@ services:
     - demo-man
     volumes: 
     - ../client:/app
+    environment:
+      VERSION: 0.0.0-dev
     working_dir: /app
     command: [ "npm", "run", "serve" ]
     ports: 
@@ -22,6 +24,7 @@ services:
     - db
     environment: 
       PORT: "8080"
+      VERSION: 0.0.0-dev
       MONGOURL: mongodb://demo-mongodb:27017
       WAVE_ENDPOINT: 'http://waveman:8083'
       API_ENDPOINT: 'http://localhost:8080/api/v1/demo'
@@ -46,6 +49,7 @@ services:
       PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
       TOKEN: demotoken
       API_ENDPOINT: 'http://api:8080/api/v1/demo'
+      VERSION: 0.0.0-dev
     volumes:
     - ./files:/app/files
     - ../watchdog:/app
@@ -63,6 +67,8 @@ services:
       dockerfile: Dockerfile
     container_name: demo-wave-man
     restart: on-failure
+    environment:
+      VERSION: 0.0.0-dev
     networks:
     - demo-man
     volumes: 
