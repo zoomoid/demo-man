@@ -17,10 +17,10 @@ data:
         "gap": 10
       },
       "small": {
-        "step_width": 16,
+        "step_width": 20,
         "height": 200,
-        "rounded": 8,
+        "rounded": 10,
         "steps": 25,
-        "gap": 8
+        "gap": 10
       }
     }
