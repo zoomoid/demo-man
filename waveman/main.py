@@ -66,15 +66,14 @@ def wavify():
     block_length = int(f.frames // config.full.steps)
     i = 0
     chunk_window = 2048
-    interpolation = 8
+    interpolation = 16
     while i < config.full.steps and f.tell() < f.frames:
       data = f.read(chunk_window * interpolation)[::interpolation] 
-      mono_block = [(abs(s1)+abs(s2)) / 2 for (s1,s2) in data]
-      """Create a new chunk sample by calculating rounded-avg of the first 512 samples in a block"""
-      chunk = round(sum(mono_block) / chunk_window, 2)
+      mono_block = [abs((s1 + s2) / 2) for (s1,s2) in data]
+      chunk = sum(mono_block) / chunk_window
       chunks.append(chunk)
-      f.seek(i * block_length)
       i += 1
+      f.seek(i * block_length)
   print()
   chunks_full = normalize(chunks)
   Logger.info("Reduced and normalized audio chunks", chunks=len(chunks_full))
@@ -97,6 +96,13 @@ def wavify():
     "full": template(config.full.width, config.full.height, "".join(blocks["full"])),
     "small": template(config.small.width, config.small.height, "".join(blocks["small"]))
   }
+
+"""
+Handler for service discovery
+"""
+@app.route("/", methods=["GET"])
+def waveman():
+  return {"app": "demo-man", "svc": "waveman", "version": os.environ["VERSION"]}
 
 """
 Cosmetic GET route to health-check the service. Used by Kubernetes' pod controller to check pod
