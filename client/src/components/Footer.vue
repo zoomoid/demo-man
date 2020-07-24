@@ -7,7 +7,10 @@
     <a href="https://alexander.bartolomey.me/">
       <span class="emoji">👨‍💻</span>
       <span class="text">@zoomoid</span>
-    </a>
+    </a><span>&mdash;</span>
+    <span class="version">
+      v{{$root.version}}
+    </span>
   </footer>
 </template>
 
@@ -46,6 +49,11 @@ footer {
         text-decoration: underline;
       }
     }
+  }
+  .version {
+    font-size: 0.8em;
+    padding: 0 16px;
+    opacity: 0.5;
   }
 }
 </style>
