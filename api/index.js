@@ -28,15 +28,23 @@ if (!process.env.TOKEN) {
   process.exit(1);
 }
 
-app.get("/ping", (_, response) => {
+app.get("/api", (_, response) => {
+  response.json({
+    "app": "demo-man",
+    "svc": "api",
+    "version": process.env.VERSION
+  });
+});
+
+app.get("/api/ping", (_, response) => {
   response.send("pong.");
 });
 
-app.get("/healthz", (_, response) => {
+app.get("/api/healthz", (_, response) => {
   response.status(200).send("ok");
 });
 
-app.get("/test", (_, response) => {
+app.get("/api/test", (_, response) => {
   fetch(endpoints.waveman.url.replace("wavify", "healthz"), { method: "GET" })
     .then((res) => {
       if (res.status == 200) {
