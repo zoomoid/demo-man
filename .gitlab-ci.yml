@@ -64,6 +64,7 @@ deploy:
     WAVEMAN: "waveman"
   extends: .kubectl
   script:
+  - echo "Upgrading images to version $VERSION"
   - kubectl set image deployment/demo-$API $API=$CI_REGISTRY_IMAGE/api:$VERSION --record
   - kubectl set image deployment/demo-$CLIENT $CLIENT=$CI_REGISTRY_IMAGE/client:$VERSION --record
   - kubectl set image deployment/demo-$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/watchdog:$VERSION --record
