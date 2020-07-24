@@ -182,7 +182,7 @@ spec:
     metadata:
       labels:
         app: demo-man
-      svc: fileserver
+        svc: fileserver
     spec:
       containers:
       - name: fileserver

@@ -9,11 +9,11 @@ ADD package.json .
 
 RUN npm ci
 
+ADD . .
+
 ARG VERSION
 ENV VERSION ${VERSION:-0.0.0}
 RUN echo $VERSION
 RUN cat package.json | sed -e "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" | tee package.json
-
-ADD . .
 
 CMD [ "npm", "start" ]
