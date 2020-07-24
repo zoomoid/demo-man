@@ -9,6 +9,7 @@ stages:
   before_script:
   - echo $kube_config | base64 -d > /root/runner
   - export KUBECONFIG="$KUBECONFIG:/root/runner"
+  - export VERSION=$(echo $CI_COMMIT_TAG | sed -e 's/^v//')
   - kubectl config use-context runner@kubernetes
   tags:
   - kubernetes
@@ -20,6 +21,7 @@ stages:
   image: docker:latest
   before_script:
   - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
+  - export VERSION=$(echo $CI_COMMIT_TAG | sed -e 's/^v//')
   tags:
   - kubernetes
 
@@ -27,29 +29,29 @@ build:api:
   extends: .build-pre
   script: 
     - cd api/
-    - docker build -t $CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG .
-    - docker push $CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY_IMAGE/api:$VERSION .
+    - docker push $CI_REGISTRY_IMAGE/api:$VERSION
 
 build:client:
   extends: .build-pre
   script: 
     - cd client/
-    - docker build -t $CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG .
-    - docker push $CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY_IMAGE/client:$VERSION .
+    - docker push $CI_REGISTRY_IMAGE/client:$VERSION
 
 build:watchdog:
   extends: .build-pre
   script: 
     - cd watchdog/
-    - docker build -t $CI_REGISTRY_IMAGE/watchdog:$CI_COMMIT_TAG .
-    - docker push $CI_REGISTRY_IMAGE/watchdog:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY_IMAGE/watchdog:$VERSION .
+    - docker push $CI_REGISTRY_IMAGE/watchdog:$VERSION
 
 build:waveman:
   extends: .build-pre
   script: 
     - cd waveman/
-    - docker build -t $CI_REGISTRY_IMAGE/waveman:$CI_COMMIT_TAG .
-    - docker push $CI_REGISTRY_IMAGE/waveman:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY_IMAGE/waveman:$VERSION .
+    - docker push $CI_REGISTRY_IMAGE/waveman:$VERSION
 
 deploy:
   only:
@@ -62,8 +64,8 @@ deploy:
     WAVEMAN: "waveman"
   extends: .kubectl
   script:
-  - kubectl set image deployment/demo-$API $API=$CI_REGISTRY_IMAGE/api:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/demo-$CLIENT $CLIENT=$CI_REGISTRY_IMAGE/client:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/demo-$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/watchdog:$CI_COMMIT_TAG --record
-  - kubectl set image deployment/demo-$WAVEMAN $WAVEMAN=$CI_REGISTRY_IMAGE/waveman:$CI_COMMIT_TAG --record
+  - kubectl set image deployment/demo-$API $API=$CI_REGISTRY_IMAGE/api:$VERSION --record
+  - kubectl set image deployment/demo-$CLIENT $CLIENT=$CI_REGISTRY_IMAGE/client:$VERSION --record
+  - kubectl set image deployment/demo-$WATCHDOG $WATCHDOG=$CI_REGISTRY_IMAGE/watchdog:$VERSION --record
+  - kubectl set image deployment/demo-$WAVEMAN $WAVEMAN=$CI_REGISTRY_IMAGE/waveman:$VERSION --record
   
