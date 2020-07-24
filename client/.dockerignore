@@ -5,3 +5,4 @@ docker-compose*
 README.md
 LICENSE
 .editorconfig
+.version.json
