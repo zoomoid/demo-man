@@ -24,3 +24,24 @@ data:
         "gap": 10
       }
     }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-fileserver-nginx-config
+data:
+  files-zoomoid-de.conf: |
+    server {
+        server_name demo.zoomoid.de;
+        location /files {
+            root /var/www/files/demo;
+            autoindex on;
+            sendfile on;
+            sendfile_max_chunk 1m;
+            tcp_nopush on;
+            tcp_nodelay on;
+            keepalive_timeout 65;
+        }
+        listen 80;
+        # listen [::]:80 ipv6only=true;
+    }

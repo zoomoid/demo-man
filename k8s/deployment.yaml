@@ -23,7 +23,7 @@ spec:
       - name: gitlab
       containers:
       - name: api
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:v1.15.2
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:1.15.5
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -69,7 +69,7 @@ spec:
       - name: gitlab
       containers:
       - name: waveman
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:v1.15.2
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:1.15.5
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -115,7 +115,7 @@ spec:
       - name: gitlab
       containers:
       - name: client
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:v1.15.2
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:1.15.5
         ports:
         - containerPort: 80
 ---
@@ -143,12 +143,12 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:v1.15.2
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:1.15.5
         env:
         - name: VOLUME
           value: "/app/files"
         - name: PUBLIC_PATH
-          value: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
+          value: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "files"}'
         - name: API_ENDPOINT
           value: http://demo-api:8080/api/v1/demo
         - name: TOKEN 
@@ -164,3 +164,47 @@ spec:
         persistentVolumeClaim:
           claimName: demo-audio-pvc
       restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: web
+  name: demo-fileserver
+  labels:
+    app: demo-man
+    svc: fileserver
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: fileserver
+  template:
+    metadata:
+      labels:
+        app: demo-man
+      svc: fileserver
+    spec:
+      containers:
+      - name: fileserver
+        image: nginx:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 10m
+            memory: 50Mi
+        volumeMounts:
+          - name: audio-volume
+            mountPath: /var/www/files/demo
+            readOnly: true
+          - name: nginx-config
+            mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: audio-volume
+        persistentVolumeClaim:
+          readOnly: true
+          claimName: demo-audio-pvc
+      - name: nginx-config
+        configMap:
+          name: demo-fileserver-nginx-config
