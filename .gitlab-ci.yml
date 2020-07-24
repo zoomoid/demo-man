@@ -22,6 +22,7 @@ stages:
   before_script:
   - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
   - export VERSION=$(echo $CI_COMMIT_TAG | sed -e 's/^v//')
+  - echo $VERSION
   tags:
   - kubernetes
 
@@ -29,28 +30,28 @@ build:api:
   extends: .build-pre
   script: 
     - cd api/
-    - docker build -t $CI_REGISTRY_IMAGE/api:$VERSION .
+    - docker build -t $CI_REGISTRY_IMAGE/api:$VERSION . --build-arg VERSION=$(VERSION)
     - docker push $CI_REGISTRY_IMAGE/api:$VERSION
 
 build:client:
   extends: .build-pre
   script: 
     - cd client/
-    - docker build -t $CI_REGISTRY_IMAGE/client:$VERSION .
+    - docker build -t $CI_REGISTRY_IMAGE/client:$VERSION . --build-arg VERSION=$(VERSION)
     - docker push $CI_REGISTRY_IMAGE/client:$VERSION
 
 build:watchdog:
   extends: .build-pre
   script: 
     - cd watchdog/
-    - docker build -t $CI_REGISTRY_IMAGE/watchdog:$VERSION .
+    - docker build -t $CI_REGISTRY_IMAGE/watchdog:$VERSION . --build-arg VERSION=$(VERSION)
     - docker push $CI_REGISTRY_IMAGE/watchdog:$VERSION
 
 build:waveman:
   extends: .build-pre
   script: 
     - cd waveman/
-    - docker build -t $CI_REGISTRY_IMAGE/waveman:$VERSION .
+    - docker build -t $CI_REGISTRY_IMAGE/waveman:$VERSION . --build-arg VERSION=$(VERSION)
     - docker push $CI_REGISTRY_IMAGE/waveman:$VERSION
 
 deploy:
