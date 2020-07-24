@@ -13,10 +13,10 @@ build-latest:
 	docker build -t waveman waveman/
 
 build:
-	docker build -t api:$(VERSION) api/ --build-args VERSION=$(VERSION)
-	docker build -t watchdog:$(VERSION) watchdog/ --build-args VERSION=$(VERSION)
-	docker build -t client:$(VERSION) client/ --build-args VERSION=$(VERSION)
-	docker build -t waveman:$(VERSION) waveman/ --build-args VERSION=$(VERSION)
+	docker build -t api:$(VERSION) api/ --build-arg VERSION=$(VERSION)
+	docker build -t watchdog:$(VERSION) watchdog/ --build-arg VERSION=$(VERSION)
+	docker build -t client:$(VERSION) client/ --build-arg VERSION=$(VERSION)
+	docker build -t waveman:$(VERSION) waveman/ --build-arg VERSION=$(VERSION)
 
 tag-gh: build
 	docker tag api:$(VERSION) $(GH_REG_PREFIX)/api:$(VERSION)	
