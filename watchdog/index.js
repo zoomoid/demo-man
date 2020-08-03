@@ -13,7 +13,7 @@ const apiEndpoint = process.env.API_ENDPOINT || "http://demo-api/api/v1/demo";
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
   prefix: "https",
   hostname: "demo.zoomoid.de",
-  dir: "files",
+  dir: "files/",
 };
 
 if (!process.env.TOKEN) {
