@@ -4,6 +4,7 @@ import App from '@/App.vue';
 import Home from '@/views/Home.vue';
 import Page from '@/views/Page.vue';
 import './registerServiceWorker';
+import store from './store';
 
 Vue.use(VueRouter);
 
@@ -26,6 +27,8 @@ Vue.config.productionTip = false;
 new Vue({
   router,
   render: (h) => h(App),
+  store,
+
   data() {
     return {
       version: process.env.VERSION,
