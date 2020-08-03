@@ -23,7 +23,7 @@ spec:
       - name: gitlab
       containers:
       - name: api
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:1.15.5
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:1.15.7
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
@@ -69,7 +69,7 @@ spec:
       - name: gitlab
       containers:
       - name: waveman
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:1.15.5
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:1.15.7
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -115,7 +115,7 @@ spec:
       - name: gitlab
       containers:
       - name: client
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:1.15.5
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:1.15.7
         ports:
         - containerPort: 80
 ---
@@ -143,12 +143,12 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:1.15.5
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:1.15.7
         env:
         - name: VOLUME
           value: "/app/files"
         - name: PUBLIC_PATH
-          value: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "files"}'
+          value: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "files/"}'
         - name: API_ENDPOINT
           value: http://demo-api:8080/api/v1/demo
         - name: TOKEN 
@@ -196,7 +196,7 @@ spec:
             memory: 50Mi
         volumeMounts:
           - name: audio-volume
-            mountPath: /var/www/files/demo
+            mountPath: /var/www/demo/files
             readOnly: true
           - name: nginx-config
             mountPath: /etc/nginx/conf.d
