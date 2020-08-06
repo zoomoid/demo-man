@@ -71,7 +71,7 @@ spec:
       - name: waveman
         image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:1.15.7
         ports:
-        - containerPort: 8080
+        - containerPort: 8083
         volumeMounts:
         - name: audio-volume
           mountPath: "/app/files"
