@@ -30,7 +30,7 @@
           </label>
         </div>
         <div class="spacer"></div>
-        <div class="play-all" :class="[this.playState === 'playing' ? 'is-disabled' : '']"
+        <div class="play-all" :class="[this.globalPlayState === 'playing' ? 'is-disabled' : '']"
           @click="playAll">
           <span class="material-icons-sharp">
             play_arrow
@@ -43,14 +43,9 @@
       <div v-for="(track, index) in queue" v-bind:key="track._id">
         <AudioPlayer
           :track="track"
-          :index="index"
-          v-on:play="setState"
-          v-on:pause="setState"
-          v-on:finish="setState"
-          v-on:progress="updateProgress"
-          :overridePlayState="playIndex === index"
+          :index="index + 1"
           :accent="accent"
-          :highlighted="`${selected}` === `${index}`"
+          :highlighted="`${selected}` === `${index + 1}`"
           v-on:update:select="select"
         ></AudioPlayer>
       </div>
@@ -62,8 +57,9 @@
 </template>
 
 <script>
-import AudioPlayer from '@/components/AudioPlayer.vue';
-import Footer from '@/components/Footer.vue';
+import { mapGetters } from 'vuex';
+import AudioPlayer from './AudioPlayer.vue';
+import Footer from './Footer.vue';
 
 export default {
   components: {
@@ -73,7 +69,7 @@ export default {
   props: {
     queue: {
       type: Array,
-      default: undefined,
+      default: () => ([]),
     },
     accent: {
       type: String,
@@ -83,53 +79,69 @@ export default {
       type: String,
       default: '#1a1a1a',
     },
+    namespace: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
       playIndex: -1,
-      progress: -1,
-      currentTime: '',
-      totalDuration: '',
       selected: -1,
       autoplay: true,
       loop: false,
-      playState: '',
     };
   },
-  methods: {
-    updateProgress({ progress, currentTime, totalDuration }) {
-      this.progress = progress;
-      this.currentTime = currentTime;
-      this.totalDuration = totalDuration;
+  computed: {
+    playing() {
+      return this.queue.find((t, i) => `${this.namespace}/#${i + 1}` === this.url);
     },
-    select(no) {
-      this.selected = no;
+    ...mapGetters([
+      'globalPlayState',
+      'url',
+      'progress',
+    ]),
+  },
+  watch: {
+    url(n) {
+      this.playIndex = this.queue.findIndex((t, i) => `${this.namespace}/#${i + 1}` === n);
     },
-    setState(state, no) {
-      switch (state) {
-        case 'play':
-          this.playState = 'playing';
-          this.playIndex = no;
-          break;
-        case 'pause':
-          this.playState = 'paused';
-          this.playIndex = -1;
-          break;
-        case 'finish':
-          this.playState = 'finished';
-          if (this.autoplay) {
-            if (this.loop) {
-              this.playIndex = (this.playIndex + 1) % this.queue.length;
-            } else {
-              this.playIndex = (this.playIndex + 1 < this.queue.length ? this.playIndex + 1 : -1);
-            }
+    globalPlayState(n) {
+      if (n === 'finished') {
+        if (this.autoplay) {
+          let nextIndex;
+          if (this.loop) {
+            nextIndex = (this.playIndex + 1) % this.queue.length;
+          } else {
+            nextIndex = (this.playIndex + 1 < this.queue.length ? this.playIndex + 1 : -1);
+          }
+          if (nextIndex >= 0) {
+            const {
+              mp3, artist, title, duration,
+            } = this.queue[nextIndex];
+            const url = `${this.namespace}/#${nextIndex + 1}`;
+            const progress = this.progress[url] || 0;
+            this.$store.dispatch({
+              type: 'changeTrack',
+              mp3,
+              url,
+              artist,
+              title,
+              duration,
+              progress,
+            });
           } else {
             this.playIndex = -1;
           }
-          break;
-        default:
-          break;
+        } else {
+          this.playIndex = -1;
+        }
       }
+    },
+  },
+  methods: {
+    select(no) {
+      this.selected = no;
     },
     loopControl() {
       this.loop = !this.loop;
@@ -138,9 +150,19 @@ export default {
       this.autoplay = !this.autoplay;
     },
     playAll() {
-      if (this.playState !== 'playing') {
-        this.setState('play', 0);
-      }
+      const {
+        mp3, artist, title, duration,
+      } = this.queue[0];
+      const url = `${this.namespace}/#1`;
+      this.$store.dispatch({
+        type: 'changeTrack',
+        mp3,
+        url,
+        artist,
+        title,
+        duration,
+        progress: this.progress[url],
+      });
     },
   },
   mounted() {

@@ -21,7 +21,7 @@
         <h2 class="artist">{{album.artist}}</h2>
         <h1 class="title">{{album.title}}</h1>
       </div>
-      <AudioManager class="players" :queue="queue"></AudioManager>
+      <AudioManager class="players" :queue="queue" :namespace="namespace"></AudioManager>
     </template>
   </div>
 </template>
@@ -44,6 +44,11 @@ export default {
       accent: '#F58B44',
       primary: '#242424',
     };
+  },
+  computed: {
+    namespace() {
+      return `${this.$route.params.id}`;
+    },
   },
   mounted() {
     axios.get(`${this.$root.apiEP}/api/v1/demo/${this.$route.params.id}`).then((response) => {
