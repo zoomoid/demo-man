@@ -4,7 +4,7 @@ const endpoints = {
     database: process.env.DB || "demo",
   },
   waveman: {
-    url: process.env.WAVE_ENDPOINT || "http://demo-wave-man:8083/wavify",
+    url: process.env.WAVE_ENDPOINT || "http://demo-wave-man:8083",
   },
   api: {
     url: process.env.API_ENDPOINT || "http://demo-api:8080/api/v1/demo",
