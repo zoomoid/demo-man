@@ -25,7 +25,7 @@ body {
   box-sizing: border-box;
 }
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .2s ease;
+  transition: opacity .1s ease;
 }
 .fade-enter, .fade-leave-active {
   opacity: 0;

@@ -2,7 +2,7 @@
   <div>
     <audio ref="audio" autoplay="false"></audio>
     <transition name="slide">
-      <div class="playerbar" v-if="!intersecting">
+      <div class="playerbar" v-if="this.url">
         <div class="metadata">
           <span class="artist">{{artist}}</span>
           <router-link :to="`/${url}`"><span class="title">{{title}}</span></router-link>
@@ -22,12 +22,23 @@
               replay
             </i>
           </div>
+          <div class="volume-control">
+            <i @click="volumeOverlay = !volumeOverlay"
+              class="material-icons-sharp">
+              {{this.volume > 0 ? 'volume_up' : 'volume_off' }}
+            </i>
+            <div class="overlay" v-if="volumeOverlay">
+              <input type="range" class="volume__input" v-model="localVolume"
+                min="0" max="100" steps="1" name="volume"
+                @blur="volumeOverlay = !volumeOverlay"/>
+            </div>
+          </div>
         </div>
         <div class="waveform-container">
           <div class="scrobble-bar" @click="setPosition"></div>
           <div class="overlay" :style="{ width: `${100 - visualProgress}%` }"></div>
           <div draggable="true" class="playhead" :style="{ left: `${visualProgress}%` }"></div>
-          <div class="waveform"></div>
+          <div class="background"></div>
         </div>
         <div class="spacer"></div>
         <div class="timestamp">
@@ -45,6 +56,10 @@ import { mapGetters } from 'vuex';
 import humanReadableTimestamp from '../main';
 
 export default {
+  data: () => ({
+    volumeOverlay: false,
+    localVolume: 100,
+  }),
   computed: {
     currentTime() {
       return humanReadableTimestamp(this.localProgress);
@@ -82,6 +97,12 @@ export default {
     },
     volume(v) {
       this.$refs.audio.volume = v;
+    },
+    localVolume(n) {
+      this.$store.commit({
+        type: 'updateVolume',
+        volume: n / 100,
+      });
     },
     globalPlayState(s) {
       switch (s) {
@@ -233,17 +254,41 @@ export default {
   box-shadow: 0 -2px 8px rgba(0,0,0,0.33);
   color: #ffffff;
   .action {
-    background: none;
-    border: none;
-    outline: none;
-    margin-right: 16px;
-    line-height: 1;
-    cursor: pointer;
-    border-radius: 32px;
-    padding: 4px;
-    &:hover, &:active {
-      background: rgba(0,0,0,0.15);
-      color: #F58B44;
+    display: flex;
+    & > div {
+      background: none;
+      border: none;
+      outline: none;
+      // margin-right: 16px;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 32px;
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+      &:hover, &:active {
+        background: rgba(0,0,0,0.15);
+        color: #F58B44;
+      }
+    }
+    .volume-control {
+      .overlay {
+        position: absolute;
+        background: #242424;
+        z-index: 100;
+        transform: rotate(270deg) translateY(0.5em);
+        transform-origin: center left;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: -90px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+        width: 200px;
+        .volume__input {
+          background: #242424;
+          width: 100%;
+          cursor: pointer;
+        }
+      }
     }
   }
   .metadata {
@@ -290,6 +335,7 @@ export default {
       width: 100%;
       height: 100%;
       z-index: 7;
+      cursor: pointer;
     }
     .overlay {
       position: absolute;
@@ -298,6 +344,7 @@ export default {
       right: 0;
       background-color: #242424;
       opacity: 0.8;
+      cursor: pointer;
     }
     .playhead {
       position: absolute;
@@ -308,9 +355,10 @@ export default {
       background: #F58B44;
       z-index: 6;
       margin-top: -4px;
+      margin-left: -4px;
       cursor: pointer;
     }
-    .waveform {
+    .background {
       height: 100%;
       z-index: 2;
       opacity: 0.5;
@@ -319,6 +367,7 @@ export default {
       background-size: 100% 100%;
       opacity: 1;
       background-color:#F58B44;
+      cursor: pointer;
     }
     @media screen and (max-width: 768px) {
       width: 100%;

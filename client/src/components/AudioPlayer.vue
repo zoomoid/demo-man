@@ -33,7 +33,7 @@
         <div class="hfill"></div>
         <div class="actions">
           <div class="share">
-            <a @click="share" target="_blank">
+            <a v-on:click.stop.prevent="share" target="_blank">
               <i class="material-icons-sharp">
                 share
               </i>

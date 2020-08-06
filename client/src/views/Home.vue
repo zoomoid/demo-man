@@ -10,9 +10,7 @@
         <p class="err" v-if="this.error">{{ this.error }}</p>
     </div>
     <div class="success" v-else>
-      <h1>
-        demo-man
-      </h1>
+      <img class="logo" src="~@/assets/demo-man.png"/>
       <ul>
         <li v-for="directory in directories" :key="directory">
           <router-link :to="'/' + directory">{{directory}}</router-link>
@@ -54,13 +52,12 @@ export default {
   padding-top: 8em;
   width: 66%;
   margin: 0 auto;
-  h1 {
-    font-size: 4em;
-    font-weight: 700;
+  .logo {
+    width: 100%;
+    max-width: 350px;
   }
   ul {
     padding-left: 2em;
-
     li {
       padding: 1em 0;
       list-style: square;
