@@ -289,6 +289,9 @@ export default {
           cursor: pointer;
         }
       }
+      @media only screen and (max-width: 768px){
+        display: none;
+      }
     }
   }
   .metadata {
