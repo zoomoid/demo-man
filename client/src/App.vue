@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <GlobalPlayer></GlobalPlayer>
+    <transition name="fade">
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 
@@ -13,6 +16,7 @@ html {
   @media screen and (max-width: 768px) {
     font-size: 10pt;
   }
+  background: #242424;
 }
 body {
   margin: 0;
@@ -20,10 +24,20 @@ body {
 * {
   box-sizing: border-box;
 }
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .1s ease;
+}
+.fade-enter, .fade-leave-active {
+  opacity: 0;
+}
 </style>
 
 <script>
-export default {
+import GlobalPlayer from './components/GlobalPlayer.vue';
 
+export default {
+  components: {
+    GlobalPlayer,
+  },
 };
 </script>
