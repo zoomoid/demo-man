@@ -1,22 +1,22 @@
 const metadata = require("music-metadata");
-const logger = require("@zoomoid/log");
-const { volume } = require("../index");
+const logger = require("@zoomoid/log").v2;
+const path = require("path");
+const fs = require("fs");
+const { volume, url } = require("../index");
+
 /**
  * Reads a newly added mp3 file for its metadata and returns an object with all relevant information
  * @param {string} path to new file
  */
-async function readMetadata(path) {
+async function readMetadata(p) {
   console.log(path);
   try {
-    logger.info("Reading IDv3 off of audio file", "path", path);
-    const src = await metadata.parseFile(p.join(volume, path));
-    logger.info(
-      "Parsed audio file metadata",
-      "dirname",
-      p.dirname(path),
-      "filename",
-      p.basename(path)
-    );
+    logger.info("Reading IDv3 off of audio file", { path: p });
+    const src = await metadata.parseFile(path.join(volume, p));
+    logger.info("Parsed audio file metadata", {
+      dirname: path.dirname(path),
+      filename: path.basename(path),
+    });
     let mimeType = "";
     let abspath = "";
     let cover = {};
@@ -27,13 +27,10 @@ async function readMetadata(path) {
         p.dirname(path),
         `cover.${mimeType.replace("image/", "")}`
       );
-      logger.info(
-        "Writing cover to file",
-        "filename",
-        abspath,
-        "mimeType",
-        mimeType
-      );
+      logger.info("Writing cover to file", {
+        cover: abspath,
+        mimeType: mimeType,
+      });
       fs.writeFileSync(abspath, src.common.picture[0].data);
       cover = {
         mimeType: mimeType,
@@ -42,13 +39,11 @@ async function readMetadata(path) {
         )}${p.sep}cover.${mimeType.replace("image/", "")}`,
       };
     } else {
-      logger.warn(
-        "Audio file metadata has no cover yet, omitting for now",
-        "path",
-        `${path}`
-      );
+      logger.warn("Audio file metadata has no cover yet, omitting for now", {
+        path: `${path}`,
+      });
     }
-    logger.info("Read metadata off of audio file", "path", path);
+    logger.info("Read metadata off of audio file", { path: path });
     return {
       year: src.common.year,
       no: src.common.track.no,
@@ -66,7 +61,7 @@ async function readMetadata(path) {
       lossless: src.format.lossless,
       bitrate: src.format.bitrate,
       cover: cover,
-      path: path, // full path of file INSIDE volume, this can be sent to the waveman
+      path: path,
       filename: p.basename(path),
       namespace: p.basename(p.dirname(path)),
       mp3: `${url.prefix}://${url.hostname}/${url.dir}${p.basename(
@@ -74,16 +69,11 @@ async function readMetadata(path) {
       )}${p.sep}${p.basename(path)}`,
     };
   } catch (err) {
-    console.log(err);
-    logger.error(
-      "Error while parsing audio metadata",
-      "error",
-      err,
-      "file",
-      path,
-      "level",
-      "readMetadata"
-    );
+    logger.error("Error while parsing audio metadata", {
+      error: err,
+      file: path,
+      in: "readMetadata",
+    });
   }
 }
 
