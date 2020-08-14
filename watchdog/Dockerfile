@@ -11,6 +11,8 @@ RUN npm ci
 
 ADD . .
 
+RUN mkdir files
+
 ARG VERSION
 ENV VERSION ${VERSION:-0.0.0}
 RUN echo $VERSION
