@@ -1,30 +1,19 @@
-const logger = require("@zoomoid/log");
+const logger = require("@zoomoid/log").v2;
+const path = require("path");
 const { add, remove } = require("../util/http");
 const { apiEndpoint } = require("../index");
 
 /**
  * Requests deletion of a previously added audio file
- * @param {string} path path of the audio file to query the DB with
+ * @param {string} p path of the audio file to query the DB with
  */
-async function removeTrack(path) {
-  logger.info("Deleting track...", "track", path, "endpoint", apiEndpoint);
-  const resp = await remove(`${apiEndpoint}/track`, { path: path });
+async function removeTrack(p) {
+  logger.info("Deleting track...", {"track": p, "endpoint": apiEndpoint});
+  const resp = await remove(`${apiEndpoint}/track`, { path: p });
   if (resp && resp.status == 200) {
-    logger.info(
-      "Deleted track",
-      "track",
-      `${p.basename(path)}`,
-      "response",
-      resp
-    );
+    logger.info("Deleted track", {"track": `${path.basename(path)}`});
   } else {
-    logger.error(
-      "Received error status from API",
-      "level",
-      "removeTrackFromAPI",
-      "response",
-      resp
-    );
+    logger.error("Received error status from API", {"track": `${path.basename(path)}`, "in": "removeTrack", "response": resp});
   }
 }
 
@@ -33,24 +22,12 @@ async function removeTrack(path) {
  * @param {*} path directory name that we need to delete
  */
 async function removeNamespace(ns) {
-  logger.info(
-    "Deleting namespace...",
-    "namespace",
-    ns,
-    "endpoint",
-    apiEndpoint
-  );
+  logger.info("Deleting namespace...", {"namespace": ns, "endpoint": apiEndpoint});
   const resp = await remove(`${apiEndpoint}/namespace`, { namespace: ns });
   if (resp && resp.status == 200) {
-    logger.info("Deleted namespace", "namespace", ns, "response", resp);
+    logger.info("Deleted namespace", {"namespace": ns});
   } else {
-    logger.error(
-      "Received error status from API",
-      "level",
-      "removeNamespaceFromAPI",
-      "response",
-      resp
-    );
+    logger.error("Received error status from API", {"namespace": ns, "in": "removeNamespace", "response": resp});
   }
 }
 
@@ -59,26 +36,12 @@ async function removeNamespace(ns) {
  * @param {string} album album title
  */
 async function addNamespace(namespace) {
-  logger.info(
-    "Adding namespace...",
-    "namespace",
-    namespace,
-    "endpoint",
-    apiEndpoint
-  );
+  logger.info("Adding namespace...", {"namespace": namespace, "endpoint": apiEndpoint});
   const resp = await add(`${apiEndpoint}/namespace`, { namespace });
   if (resp && resp.status == 200) {
-    logger.info("Added namespace", "namespace", namespace, "response", resp);
+    logger.info("Added namespace", {"namespace": namespace});
   } else {
-    logger.error(
-      "Received error status from API",
-      "namespace",
-      namespace,
-      "level",
-      "postNamespaceToAPI",
-      "response",
-      resp
-    );
+    logger.error("Received error status from API", {"namespace": namespace, "in": "addNamespace", "response": resp});
   }
 }
 
@@ -87,26 +50,12 @@ async function addNamespace(namespace) {
  * @param {*} track track data to post to the API
  */
 async function addTrack(track) {
-  logger.info(
-    "Adding track...",
-    "track",
-    track.filename,
-    "endpoint",
-    apiEndpoint
-  );
+  logger.info("Adding track...", {"track": track.filename, "endpoint": apiEndpoint});
   const resp = await add(`${apiEndpoint}/track`, { track: track });
   if (resp && resp.status == 200) {
-    logger.info("Added track", "track", track.filename, "response", resp);
+    logger.info("Added track", {"track": track.filename});
   } else {
-    logger.error(
-      "Received error status from API",
-      "track",
-      track.filename,
-      "level",
-      "postTrackToAPI",
-      "response",
-      resp
-    );
+    logger.error("Received error status from API", { "namespace": track.filename, "in": "addTrack", "response": resp });
   }
 }
 
