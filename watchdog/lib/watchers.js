@@ -1,8 +1,10 @@
 const chokidar = require("chokidar");
-const p = require("path");
+const path = require("path");
 const fs = require("fs");
-const logger = require("@zoomoid/log");
+const logger = require("@zoomoid/log").v2;
 const { volume } = require("../index.js");
+const { track, namespace } = require("./requests");
+const { metadata } = require("../util");
 /**
  * Volume path to watch
  *
@@ -46,55 +48,40 @@ module.exports = function () {
     })
     .on("add", async (path) => {
       try {
-        logger.info(
-          "File added",
-          "file",
-          path,
-          "timestamp",
-          new Date().toLocaleString("de-DE")
-        );
+        logger.info("File added", {
+          file: path,
+          timestamp: new Date().toLocaleString("de-DE"),
+        });
         const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
-        let track = await readMetadata(reducedFilename);
-        await postTrackToAPI(track);
+        let t = await metadata(reducedFilename);
+        await track.add(t);
       } catch (err) {
-        logger.error(
-          "Received error from API server",
-          "event",
-          "add",
-          "path",
-          path,
-          "error",
-          err
-        );
-        logger.info("Reverting changes to file system", "path", path);
+        logger.error("Received error from API server", {
+          on: "add",
+          path: path,
+          error: err,
+        });
+        logger.info("Reverting changes to file system", { path: path });
         fs.unlink(path, (err) => {
-          logger.error("I/O Error on unlink. Exiting...", "error", err);
+          logger.error("I/O Error on unlink. Exiting...", { error: err });
           process.exit(1);
         });
       }
     })
     .on("unlink", async (path) => {
-      const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
-      logger.info(
-        "File removed",
-        "file",
-        reducedFilename,
-        "time",
-        new Date().toLocaleString("de-DE")
-      );
-      // API Server querys for full path on delete request
+      const reducedFilename = path.replace(`${volume}/`, "");
+      logger.info("File removed", {
+        file: reducedFilename,
+        time: new Date().toLocaleString("de-DE"),
+      });
       try {
-        await removeTrackFromAPI(reducedFilename);
+        await track.remove(reducedFilename);
       } catch (err) {
-        logger.error(
-          "Received error from API server. Manual assessment required",
-          "event",
-          "unlink",
-          "path",
-          path,
-          "error",
-          err
-        );
+        logger.error("Received error from API server. USER ACTION REQUIRED!", {
+          on: "unlink",
+          path: path,
+          error: err,
+        });
       }
     });
 
@@ -109,58 +96,44 @@ module.exports = function () {
       usePolling: true,
       depth: 1,
     })
-    .on("addDir", async (path) => {
+    .on("addDir", async (p) => {
       try {
-        if (path == `${volume}/`) {
-          logger.info("Skipping docker volume mount event", "directory", path);
+        if (p == `${volume}/`) {
+          logger.info("Skipping docker volume mount event", { directory: p });
           return;
         }
-        logger.info(
-          "Directory added",
-          "directory",
-          path,
-          "timestamp",
-          new Date().toLocaleString("de-DE")
-        );
-        let namespace = p.basename(path);
-        await postNamespaceToAPI(namespace);
+        logger.info("Directory added", {
+          directory: p,
+          timestamp: new Date().toLocaleString("de-DE"),
+        });
+        let n = path.basename(p);
+        await namespace.add(n);
       } catch (err) {
-        logger.error(
-          "Received error from API server",
-          "event",
-          "addDir",
-          "path",
-          path,
-          "error",
-          err
-        );
-        logger.info("Reverting changes to file system", "path", path);
-        fs.unlink(path, (err) => {
-          logger.error("I/O Error on unlink. Exiting...", "error", err);
+        logger.error("Received error from API server", {
+          on: "addDir",
+          path: p,
+          error: err,
+        });
+        logger.info("Reverting changes to file system", { path: p });
+        fs.unlink(p, (err) => {
+          logger.error("I/O Error on unlink. Exiting...", { error: err });
           process.exit(1);
         });
       }
     })
-    .on("unlinkDir", async (path) => {
-      const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
-      logger.info(
-        "Directory removed",
-        "directory",
-        reducedFilename,
-        "time",
-        new Date().toLocaleString("de-DE")
-      );
-      // API Server querys for full path on delete request
+    .on("unlinkDir", async (p) => {
+      const reducedFilename = p.replace(`${volume}/`, "");
+      logger.info("Directory removed", {
+        directory: reducedFilename,
+        time: new Date().toLocaleString("de-DE"),
+      });
       try {
-        await removeNamespaceFromAPI(reducedFilename);
+        await namespace.remove(reducedFilename);
       } catch (err) {
-        logger.error(
-          "Received error from API server. Manual assessment required.",
-          "event",
-          "unlinkDir",
-          "error",
-          err
-        );
+        logger.error("Received error from API server. USER ACTION REQUIRED!", {
+          on: "unlinkDir",
+          error: err,
+        });
       }
     });
 
@@ -184,13 +157,13 @@ module.exports = function () {
   chokidar
     .watch([".cache", ".gnupg", "private-keys-v1.d"], { cwd: `${volume}` })
     .on("addDir", async (path) => {
-      logger.info("Cleaning up trash directories", "directory", path);
+      logger.info("Cleaning up trash directories", { directory: path });
       fs.rmdir(path, { recursive: true }, (err) => {
         if (err) {
-          logger.error("Error on rmdir w/ recursive option", "error", err);
+          logger.error("Error on rmdir w/ recursive option", { error: err });
           return;
         }
-        logger.info("Finish cleanup round", "directory", path);
+        logger.info("Finish cleanup round", { directory: path });
       });
     });
 };
