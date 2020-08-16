@@ -1,10 +1,11 @@
 const chokidar = require("chokidar");
 const path = require("path");
 const fs = require("fs");
+const yaml = require("js-yaml");
 const logger = require("@zoomoid/log").v2;
 const { volume } = require("../index.js");
-const { track, namespace } = require("./requests");
-const { metadata } = require("../util");
+const { track, namespace, metadata } = require("./requests");
+const { id3 } = require("../util");
 /**
  * Volume path to watch
  *
@@ -53,7 +54,7 @@ module.exports = function () {
           timestamp: new Date().toLocaleString("de-DE"),
         });
         const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
-        let t = await metadata(reducedFilename);
+        let t = await id3(reducedFilename);
         await track.add(t);
       } catch (err) {
         logger.error("Received error from API server", {
@@ -136,9 +137,7 @@ module.exports = function () {
         });
       }
     });
-
-  /** metadata watcher */
-  chokidar.watch(`${volume}/[A-Za-z0-9]*/metadata.json`, {
+  const metadataWatcherOptions = {
     cwd: `${volume}`,
     ignoreInitial: true,
     persistent: true,
@@ -149,7 +148,38 @@ module.exports = function () {
       stabilityThreshold: 3000,
       pollInterval: 1000,
     },
-  });
+  };
+  /**
+   * metadata watchers
+   * Supports both json and yaml files
+   */
+  chokidar
+    .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, metadataWatcherOptions)
+    .on("change", async (p) => {
+      // Send metadata.json contents to API server
+      const config = require(p); // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
+      metadata.change(config, p).catch((err) => {
+        logger.error("Updating namespace metadata failed", {
+          on: "change",
+          error: err,
+          path: p,
+        });
+      });
+    });
+
+  chokidar
+    .watch(`${volume}/[A-Za-z0-9]*/metadata.yaml`, metadataWatcherOptions)
+    .on("change", async (p) => {
+      // Send metadata.yaml contents to API server
+      const config = yaml.safeLoad(fs.readFileSync(p, { encoding: "utf-8" }));
+      metadata.change(config, p).catch((err) => {
+        logger.error("Updating namespace metadata failed", {
+          on: "change",
+          error: err,
+          path: p,
+        });
+      });
+    });
 
   /**
    * Garbage collector removes any files and directories created in the process of SFTP handshakes by FileZilla

@@ -1,4 +1,4 @@
 module.exports = {
   http: require("./http"),
-  metadata: require("./metadata"),
+  id3: require("./metadata"),
 };
