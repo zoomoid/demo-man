@@ -30,9 +30,9 @@ if (!process.env.TOKEN) {
 
 app.get("/api", (_, response) => {
   response.json({
-    "app": "demo-man",
-    "svc": "api",
-    "version": process.env.VERSION
+    app: "demo-man",
+    svc: "api",
+    version: process.env.VERSION,
   });
 });
 
