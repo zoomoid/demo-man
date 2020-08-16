@@ -1,6 +1,6 @@
 const logger = require("@zoomoid/log").v2;
 const path = require("path");
-const { add, remove } = require("../util/http");
+const { add, remove, change } = require("../util/http");
 const { apiEndpoint } = require("../index");
 
 /**
@@ -9,16 +9,19 @@ const { apiEndpoint } = require("../index");
  */
 async function removeTrack(p) {
   logger.info("Deleting track...", { track: p, endpoint: apiEndpoint });
-  const resp = await remove(`${apiEndpoint}/track`, { path: p });
-  if (resp && resp.status == 200) {
-    logger.info("Deleted track", { track: `${path.basename(path)}` });
-  } else {
+  return remove(`${apiEndpoint}/track`, { path: p }).then((resp) => {
+    if(resp.ok) {
+      logger.info("Deleted track", { track: `${path.basename(path)}` });
+    } else {
+      throw new Error(resp.statusText);
+    }
+  }).catch((err) => {
     logger.error("Received error status from API", {
       track: `${path.basename(path)}`,
       in: "removeTrack",
-      response: resp,
+      error: err,
     });
-  }
+  });
 }
 
 /**
@@ -30,16 +33,19 @@ async function removeNamespace(ns) {
     namespace: ns,
     endpoint: apiEndpoint,
   });
-  const resp = await remove(`${apiEndpoint}/namespace`, { namespace: ns });
-  if (resp && resp.status == 200) {
-    logger.info("Deleted namespace", { namespace: ns });
-  } else {
+  return remove(`${apiEndpoint}/namespace`, { namespace: ns }).then((resp) => {
+    if (resp.ok) {
+      logger.info("Deleted namespace", { namespace: ns });
+    } else {
+      throw new Error(resp.statusText);
+    }
+  }).catch((err) => {
     logger.error("Received error status from API", {
       namespace: ns,
       in: "removeNamespace",
-      response: resp,
+      error: err,
     });
-  }
+  });
 }
 
 /**
@@ -51,16 +57,20 @@ async function addNamespace(namespace) {
     namespace: namespace,
     endpoint: apiEndpoint,
   });
-  const resp = await add(`${apiEndpoint}/namespace`, { namespace });
-  if (resp && resp.status == 200) {
-    logger.info("Added namespace", { namespace: namespace });
-  } else {
+  return add(`${apiEndpoint}/namespace`, { namespace }).then((resp) => {
+    if(resp.ok) {
+      logger.info("Added namespace", { namespace: namespace });
+
+    } else {
+      throw new Error(resp.statusText);
+    }
+  }).catch((err) => {
     logger.error("Received error status from API", {
       namespace: namespace,
       in: "addNamespace",
-      response: resp,
+      error: err,
     });
-  }
+  });
 }
 
 /**
@@ -72,16 +82,44 @@ async function addTrack(track) {
     track: track.filename,
     endpoint: apiEndpoint,
   });
-  const resp = await add(`${apiEndpoint}/track`, { track: track });
-  if (resp && resp.status == 200) {
-    logger.info("Added track", { track: track.filename });
-  } else {
+  return add(`${apiEndpoint}/track`, { track: track }).then((resp) => {
+    if (resp.ok) {
+      logger.info("Added track", { track: track.filename });
+    } else {
+      throw new Error(resp.statusText);
+    }
+  }).catch((err) => {
     logger.error("Received error status from API", {
       namespace: track.filename,
       in: "addTrack",
-      response: resp,
+      error: err,
     });
-  }
+  });
+}
+
+async function changeMetadata(o, p) {
+  logger.info("Metadata changed", {
+    path: p,
+    data: o,
+  });
+  return change(`${apiEndpoint}/namespace/metadata`, {metadata: o}).then((resp) => {
+    if (resp.ok) {
+      logger.info("Updated namespace metadata", {
+        namespace: path.dirname(p),
+        path: p,
+        data: o,
+      });
+    } else {
+      throw new Error(resp.statusText);
+    }
+  }).catch((err) => {
+    logger.error("Received error status from API", {
+      namespace: path.dirname(p),
+      path: p,
+      in: "changeMetadata",
+      error: err,
+    });
+  });
 }
 
 module.exports = {
@@ -92,5 +130,8 @@ module.exports = {
   track: {
     add: addTrack,
     remove: removeTrack,
+  },
+  metadata: {
+    change: changeMetadata,
   },
 };
