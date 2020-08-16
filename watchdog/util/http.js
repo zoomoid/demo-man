@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-const logger = require("@zoomoid/log");
+const logger = require("@zoomoid/log").v2;
 const { token } = require("../index");
 
 /**
@@ -21,6 +21,15 @@ async function remove(ep, data) {
 }
 
 /**
+ * Shorthand function for HTTP PATCH request
+ * @param {string} ep endpoint url
+ * @param {*} data data to delete
+ */
+async function change(ep, data) {
+  return request("PATCH", ep, data);
+}
+
+/**
  * Your generic http wrapper using node-fetch
  * @param {string} method http method
  * @param {string} ep endpoint url
@@ -39,15 +48,12 @@ async function request(method, ep, data) {
         },
         body: JSON.stringify(data),
       });
-      return resp;
+      return resp.json();
     } else {
-      logger.warn(
-        "Dry run! Not sending request to API server",
-        "endpoint",
-        `${ep}`,
-        "data",
-        data
-      );
+      logger.warn("Dry run! Not sending request to API server", {
+        endpoint: `${ep}`,
+        data: data,
+      });
       return {
         success: true,
         note: "dry_run",
@@ -55,19 +61,16 @@ async function request(method, ep, data) {
       };
     }
   } catch (err) {
-    logger.error(
-      "Received error from API server",
-      "level",
-      "__request",
-      "response",
-      err,
-      "endpoint",
-      `${ep}`
-    );
+    logger.error("Received error from API server", {
+      in: "__request",
+      response: err,
+      endpoint: `${ep}`,
+    });
   }
 }
 
 module.exports = {
   add,
   remove,
+  change,
 };
