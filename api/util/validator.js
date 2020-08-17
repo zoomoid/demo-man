@@ -71,7 +71,7 @@ const links = (o) => {
       errors.push({
         name: "links",
         expected: "array",
-        warning: "wrong_expected",
+        error: "wrong_type",
         found: o.links
       });
     } else {
@@ -82,7 +82,7 @@ const links = (o) => {
             errors.push({
               name: "links.link",
               expected: "string[type=URL]",
-              warning: "illformated",
+              error: "illformated",
               found: `${link}`,
             });
           }
@@ -90,7 +90,7 @@ const links = (o) => {
             errors.push({
               name: "links.label",
               expected: "string",
-              warning: "illformated",
+              error: "illformated",
               found: `${label}`,
             });
           }
@@ -98,7 +98,7 @@ const links = (o) => {
           errors.push({
             name: "links",
             expected: "object { link, label }",
-            warning: "illformated",
+            error: "illformated",
             found: `${v}`,
           });
         }
@@ -111,14 +111,51 @@ const links = (o) => {
   };
 };
 
-const description = () => {
-  // TODO: USER ACTION REQUIRED! Implement validator for markdown in the description
+/** namespace validator helper function */
+const namespace = (o) => {
+  const errors = [];
+  if(!o.has("namespace")){
+    errors.push({
+      name: "namespace",
+      expected: "string",
+      error: "missing",
+      found: "undefined",
+    });
+  }
   return {
-    errors: [],
+    errors,
     warnings: [],
   };
 };
 
+/** Description validator helper function */
+const description = (o) => {
+  const warnings = [];
+  const errors = [];
+  if (!o.has("description")) {
+    warnings.push({
+      name: "description",
+      expected: "string[type=Markdown]",
+      warning: "missing",
+      found: "undefined",
+    });
+  } else {
+    if (typeof o.description !== "string") {
+      errors.push({
+        name: "description",
+        expected: "string[type=Markdown]",
+        error: "wrong_type",
+        found: `${typeof o.description}`,
+      });
+    }
+  }
+  return {
+    errors: [],
+    warnings,
+  };
+};
+
+/** Metadata validator parser */
 const metadata = (request, response, next) => {
   const o = request.body;
   const e = [];
@@ -126,7 +163,8 @@ const metadata = (request, response, next) => {
   [
     colors(o), 
     description(o), 
-    links(o)
+    links(o),
+    namespace(o),
   ].forEach(({errors, warnings}) => {
     e.concat(errors);
     w.concat(warnings);
@@ -150,12 +188,12 @@ const metadata = (request, response, next) => {
     logger.error("Metadata validator finished with errors", {
       "errors": e.length, 
     });
-    e.forEach(({name, expected, found, warning}) => {
+    e.forEach(({name, expected, found, error}) => {
       logger.pretty.error("Metadata error:", {
         key: name,
         expected: expected,
         found: found,
-        type: warning,
+        type: error,
       });
     });
     response.status(400).send("Bad Request");
