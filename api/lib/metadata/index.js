@@ -7,26 +7,26 @@ module.exports = function (router) {
     /**
      * Updates the metadata to a given namespace
      */
-    .patch(guard, validator.metadata, (request, response) => {
+    .patch(guard, validator.metadata, ({body}, response) => {
       db.get().findOneAndUpdate({
         type: "Namespace",
-        name: request.body.namespace,
+        name: body.metadata.namespace,
       }, {
-        metadata: request.body.metadata,
+        metadata: body.metadata,
         lastUpdated: new Date().toLocaleDateString("de-DE"),
       }).then((resp) => {
         if(resp){
           logger.info("Updated metadata for namespace", {
-            for: request.body.namespace,
-            metadata: request.body.namespace,
+            for: body.metadata.namespace,
+            metadata: body.metadata,
           });
           response.status(200).json({
             response: resp,
           });
         } else {
           logger.warn("Could not find namespace", {
-            for: request.body.namespace,
-            metadata: request.body.namespace,
+            for: body.namespace,
+            metadata: body.namespace,
           });
           response.status(404).send("Not found");
         }
