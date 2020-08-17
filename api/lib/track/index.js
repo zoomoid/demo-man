@@ -2,6 +2,7 @@ const { guard, waveform, db } = require("../../util/");
 const { ObjectID } = require("mongodb");
 const logger = require("@zoomoid/log").v2;
 const { api, waveman } = require("../../endpoints");
+const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
   router
@@ -67,13 +68,17 @@ module.exports = function (router) {
       .findOne({
         type: "Track",
         namespace: req.params.namespace,
-        _id: ObjectID.createFromHexString(req.params.track),
+        _id: id(req.params.track),
       })
       .then((resp) => {
         if (resp) {
           resp.waveform = `${api.url}/${req.params.namespace}/${resp._id}/waveform`;
           res.json(resp);
         } else {
+          logger.warn("Could not find original document", {
+            namespace: req.param.namespace,
+            "track.id": req.params.track,
+          });
           res.status(404).send("Not found");
         }
       })
