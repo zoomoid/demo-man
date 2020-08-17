@@ -102,7 +102,7 @@ module.exports = function (router) {
           return {
             url: `${api.url}/${req.params.namespace}/${t._id}/`,
             waveform: `${api.url}/${req.params.namespace}/${t._id}/waveform`,
-            ...t
+            ...t,
           };
         })
       )

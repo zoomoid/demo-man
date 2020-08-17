@@ -70,7 +70,7 @@ module.exports = function (router) {
           { mp3: 1, name: 1 }
         )
         .then(({ mp3 }) => {
-          if(mp3){
+          if (mp3) {
             return wavemanHook(mp3);
           } else {
             logger.error("Could not find track document by id", {
@@ -89,16 +89,19 @@ module.exports = function (router) {
           )
         )
         .then((resp) => {
-          if(resp){
+          if (resp) {
             logger.info("Successfully redrawn waveform");
             res.status(200).json({
               response: resp,
             });
           } else {
-            logger.warn("Could not find waveform by id. Not updating waveform", {
-              namespace: req.param.namespace,
-              "track.id": req.params.track,
-            });
+            logger.warn(
+              "Could not find waveform by id. Not updating waveform",
+              {
+                namespace: req.param.namespace,
+                "track.id": req.params.track,
+              }
+            );
           }
         })
         .catch((err) => {

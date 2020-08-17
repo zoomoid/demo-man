@@ -6,7 +6,7 @@ Object.protoexpected.has = Object.protoexpected.hasOwnProperty;
 /** Color validator helper function */
 const colors = (o) => {
   const warnings = [];
-  if(!o.has("colors")){
+  if (!o.has("colors")) {
     warnings.push({
       name: "colors",
       expected: "object",
@@ -14,7 +14,7 @@ const colors = (o) => {
       found: "undefined",
     });
   } else {
-    if(!o.colors.has("primary")){
+    if (!o.colors.has("primary")) {
       warnings.push({
         name: "colors.primary",
         expected: "string",
@@ -22,7 +22,7 @@ const colors = (o) => {
         found: "undefined",
       });
     } else {
-      if(!isHexColor(o.colors.primary)){
+      if (!isHexColor(o.colors.primary)) {
         warnings.push({
           name: "colors.primary",
           expected: "string",
@@ -31,15 +31,15 @@ const colors = (o) => {
         });
       }
     }
-    if(!o.colors.has("accent")){
+    if (!o.colors.has("accent")) {
       warnings.push({
         name: "colors.accent",
         expected: "string",
         warning: "missing",
-        found: "undefined"
+        found: "undefined",
       });
     } else {
-      if(!isHexColor(o.colors.accent)){
+      if (!isHexColor(o.colors.accent)) {
         warnings.push({
           name: "colors.primary",
           expected: "string",
@@ -59,7 +59,7 @@ const colors = (o) => {
 const links = (o) => {
   const warnings = [];
   const errors = [];
-  if(!o.has("links")){
+  if (!o.has("links")) {
     warnings.push({
       name: "links",
       expected: "array",
@@ -67,18 +67,18 @@ const links = (o) => {
       found: "undefined",
     });
   } else {
-    if(!Array.isArray(o.links)){
+    if (!Array.isArray(o.links)) {
       errors.push({
         name: "links",
         expected: "array",
         error: "wrong_type",
-        found: o.links
+        found: o.links,
       });
     } else {
       o.links.forEach((v) => {
         try {
           const { link, label } = v;
-          if(isURL(link)){
+          if (isURL(link)) {
             errors.push({
               name: "links.link",
               expected: "string[type=URL]",
@@ -86,7 +86,7 @@ const links = (o) => {
               found: `${link}`,
             });
           }
-          if(typeof label !== "string") {
+          if (typeof label !== "string") {
             errors.push({
               name: "links.label",
               expected: "string",
@@ -107,14 +107,14 @@ const links = (o) => {
   }
   return {
     errors,
-    warnings
+    warnings,
   };
 };
 
 /** namespace validator helper function */
 const namespace = (o) => {
   const errors = [];
-  if(!o.has("namespace")){
+  if (!o.has("namespace")) {
     errors.push({
       name: "namespace",
       expected: "string",
@@ -160,20 +160,17 @@ const metadata = (request, response, next) => {
   const o = request.body;
   const e = [];
   const w = [];
-  [
-    colors(o), 
-    description(o), 
-    links(o),
-    namespace(o),
-  ].forEach(({errors, warnings}) => {
-    e.concat(errors);
-    w.concat(warnings);
-  });
-  if(w.length > 0) {
+  [colors(o), description(o), links(o), namespace(o)].forEach(
+    ({ errors, warnings }) => {
+      e.concat(errors);
+      w.concat(warnings);
+    }
+  );
+  if (w.length > 0) {
     logger.info("Metadata validator finished with warnings", {
-      "warnings": w.length, 
+      warnings: w.length,
     });
-    w.forEach(({name, expected, found, warning}) => {
+    w.forEach(({ name, expected, found, warning }) => {
       logger.pretty.warn("Metadata warning:", {
         key: name,
         expected: expected,
@@ -182,13 +179,13 @@ const metadata = (request, response, next) => {
       });
     });
   }
-  if(e.length === 0){
+  if (e.length === 0) {
     next();
   } else {
     logger.error("Metadata validator finished with errors", {
-      "errors": e.length, 
+      errors: e.length,
     });
-    e.forEach(({name, expected, found, error}) => {
+    e.forEach(({ name, expected, found, error }) => {
       logger.pretty.error("Metadata error:", {
         key: name,
         expected: expected,

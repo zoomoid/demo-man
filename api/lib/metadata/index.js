@@ -7,35 +7,41 @@ module.exports = function (router) {
     /**
      * Updates the metadata to a given namespace
      */
-    .patch(guard, validator.metadata, ({body}, response) => {
-      db.get().findOneAndUpdate({
-        type: "Namespace",
-        name: body.metadata.namespace,
-      }, {
-        metadata: body.metadata,
-        lastUpdated: new Date().toLocaleDateString("de-DE"),
-      }).then((resp) => {
-        if(resp){
-          logger.info("Updated metadata for namespace", {
-            for: body.metadata.namespace,
+    .patch(guard, validator.metadata, ({ body }, response) => {
+      db.get()
+        .findOneAndUpdate(
+          {
+            type: "Namespace",
+            name: body.metadata.namespace,
+          },
+          {
             metadata: body.metadata,
+            lastUpdated: new Date().toLocaleDateString("de-DE"),
+          }
+        )
+        .then((resp) => {
+          if (resp) {
+            logger.info("Updated metadata for namespace", {
+              for: body.metadata.namespace,
+              metadata: body.metadata,
+            });
+            response.status(200).json({
+              response: resp,
+            });
+          } else {
+            logger.warn("Could not find namespace", {
+              for: body.namespace,
+              metadata: body.namespace,
+            });
+            response.status(404).send("Not found");
+          }
+        })
+        .catch((err) => {
+          logger.error("Received error from MongoDB", {
+            in: "PATCH /namespace/metadata",
+            error: err,
           });
-          response.status(200).json({
-            response: resp,
-          });
-        } else {
-          logger.warn("Could not find namespace", {
-            for: body.namespace,
-            metadata: body.namespace,
-          });
-          response.status(404).send("Not found");
-        }
-      }).catch((err) => {
-        logger.error("Received error from MongoDB", {
-          in: "PATCH /namespace/metadata",
-          error: err,
+          response.status(500).send("Interal Server Error");
         });
-        response.status(500).send("Interal Server Error");
-      });
     });
 };

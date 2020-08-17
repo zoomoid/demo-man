@@ -3,5 +3,5 @@ module.exports = {
   waveform: require("./waveman").waveform,
   wavemanHook: require("./waveman").wavemanHook,
   db: require("./db"),
-  validator: require("./validator");
+  validator: require("./validator"),
 };
