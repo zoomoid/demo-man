@@ -105,7 +105,7 @@ async function changeMetadata(o, p) {
   return change(`${apiEndpoint}/namespace/metadata`, {metadata: o}).then((resp) => {
     if (resp.ok) {
       logger.info("Updated namespace metadata", {
-        namespace: path.dirname(p),
+        namespace: o.namespace,
         path: p,
         data: o,
       });
@@ -114,7 +114,7 @@ async function changeMetadata(o, p) {
     }
   }).catch((err) => {
     logger.error("Received error status from API", {
-      namespace: path.dirname(p),
+      namespace: o.namespace,
       path: p,
       in: "changeMetadata",
       error: err,
