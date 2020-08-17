@@ -70,8 +70,10 @@ module.exports = function (router) {
       .then((resp) => resp.toArray())
       .then((resp) =>
         resp.map((e) => {
-          e.url = `${api.url}/${e.name}`;
-          return e;
+          return {
+            url: `${api.url}/${e.name}`,
+            ...e,
+          };
         })
       )
       .then((resp) => {
@@ -97,9 +99,11 @@ module.exports = function (router) {
       .then((resp) => resp.toArray())
       .then((resp) =>
         resp.map((t) => {
-          t.url = `${api.url}/${req.params.namespace}/${t._id}/`;
-          t.waveform = `${api.url}/${req.params.namespace}/${t._id}/waveform`;
-          return t;
+          return {
+            url: `${api.url}/${req.params.namespace}/${t._id}/`,
+            waveform: `${api.url}/${req.params.namespace}/${t._id}/waveform`,
+            ...t
+          };
         })
       )
       .then((resp) => {
