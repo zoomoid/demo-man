@@ -21,19 +21,19 @@ SFTP user and (c) a pubkey for that same SFTP user to authenticate without using
 
 ```bash
 # Generate the SSH hostkey for the SSH server to provide
-ssh-keygen -t ed25519 -f ssh_host_ed25519 -q < /dev/null
-ssh-keygen -t rsa -b 4096 -f ssh_host_rsa -q < /dev/null
+ssh-keygen -t ed25519 -f ssh_host_ed25519 -q -N ''
+ssh-keygen -t rsa -b 4096 -f ssh_host_rsa -q -N ''
 
 # Store these keys inside a Kubernetes secret
 kubectl create secret generic demo-man-ssh-host-keys --from-file=ssh_host_ed25519_key=ssh_host_ed25519 --from-file=ssh_host_rsa_key=ssh_host_rsa
 
 # Create a Kubernetes secret for the user account we want to use inside the container 
-USERNAME=<USERNAME>
-PASSWORD=<PASSWORD>
-kubectl create secret generic demo-man-sftp-user --from-literal=users.conf="$USERNAME:$PASSWORD:::"
+SFTP_USERNAME=<USERNAME>
+SFTP_PASSWORD=<PASSWORD>
+kubectl create secret generic demo-man-sftp-user --from-literal=users.conf="$SFTP_USERNAME:$SFTP_PASSWORD:::"
 
 # Create an SSH key for the local user you want to use to authenticate using an SFTP-capable client (e.g. FileZilla)
-ssh-keygen -q -t rsa -b 4069 -f ssh_user_rsa < /dev/null
+ssh-keygen -q -t rsa -b 4069 -f ssh_user_rsa -N ''
 
 # Create a Kubernetes secret from these SSH keys as well
 kubectl create secret generic demo-man-ssh-user-keys --from-file=id_rsa=ssh_user_rsa --from-file=id_rsa.pub=ssh_user_rsa.pub
