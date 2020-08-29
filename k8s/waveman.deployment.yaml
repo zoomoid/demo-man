@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-waveman
+  namespace: web
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: waveman
+  template:
+    metadata:
+      labels:
+        app: demo-man
+        svc: waveman
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: github
+      - name: gitlab
+      containers:
+      - name: waveman
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:1.15.7
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: audio-volume
+          mountPath: "/app/files"
+        - name: waveman-config
+          mountPath: /app/config
+        resources:
+          limits:
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+      volumes:
+      - name: audio-volume
+        persistentVolumeClaim:
+          claimName: demo-man-audio-pvc
+      - name: waveman-config
+        configMap:
+          name: demo-man-waveman-config

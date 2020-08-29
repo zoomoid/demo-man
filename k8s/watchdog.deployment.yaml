@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-watchdog
+  namespace: web
+  labels:
+    app: demo-man
+    svc: watchdog
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: watchdog
+  template:
+    metadata:
+      labels:
+        app: demo-man
+        svc: watchdog
+    spec:
+      imagePullSecrets:
+      - name: github
+      - name: gitlab
+      containers:
+      - name: watchdog
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:1.15.7
+        env:
+        - name: VOLUME
+          value: "/app/files"
+        - name: PUBLIC_PATH
+          value: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "files/"}'
+        - name: API_ENDPOINT
+          value: http://demo-api:8080/api/v1/demo
+        - name: TOKEN 
+          valueFrom:
+            secretKeyRef:
+              name: demo-man-api-token
+              key: token
+        volumeMounts:
+        - mountPath: "/app/files"
+          name: audio-volume
+      volumes:
+      - name: audio-volume
+        persistentVolumeClaim:
+          claimName: demo-audio-pvc
+      restartPolicy: Always
