@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: demo-waveman-config
+  name: demo-man-waveman-config
   namespace: web
   labels:
     app: demo-man
@@ -28,7 +28,8 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: demo-fileserver-nginx-config
+  name: demo-man-fileserver-nginx-config
+  namespace: web
 data:
   files-zoomoid-de.conf: |
     server {
