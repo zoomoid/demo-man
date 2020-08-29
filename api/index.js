@@ -45,7 +45,7 @@ app.get("/api/healthz", (_, response) => {
 });
 
 app.get("/api/test", (_, response) => {
-  fetch(endpoints.waveman.url.replace("wavify", "healthz"), { method: "GET" })
+  fetch(`${endpoints.waveman.url}/healthz`, { method: "GET" })
     .then((res) => {
       if (res.status == 200) {
         response.status(200).send("ok");

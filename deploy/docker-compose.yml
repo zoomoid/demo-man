@@ -5,8 +5,6 @@ services:
     image: node:latest
     container_name: demo-client
     restart: on-failure
-    networks: 
-    - demo-man
     volumes: 
     - ../client:/app
     environment:
@@ -22,6 +20,7 @@ services:
     restart: on-failure
     depends_on: 
     - db
+    - waveman
     environment: 
       PORT: "8080"
       VERSION: 0.0.0-dev
@@ -30,8 +29,6 @@ services:
       API_ENDPOINT: 'http://localhost:8080/api/v1/demo'
       DB: demo
       TOKEN: demotoken
-    networks:
-    - demo-man
     volumes: 
     - ../api:/app
     working_dir: /app
@@ -46,7 +43,7 @@ services:
     restart: on-failure
     environment: 
       VOLUME: /app/files
-      PUBLIC_PATH: '{"prefix": "https", "hostname": "files.zoomoid.de", "dir": ""}'
+      PUBLIC_PATH: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "files/"}'
       TOKEN: demotoken
       API_ENDPOINT: 'http://api:8080/api/v1/demo'
       VERSION: 0.0.0-dev
@@ -55,8 +52,6 @@ services:
     - ../watchdog:/app
     working_dir: /app
     command: [ "npm", "start" ]
-    networks:
-    - demo-man
     ports:
     - "8082:8080"
 
@@ -69,13 +64,11 @@ services:
     restart: on-failure
     environment:
       VERSION: 0.0.0-dev
-    networks:
-    - demo-man
     volumes: 
     - ../waveman/config:/app/config
     - ./files:/app/files
     ports:
-    - "8083:8080"
+    - "8083:8083"
 
   db:
     image: mongo:4.2.5
@@ -85,13 +78,9 @@ services:
     - db-data:/data/db
     environment: 
       MONGO_INITDB_DATABASE: demo
-    networks:
-    - demo-man
     ports:
     - "27017:27017"
 
-networks:
-  demo-man:
 
 volumes:
   db-data:
