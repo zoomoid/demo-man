@@ -48,42 +48,39 @@ module.exports = function () {
       },
     })
     .on("add", async (path) => {
-      try {
-        logger.info("File added", {
-          file: path,
-          timestamp: new Date().toLocaleString("de-DE"),
+      logger.info("File added", {
+        file: path,
+        timestamp: new Date().toLocaleString("de-DE"),
+      });
+      const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
+      id3(reducedFilename)
+        .then((t) => track.add(t))
+        .catch((err) => {
+          logger.error("Received error from API server", {
+            on: "add",
+            path: path,
+            error: err,
+          });
+          logger.info("Reverting changes to file system", { path: path });
+          fs.unlink(path, (err) => {
+            logger.error("I/O Error on unlink. Exiting...", { error: err });
+            process.exit(1);
+          });
         });
-        const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
-        let t = await id3(reducedFilename);
-        await track.add(t);
-      } catch (err) {
-        logger.error("Received error from API server", {
-          on: "add",
-          path: path,
-          error: err,
-        });
-        logger.info("Reverting changes to file system", { path: path });
-        fs.unlink(path, (err) => {
-          logger.error("I/O Error on unlink. Exiting...", { error: err });
-          process.exit(1);
-        });
-      }
     })
-    .on("unlink", async (path) => {
+    .on("unlink", (path) => {
       const reducedFilename = path.replace(`${volume}/`, "");
       logger.info("File removed", {
         file: reducedFilename,
         time: new Date().toLocaleString("de-DE"),
       });
-      try {
-        await track.remove(reducedFilename);
-      } catch (err) {
+      track.remove(reducedFilename).catch((err) => {
         logger.error("Received error from API server. USER ACTION REQUIRED!", {
           on: "unlink",
           path: path,
           error: err,
         });
-      }
+      });
     });
 
   /** namespace watcher */
@@ -97,19 +94,17 @@ module.exports = function () {
       usePolling: true,
       depth: 1,
     })
-    .on("addDir", async (p) => {
-      try {
-        if (p == `${volume}/`) {
-          logger.info("Skipping docker volume mount event", { directory: p });
-          return;
-        }
-        logger.info("Directory added", {
-          directory: p,
-          timestamp: new Date().toLocaleString("de-DE"),
-        });
-        let n = path.basename(p);
-        await namespace.add(n);
-      } catch (err) {
+    .on("addDir", (p) => {
+      if (p == `${volume}/`) {
+        logger.info("Skipping docker volume mount event", { directory: p });
+        return;
+      }
+      logger.info("Directory added", {
+        directory: p,
+        timestamp: new Date().toLocaleString("de-DE"),
+      });
+      let n = path.basename(p);
+      namespace.add(n).catch((err) => {
         logger.error("Received error from API server", {
           on: "addDir",
           path: p,
@@ -120,7 +115,7 @@ module.exports = function () {
           logger.error("I/O Error on unlink. Exiting...", { error: err });
           process.exit(1);
         });
-      }
+      });
     })
     .on("unlinkDir", async (p) => {
       const reducedFilename = p.replace(`${volume}/`, "");
@@ -128,14 +123,12 @@ module.exports = function () {
         directory: reducedFilename,
         time: new Date().toLocaleString("de-DE"),
       });
-      try {
-        await namespace.remove(reducedFilename);
-      } catch (err) {
+      await namespace.remove(reducedFilename).catch((err) => {
         logger.error("Received error from API server. USER ACTION REQUIRED!", {
           on: "unlinkDir",
           error: err,
         });
-      }
+      });
     });
   const metadataWatcherOptions = {
     cwd: `${volume}`,
@@ -155,7 +148,7 @@ module.exports = function () {
    */
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, metadataWatcherOptions)
-    .on("change", async (p) => {
+    .on("change", (p) => {
       // Send metadata.json contents to API server
       const config = require(p); // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
       metadata.change(config, p).catch((err) => {
@@ -169,7 +162,7 @@ module.exports = function () {
 
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.yaml`, metadataWatcherOptions)
-    .on("change", async (p) => {
+    .on("change", (p) => {
       // Send metadata.yaml contents to API server
       const config = yaml.safeLoad(fs.readFileSync(p, { encoding: "utf-8" }));
       metadata.change(config, p).catch((err) => {
@@ -186,7 +179,7 @@ module.exports = function () {
    */
   chokidar
     .watch([".cache", ".gnupg", "private-keys-v1.d"], { cwd: `${volume}` })
-    .on("addDir", async (path) => {
+    .on("addDir", (path) => {
       logger.info("Cleaning up trash directories", { directory: path });
       fs.rmdir(path, { recursive: true }, (err) => {
         if (err) {
