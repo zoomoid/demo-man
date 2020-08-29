@@ -36,7 +36,7 @@ spec:
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
-          claimName: demo-man-audio-pvc
+          claimName: demo-audio-pvc
       - name: waveman-config
         configMap:
           name: demo-man-waveman-config
