@@ -148,9 +148,10 @@ module.exports = function () {
    */
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, metadataWatcherOptions)
-    .on("change", (p) => {
+    .on("add", (p) => {
+      // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
+      const config = require(path.join(volume, p));
       // Send metadata.json contents to API server
-      const config = require(p); // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
       metadata.change(config, p).catch((err) => {
         logger.error("Updating namespace metadata failed", {
           on: "change",
@@ -162,9 +163,9 @@ module.exports = function () {
 
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.yaml`, metadataWatcherOptions)
-    .on("change", (p) => {
+    .on("add", (p) => {
       // Send metadata.yaml contents to API server
-      const config = yaml.safeLoad(fs.readFileSync(p, { encoding: "utf-8" }));
+      const config = yaml.safeLoad(fs.readFileSync(path.join(volume, p), { encoding: "utf-8" }));
       metadata.change(config, p).catch((err) => {
         logger.error("Updating namespace metadata failed", {
           on: "change",
