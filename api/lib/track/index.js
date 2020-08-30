@@ -19,13 +19,13 @@ module.exports = function (router) {
       waveform(track.namespace, track.filename, track._id, waveman.url);
       db.get()
         .insertOne(track)
-        .then((resp) => {
+        .then(() => {
           logger.info("Added track to namespace", {
             in: "POST /track",
             namespace: track.namespace,
           });
           res.status(200).json({
-            response: resp,
+            message: "success",
           });
         })
         .catch((err) => {
@@ -33,7 +33,7 @@ module.exports = function (router) {
             in: "POST /track",
             error: err,
           });
-          res.status(500).json({message: "Interal Server Error"});
+          res.status(500).json({ message: "Interal Server Error" });
         });
     })
     /**
@@ -42,13 +42,13 @@ module.exports = function (router) {
     .delete(guard, async (req, res) => {
       db.get()
         .deleteMany({ path: req.body.path, type: "Track" })
-        .then((resp) => {
+        .then(() => {
           logger.info("Deleted track from namespace", {
             in: "DELETE /track",
             track: `${req.body.path}`,
           });
           res.status(200).json({
-            response: resp,
+            message: "success",
           });
         })
         .catch((err) => {
@@ -56,7 +56,7 @@ module.exports = function (router) {
             in: "DELETE /track",
             error: err,
           });
-          res.status(500).json({message: "Interal Server Error"});
+          res.status(500).json({ message: "Interal Server Error" });
         });
     });
 
@@ -79,7 +79,7 @@ module.exports = function (router) {
             namespace: req.param.namespace,
             "track.id": req.params.track,
           });
-          res.status(404).json({message: "Not found"});
+          res.status(404).json({ message: "Not found" });
         }
       })
       .catch((err) => {
@@ -89,7 +89,7 @@ module.exports = function (router) {
           "track.id": `${req.params.track}`,
           error: err,
         });
-        res.status(500).json({message: "Interal Server Error"});
+        res.status(500).json({ message: "Interal Server Error" });
       });
   });
 };

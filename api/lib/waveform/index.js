@@ -13,7 +13,7 @@ module.exports = function (router) {
      * :mode has to be either "full" or "small", otherway an error is returned
      * You can also send addition query "color" such that all templated colors get replaced with your color
      */
-    .get(async (req, res) => {
+    .get((req, res) => {
       db.get()
         .findOne({
           type: "Waveform",
@@ -42,7 +42,7 @@ module.exports = function (router) {
               namespace: req.param.namespace,
               "track.id": req.params.track,
             });
-            res.status(404).json({message: "Not found"});
+            res.status(404).json({ message: "Not found" });
           }
         })
         .catch((err) => {
@@ -52,7 +52,7 @@ module.exports = function (router) {
             "track.id": `${req.params.track}`,
             error: err,
           });
-          res.status(500).json({message: "Interal Server Error"});
+          res.status(500).json({ message: "Interal Server Error" });
         });
     })
     /**
@@ -60,7 +60,7 @@ module.exports = function (router) {
      * if we change the config maps for the wave-man and do not want to remove the existing track to
      * retrigger the generation
      */
-    .patch(guard, async (req, res) => {
+    .patch(guard, (req, res) => {
       db.get()
         .findOne(
           {
@@ -92,7 +92,7 @@ module.exports = function (router) {
           if (resp) {
             logger.info("Successfully redrawn waveform");
             res.status(200).json({
-              response: resp,
+              message: "success",
             });
           } else {
             logger.warn(
@@ -108,7 +108,7 @@ module.exports = function (router) {
           logger.error("Error while redrawing waveform", {
             error: err,
           });
-          res.status(500).json({message: "Interal Server Error"});
+          res.status(500).json({ message: "Interal Server Error" });
         });
     });
 };

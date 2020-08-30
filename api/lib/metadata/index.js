@@ -26,14 +26,14 @@ module.exports = function (router) {
               metadata: body.metadata,
             });
             response.status(200).json({
-              response: resp,
+              message: "success",
             });
           } else {
             logger.warn("Could not find namespace", {
               for: body.namespace,
               metadata: body.namespace,
             });
-            response.status(404).json({message: "Not found"});
+            response.status(404).json({ message: "Not found" });
           }
         })
         .catch((err) => {
@@ -41,7 +41,7 @@ module.exports = function (router) {
             in: "PATCH /namespace/metadata",
             error: err,
           });
-          response.status(500).json({message: "Interal Server Error"});
+          response.status(500).json({ message: "Interal Server Error" });
         });
     });
 };

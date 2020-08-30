@@ -15,13 +15,13 @@ module.exports = function (router) {
       };
       db.get()
         .insertOne(namespace)
-        .then((resp) => {
+        .then(() => {
           logger.info("Added new namespace", {
             in: "POST /namespace",
             namespace: namespace.name,
           });
           res.status(200).json({
-            response: resp,
+            message: "success",
           });
         })
         .catch((err) => {
@@ -29,7 +29,7 @@ module.exports = function (router) {
             in: "POST /namespace",
             error: err,
           });
-          res.status(500).json({message: "Interal Server Error"});
+          res.status(500).json({ message: "Interal Server Error" });
         });
     })
     /**
@@ -38,7 +38,7 @@ module.exports = function (router) {
     .delete(guard, (req, res) => {
       const path = req.body.namespace;
       const c = db.get();
-      const resp = Promise.all([
+      Promise.all([
         c.deleteMany({ type: "Track", namespace: path }),
         c.deleteMany({ type: "Namespace", name: path }),
         c.deleteMany({ type: "Waveform", namespace: path }),
@@ -49,7 +49,7 @@ module.exports = function (router) {
             namespace: `${req.body.namespace}`,
           });
           res.status(200).json({
-            response: resp,
+            message: "success",
           });
         })
         .catch((err) => {
@@ -57,7 +57,7 @@ module.exports = function (router) {
             in: "DELETE /namespace",
             error: err,
           });
-          res.status(500).json({message: "Interal Server Error"});
+          res.status(500).json({ message: "Interal Server Error" });
         });
     });
 
@@ -86,7 +86,7 @@ module.exports = function (router) {
           in: "GET /",
           error: err,
         });
-        res.status(500).json({message: "Interal Server Error"});
+        res.status(500).json({ message: "Interal Server Error" });
       });
   });
 
@@ -116,7 +116,7 @@ module.exports = function (router) {
           in: "GET /:namespace",
           error: err,
         });
-        res.status(500).json({message: "Interal Server Error"});
+        res.status(500).json({ message: "Interal Server Error" });
       });
   });
 
@@ -135,7 +135,7 @@ module.exports = function (router) {
           namespace: `${req.params.namespace}`,
           error: err,
         });
-        res.status(500).json({message: "Interal Server Error"});
+        res.status(500).json({ message: "Interal Server Error" });
       });
   });
 
@@ -176,7 +176,7 @@ module.exports = function (router) {
           namespace: `${req.params.namespace}`,
           error: err,
         });
-        res.status(500).json({message: "Interal Server Error"});
+        res.status(500).json({ message: "Interal Server Error" });
       });
   });
 };
