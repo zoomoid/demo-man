@@ -47,16 +47,12 @@ function request(method, ep, data) {
       },
       body: JSON.stringify(data),
     })
-      .then((res) => res.json())
-      .then((res) => {
-        console.log(res);
-        return res;
-      })
-      .then((res) => {
+      .then(async (res) => {
         if (res.ok) {
-          return res;
+          return res.json();
         } else {
-          throw new Error(res.message);
+          const message = await res.json();
+          throw new Error(message);
         }
       })
       .catch((err) => {
