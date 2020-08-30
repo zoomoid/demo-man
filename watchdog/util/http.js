@@ -7,7 +7,7 @@ const { token } = require("../constants");
  * @param {string} ep Endpoint URL
  * @param {*} data data to post
  */
-async function add(ep, data) {
+function add(ep, data) {
   return request("POST", ep, data);
 }
 
@@ -16,7 +16,7 @@ async function add(ep, data) {
  * @param {string} ep endpoint url
  * @param {*} data data to delete
  */
-async function remove(ep, data) {
+function remove(ep, data) {
   return request("DELETE", ep, data);
 }
 
@@ -25,7 +25,7 @@ async function remove(ep, data) {
  * @param {string} ep endpoint url
  * @param {*} data data to delete
  */
-async function change(ep, data) {
+function change(ep, data) {
   return request("PATCH", ep, data);
 }
 
@@ -35,36 +35,46 @@ async function change(ep, data) {
  * @param {string} ep endpoint url
  * @param {*} data data object to be posted
  */
-async function request(method, ep, data) {
-  try {
-    if (!process.env.DRY_RUN) {
-      data.token = token;
-      const resp = await fetch(ep, {
-        mode: "cors",
-        method: method,
-        cache: "no-cache",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+function request(method, ep, data) {
+  if (!process.env.DRY_RUN) {
+    data.token = token;
+    return fetch(ep, {
+      mode: "cors",
+      method: method,
+      cache: "no-cache",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        return res;
+      })
+      .then((res) => {
+        if (res.ok) {
+          return res;
+        } else {
+          throw new Error(res.message);
+        }
+      })
+      .catch((err) => {
+        logger.error("Received error from API server", {
+          in: "__request",
+          response: err,
+          endpoint: `${ep}`,
+        });
       });
-      return resp.json();
-    } else {
-      logger.warn("Dry run! Not sending request to API server", {
-        endpoint: `${ep}`,
-        data: data,
-      });
-      return {
-        success: true,
-        note: "dry_run",
-        data: data,
-      };
-    }
-  } catch (err) {
-    logger.error("Received error from API server", {
-      in: "__request",
-      response: err,
+  } else {
+    logger.warn("Dry run! Not sending request to API server", {
       endpoint: `${ep}`,
+      data: data,
+    });
+    return Promise.resolve({
+      success: true,
+      note: "dry_run",
+      data: data,
     });
   }
 }
