@@ -1,7 +1,9 @@
 const { isHexColor, isURL } = require("validator");
 const logger = require("@zoomoid/log").v2;
 
-Object.prototype.has = Object.prototype.hasOwnProperty;
+Object.prototype.has = function(prop){
+  return Object.prototype.call(this, prop);
+};
 
 /** Color validator helper function */
 const colors = (o) => {

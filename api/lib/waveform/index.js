@@ -42,7 +42,7 @@ module.exports = function (router) {
               namespace: req.param.namespace,
               "track.id": req.params.track,
             });
-            res.status(404).send("Not found");
+            res.status(404).json({message: "Not found"});
           }
         })
         .catch((err) => {
@@ -52,7 +52,7 @@ module.exports = function (router) {
             "track.id": `${req.params.track}`,
             error: err,
           });
-          res.status(500).send("Internal Server Error");
+          res.status(500).json({message: "Interal Server Error"});
         });
     })
     /**
@@ -108,7 +108,7 @@ module.exports = function (router) {
           logger.error("Error while redrawing waveform", {
             error: err,
           });
-          res.status(500).send("Internal Server Error");
+          res.status(500).json({message: "Interal Server Error"});
         });
     });
 };

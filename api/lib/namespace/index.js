@@ -29,7 +29,7 @@ module.exports = function (router) {
             in: "POST /namespace",
             error: err,
           });
-          res.status(500).send("Internal Server Error");
+          res.status(500).json({message: "Interal Server Error"});
         });
     })
     /**
@@ -57,7 +57,7 @@ module.exports = function (router) {
             in: "DELETE /namespace",
             error: err,
           });
-          res.status(500).send("Internal Server Error");
+          res.status(500).json({message: "Interal Server Error"});
         });
     });
 
@@ -86,7 +86,7 @@ module.exports = function (router) {
           in: "GET /",
           error: err,
         });
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({message: "Interal Server Error"});
       });
   });
 
@@ -116,7 +116,7 @@ module.exports = function (router) {
           in: "GET /:namespace",
           error: err,
         });
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({message: "Interal Server Error"});
       });
   });
 
@@ -135,7 +135,7 @@ module.exports = function (router) {
           namespace: `${req.params.namespace}`,
           error: err,
         });
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({message: "Interal Server Error"});
       });
   });
 
@@ -176,7 +176,7 @@ module.exports = function (router) {
           namespace: `${req.params.namespace}`,
           error: err,
         });
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({message: "Interal Server Error"});
       });
   });
 };

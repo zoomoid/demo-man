@@ -33,7 +33,7 @@ module.exports = function (router) {
               for: body.namespace,
               metadata: body.namespace,
             });
-            response.status(404).send("Not found");
+            response.status(404).json({message: "Not found"});
           }
         })
         .catch((err) => {
@@ -41,7 +41,7 @@ module.exports = function (router) {
             in: "PATCH /namespace/metadata",
             error: err,
           });
-          response.status(500).send("Interal Server Error");
+          response.status(500).json({message: "Interal Server Error"});
         });
     });
 };
