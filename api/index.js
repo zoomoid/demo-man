@@ -1,6 +1,6 @@
 const cors = require("cors");
 const express = require("express");
-const logger = require("@zoomoid/log");
+const logger = require("@zoomoid/log").v2;
 const fetch = require("node-fetch");
 const endpoints = require("./endpoints");
 
@@ -8,6 +8,7 @@ const { db } = require("./util");
 
 var app = express();
 const demoRouter = express.Router();
+
 
 app.use(cors());
 
@@ -50,16 +51,14 @@ app.get("/api/test", (_, response) => {
       if (res.status == 200) {
         response.status(200).send("ok");
       } else {
-        logger.error(
-          "Error establishing link to wave-man",
-          "error",
-          res.statusText
-        );
+        logger.error("Error establishing link to wave-man", {
+          error: res.statusText,
+        });
         response.status(res.status).send(res.statusText);
       }
     })
     .catch((err) => {
-      logger.error("Error establishing link to wave-man", "error", err);
+      logger.error("Error establishing link to wave-man", { error: err });
       response.status(500).send(err);
     });
 });
@@ -71,24 +70,19 @@ db.connect(
   .then(() => {
     app.listen({ port: endpoints.api.port, host: "0.0.0.0" }, (err) => {
       if (err) {
-        logger.error("Error occured on API server startup", "error", err);
+        logger.error("Error occured on API server startup", { error: err });
       } else {
-        logger.info(
-          "Started API server",
-          "port",
-          endpoints.api.port,
-          "time",
-          new Date().toLocaleString("de-DE")
-        );
+        logger.info("Started API server", {
+          port: endpoints.api.port,
+          time: new Date().toLocaleString("de-DE"),
+        });
       }
     });
   })
   .catch((err) => {
-    logger.error(
-      "MongoDB connector failed to connect to database",
-      "error",
-      err
-    );
+    logger.error("MongoDB connector failed to connect to database", {
+      error: err,
+    });
     process.exit(1);
   });
 
