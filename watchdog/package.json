@@ -6,7 +6,7 @@
   "author": "Alexander Bartolomey",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js"
+    "start": "node --trace-warnings index.js"
   },
   "dependencies": {
     "@zoomoid/log": "^2.0.0",

@@ -1,7 +1,7 @@
 const logger = require("@zoomoid/log").v2;
 const path = require("path");
 const { add, remove, change } = require("../util/http");
-const { apiEndpoint } = require("../index");
+const { apiEndpoint } = require("../constants");
 
 /**
  * Requests deletion of a previously added audio file

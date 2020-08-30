@@ -2,7 +2,7 @@ const metadata = require("music-metadata");
 const logger = require("@zoomoid/log").v2;
 const path = require("path");
 const fs = require("fs");
-const { volume, url } = require("../index");
+const { volume, url } = require("../constants");
 
 /**
  * Reads a newly added mp3 file for its metadata and returns an object with all relevant information

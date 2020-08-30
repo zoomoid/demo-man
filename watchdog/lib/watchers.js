@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const yaml = require("js-yaml");
 const logger = require("@zoomoid/log").v2;
-const { volume } = require("../index.js");
+const { volume } = require("../constants");
 const { track, namespace, metadata } = require("./requests");
 const { id3 } = require("../util");
 /**

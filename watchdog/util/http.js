@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 const logger = require("@zoomoid/log").v2;
-const { token } = require("../index");
+const { token } = require("../constants");
 
 /**
  * Shorthand function for HTTP POST requests
