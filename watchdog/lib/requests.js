@@ -7,19 +7,15 @@ const { apiEndpoint } = require("../constants");
  * Requests deletion of a previously added audio file
  * @param {string} p path of the audio file to query the DB with
  */
-async function removeTrack(p) {
+function removeTrack(p) {
   logger.info("Deleting track...", { track: p, endpoint: apiEndpoint });
   return remove(`${apiEndpoint}/track`, { path: p })
-    .then((resp) => {
-      if (resp.ok) {
-        logger.info("Deleted track", { track: `${path.basename(path)}` });
-      } else {
-        throw new Error(resp.statusText);
-      }
+    .then(() => {
+      logger.info("Deleted track", { track: `${path.basename(p)}` });
     })
     .catch((err) => {
       logger.error("Received error status from API", {
-        track: `${path.basename(path)}`,
+        track: `${path.basename(p)}`,
         in: "removeTrack",
         error: err,
       });
@@ -30,22 +26,18 @@ async function removeTrack(p) {
  * Requests deletion of a previously added album
  * @param {*} path directory name that we need to delete
  */
-async function removeNamespace(ns) {
+function removeNamespace(namespace) {
   logger.info("Deleting namespace...", {
-    namespace: ns,
+    namespace: namespace,
     endpoint: apiEndpoint,
   });
-  return remove(`${apiEndpoint}/namespace`, { namespace: ns })
-    .then((resp) => {
-      if (resp.ok) {
-        logger.info("Deleted namespace", { namespace: ns });
-      } else {
-        throw new Error(resp.statusText);
-      }
+  return remove(`${apiEndpoint}/namespace`, { namespace: namespace })
+    .then(() => {
+      logger.info("Deleted namespace", { namespace: namespace });
     })
     .catch((err) => {
       logger.error("Received error status from API", {
-        namespace: ns,
+        namespace: namespace,
         in: "removeNamespace",
         error: err,
       });
@@ -56,18 +48,14 @@ async function removeNamespace(ns) {
  * Requests creation of a new album
  * @param {string} album album title
  */
-async function addNamespace(namespace) {
+function addNamespace(namespace) {
   logger.info("Adding namespace...", {
     namespace: namespace,
     endpoint: apiEndpoint,
   });
   return add(`${apiEndpoint}/namespace`, { namespace })
-    .then((resp) => {
-      if (resp.ok) {
-        logger.info("Added namespace", { namespace: namespace });
-      } else {
-        throw new Error(resp.statusText);
-      }
+    .then(() => {
+      logger.info("Added namespace", { namespace: namespace });
     })
     .catch((err) => {
       logger.error("Received error status from API", {
@@ -82,18 +70,14 @@ async function addNamespace(namespace) {
  * Requests creation of a new track
  * @param {*} track track data to post to the API
  */
-async function addTrack(track) {
+function addTrack(track) {
   logger.info("Adding track...", {
     track: track.filename,
     endpoint: apiEndpoint,
   });
   return add(`${apiEndpoint}/track`, { track: track })
-    .then((resp) => {
-      if (resp.ok) {
-        logger.info("Added track", { track: track.filename });
-      } else {
-        throw new Error(resp.statusText);
-      }
+    .then(() => {
+      logger.info("Added track", { track: track.filename });
     })
     .catch((err) => {
       logger.error("Received error status from API", {
@@ -104,22 +88,18 @@ async function addTrack(track) {
     });
 }
 
-async function changeMetadata(o, p) {
+function changeMetadata(o, p) {
   logger.info("Metadata changed", {
     path: p,
     data: o,
   });
   return change(`${apiEndpoint}/namespace/metadata`, { metadata: o })
-    .then((resp) => {
-      if (resp.ok) {
-        logger.info("Updated namespace metadata", {
-          namespace: o.namespace,
-          path: p,
-          data: o,
-        });
-      } else {
-        throw new Error(resp.statusText);
-      }
+    .then(() => {
+      logger.info("Updated namespace metadata", {
+        namespace: o.namespace,
+        path: p,
+        data: o,
+      });
     })
     .catch((err) => {
       logger.error("Received error status from API", {
