@@ -144,50 +144,44 @@ module.exports = function () {
     },
   };
 
-  const metadataWatcherFunctions = {
-    json: (p) => {
-      let config = {};
-      try {
-        // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
-        config = require(path.join(volume, p)) || {};
-      } catch (err) {
-        // TODO: this is really dirty, we should replace this with a dedicated event handler on deletion, i.e.,
-        // branch the yaml property into handlers for all three cases, add, change and, unlink
-        logger.info("Error occured, probably due to the file being deleted and attempting to read from it", {
-          in: "metadataWatcherFunctions.json",
-        });
-      } finally {
-        // Send metadata.json contents to API server
-        metadata.change(config, p, path.dirname(p)).catch((err) => {
-          logger.error("Updating namespace metadata failed", {
-            on: "change",
-            error: err,
-            path: p,
-          });
-        });
-      }
+  const m = {
+    options: {
+      cwd: `${volume}`,
+      ignoreInitial: true,
+      persistent: true,
+      atomic: true,
+      usePolling: true,
+      depth: 2,
+      awaitWriteFinish: {
+        stabilityThreshold: 3000,
+        pollInterval: 1000,
+      },
     },
-    yaml: (p) => {
-      let config = {};
-      try {
-        const file = fs.readFileSync(path.join(volume, p), { encoding: "utf-8" });
-        config = yaml.safeLoad(file);
-      } catch(err) {
-        // TODO: this is really dirty, we should replace this with a dedicated event handler on deletion, i.e.,
-        // branch the yaml property into handlers for all three cases, add, change and, unlink
-        logger.info("Error occured, probably due to the file being deleted and attempting to read from it", {
-          in: "metadataWatcherFunctions.yaml",
+    loaders: {
+      json: (p) => require(path.join(volume, p)),
+      yaml: (p) =>
+        yaml.safeLoad(
+          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
+        ),
+    },
+    add: (event, loader, p) => {
+      const config = loader(p);
+      metadata.change(config, p, path.dirname(p)).catch((err) => {
+        logger.error("Failed to update namespace metadata", {
+          on: event,
+          error: err,
+          path: p,
         });
-      } finally {
-        // Send metadata.yaml contents to API server
-        metadata.change(config, p, path.dirname(p)).catch((err) => {
-          logger.error("Updating namespace metadata failed", {
-            on: "change",
-            error: err,
-            path: p,
-          });
+      });
+    },
+    remove: (p) => {
+      metadata.change({}, p, path.dirname(p)).catch((err) => {
+        logger.error("Failed to update namespace metadata", {
+          on: "unlink",
+          error: err,
+          path: p,
         });
-      }
+      });
     },
   };
 
@@ -196,16 +190,16 @@ module.exports = function () {
    * Supports both json and yaml files
    */
   chokidar
-    .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, metadataWatcherOptions)
-    .on("add", metadataWatcherFunctions.json)
-    .on("change", metadataWatcherFunctions.json)
-    .on("unlink", metadataWatcherFunctions.json);
+    .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, m.options)
+    .on("add", m.add.bind(null, "add", m.loaders.json))
+    .on("change", m.add.bind(null, "change", m.loaders.json))
+    .on("unlink", m.remove);
 
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.yaml`, metadataWatcherOptions)
-    .on("add", metadataWatcherFunctions.yaml)
-    .on("change", metadataWatcherFunctions.yaml)
-    .on("unlink", metadataWatcherFunctions.yaml);
+    .on("add", m.add.bind(null, "add", m.loaders.yaml))
+    .on("change", m.add.bind(null, "change", m.loaders.yaml))
+    .on("unlink", m.remove);
 
   /**
    * Garbage collector removes any files and directories created in the process of SFTP handshakes by FileZilla
