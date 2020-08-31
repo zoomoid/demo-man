@@ -2,7 +2,7 @@ const { isHexColor, isURL } = require("validator");
 const logger = require("@zoomoid/log").v2;
 
 Object.prototype.has = function(prop){
-  return Object.prototype.call(this, prop);
+  return Object.prototype.hasOwnProperty.call(this, prop);
 };
 
 /** Color validator helper function */
@@ -115,9 +115,9 @@ const links = (o) => {
 
 /** namespace validator helper function */
 const namespace = (o) => {
-  const errors = [];
+  const warnings = [];
   if (!o.has("namespace")) {
-    errors.push({
+    warnings.push({
       name: "namespace",
       expected: "string",
       error: "missing",
@@ -125,8 +125,8 @@ const namespace = (o) => {
     });
   }
   return {
-    errors,
-    warnings: [],
+    errors: [],
+    warnings,
   };
 };
 
