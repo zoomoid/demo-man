@@ -25,6 +25,10 @@ require("./lib/track")(demoRouter);
 require("./lib/waveform")(demoRouter);
 require("./lib/metadata")(demoRouter);
 
+demoRouter.get("/", (_, response) => {
+  response.redirect("/api/v1/demo/namespace");
+});
+
 if (!process.env.TOKEN) {
   logger.error("No auth token provided as ENV variable");
   process.exit(1);

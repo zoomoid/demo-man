@@ -18,7 +18,7 @@ module.exports = function (router) {
             $set: {
               metadata: body.metadata,
               lastUpdated: new Date().toLocaleString("de-DE"),
-            }
+            },
           },
           {
             upsert: false,
@@ -29,15 +29,13 @@ module.exports = function (router) {
           if (resp) {
             logger.info("Updated metadata for namespace", {
               for: body.namespace,
-              metadata: body.metadata,
             });
             response.status(200).json({
               message: "success",
             });
           } else {
             logger.warn("Could not find namespace", {
-              for: body.namespace,
-              metadata: body.namespace,
+              namespace: body.namespace,
             });
             response.status(404).json({ message: "Not found" });
           }
@@ -50,4 +48,35 @@ module.exports = function (router) {
           response.status(500).json({ message: "Interal Server Error" });
         });
     });
+
+  router.route("/namespace/:namespace/metadata").get((req, res) => {
+    db.get()
+      .findOne(
+        { type: "Namespace", name: req.params.namespace },
+        { metadata: 1, name: 1, url: 1, lastUpdated: 1 }
+      )
+      .then((resp) => {
+        if (resp) {
+          res.status(200).json({
+            ...resp.metadata,
+            name: resp.name,
+            url: resp.url,
+            lastUpdated: resp.lastUpdated,
+          });
+        } else {
+          logger.warn("Could not find namespace", {
+            namespace: req.params.namespace,
+          });
+          res.status(404).json({ message: "Not Found" });
+        }
+      })
+      .catch((err) => {
+        logger.error("Failed to load metadata for namespace", {
+          namespace: req.params.namespace,
+          error: err,
+          in: "GET /namespace/:namespace/:metadata",
+        });
+        res.status(500).json({ message: "Interal Server Error" });
+      });
+  });
 };

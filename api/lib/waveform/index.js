@@ -6,7 +6,7 @@ const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
   router
-    .route("/:namespace/:track/waveform")
+    .route("/track/:track/waveform")
     /**
      * GET a specific waveform for a specific track from the API server
      * :track is supposed to be a string of ObjectId of the track in question
@@ -23,6 +23,7 @@ module.exports = function (router) {
         .then((resp) => {
           if (resp) {
             let waveform;
+            // console.log(resp);
             switch (req.query.mode) {
               case "small":
                 waveform = resp.small.replace(/\\/g, "");
@@ -36,7 +37,7 @@ module.exports = function (router) {
             }
             let color = req.query.color || "000000";
             waveform = waveform.replace(/{{.color}}/g, `#${color}`);
-            res.set({ "Content-Type": "image/svg+xml" }).send(waveform);
+            res.set("Content-Type", "image/svg+xml").send(waveform);
           } else {
             logger.warn("Could not find original document", {
               namespace: req.param.namespace,
@@ -46,8 +47,8 @@ module.exports = function (router) {
           }
         })
         .catch((err) => {
-          logger.error("Error while loading waveform", {
-            in: "GET /:namespace/:track/waveform/:mode",
+          logger.error("Failed to retrieve waveform resource", {
+            in: "GET /:namespace/:track/waveform/",
             namespace: `${req.params.namespace}`,
             "track.id": `${req.params.track}`,
             error: err,
@@ -105,7 +106,7 @@ module.exports = function (router) {
           }
         })
         .catch((err) => {
-          logger.error("Error while redrawing waveform", {
+          logger.error("Failed to redraw waveform resource", {
             error: err,
           });
           res.status(500).json({ message: "Interal Server Error" });
