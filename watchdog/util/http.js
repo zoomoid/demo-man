@@ -36,6 +36,11 @@ function change(ep, data) {
  * @param {*} data data object to be posted
  */
 function request(method, ep, data) {
+  // logger.info("Requesting resource", {
+  //   method,
+  //   ep,
+  //   data,
+  // });
   if (!process.env.DRY_RUN) {
     data.token = token;
     return fetch(ep, {
