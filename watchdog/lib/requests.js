@@ -88,22 +88,25 @@ function addTrack(track) {
     });
 }
 
-function changeMetadata(o, p) {
+function changeMetadata(o, p, n) {
   logger.info("Metadata changed", {
     path: p,
     data: o,
   });
-  return change(`${apiEndpoint}/namespace/metadata`, { metadata: o })
+  return change(`${apiEndpoint}/namespace/metadata`, {
+    namespace: n,
+    metadata: o
+  })
     .then(() => {
       logger.info("Updated namespace metadata", {
-        namespace: o.namespace,
+        namespace: n,
         path: p,
         data: o,
       });
     })
     .catch((err) => {
       logger.error("Received error status from API", {
-        namespace: o.namespace,
+        namespace: n,
         path: p,
         in: "changeMetadata",
         error: err,
