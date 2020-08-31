@@ -23,6 +23,7 @@ app.use("/api/v1/demo", demoRouter);
 require("./lib/namespace")(demoRouter);
 require("./lib/track")(demoRouter);
 require("./lib/waveform")(demoRouter);
+require("./lib/metadata")(demoRouter);
 
 if (!process.env.TOKEN) {
   logger.error("No auth token provided as ENV variable");
