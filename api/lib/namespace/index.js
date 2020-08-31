@@ -67,7 +67,7 @@ module.exports = function (router) {
   router.get("/", (req, res) => {
     db.get()
       .find({ type: "Namespace" })
-      .then((resp) => resp.toArray())
+      .toArray()
       .then((resp) =>
         resp.map((e) => {
           return {
@@ -96,7 +96,7 @@ module.exports = function (router) {
   router.get("/:namespace", async (req, res) => {
     db.get()
       .find({ type: "Track", namespace: req.params.namespace })
-      .then((resp) => resp.toArray())
+      .toArray()
       .then((resp) =>
         resp.map((t) => {
           return {
@@ -152,7 +152,7 @@ module.exports = function (router) {
           },
         },
       ])
-      .then((resp) => resp.toArray())
+      .toArray()
       .then((resp) =>
         resp.map((waveform) => {
           switch (req.query.mode) {
