@@ -130,6 +130,7 @@ module.exports = function () {
         });
       });
     });
+
   const metadataWatcherOptions = {
     cwd: `${volume}`,
     ignoreInitial: true,
@@ -142,38 +143,58 @@ module.exports = function () {
       pollInterval: 1000,
     },
   };
+
+  const metadataWatcherFunctions = {
+    json: (p) => {
+      let config = {};
+      try {
+        // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
+        config = require(path.join(volume, p)) || {};
+      } finally {
+        // Send metadata.json contents to API server
+        metadata.change(config, p, path.dirname(p)).catch((err) => {
+          logger.error("Updating namespace metadata failed", {
+            on: "change",
+            error: err,
+            path: p,
+          });
+        });
+      }
+    },
+    yaml: (p) => {
+      let config = {};
+      try {
+        config = yaml.safeLoad(
+          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
+        );
+      } finally {
+        // Send metadata.yaml contents to API server
+        metadata.change(config, p, path.dirname(p)).catch((err) => {
+          logger.error("Updating namespace metadata failed", {
+            on: "change",
+            error: err,
+            path: p,
+          });
+        });
+      }
+    },
+  };
+
   /**
    * metadata watchers
    * Supports both json and yaml files
    */
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, metadataWatcherOptions)
-    .on("add", (p) => {
-      // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
-      const config = require(path.join(volume, p));
-      // Send metadata.json contents to API server
-      metadata.change(config, p).catch((err) => {
-        logger.error("Updating namespace metadata failed", {
-          on: "change",
-          error: err,
-          path: p,
-        });
-      });
-    });
+    .on("add", metadataWatcherFunctions.json)
+    .on("change", metadataWatcherFunctions.json)
+    .on("unlink", metadataWatcherFunctions.json);
 
   chokidar
     .watch(`${volume}/[A-Za-z0-9]*/metadata.yaml`, metadataWatcherOptions)
-    .on("add", (p) => {
-      // Send metadata.yaml contents to API server
-      const config = yaml.safeLoad(fs.readFileSync(path.join(volume, p), { encoding: "utf-8" }));
-      metadata.change(config, p).catch((err) => {
-        logger.error("Updating namespace metadata failed", {
-          on: "change",
-          error: err,
-          path: p,
-        });
-      });
-    });
+    .on("add", metadataWatcherFunctions.yaml)
+    .on("change", metadataWatcherFunctions.yaml)
+    .on("unlink", metadataWatcherFunctions.yaml);
 
   /**
    * Garbage collector removes any files and directories created in the process of SFTP handshakes by FileZilla
