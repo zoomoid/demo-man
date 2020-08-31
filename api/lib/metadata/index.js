@@ -12,17 +12,23 @@ module.exports = function (router) {
         .findOneAndUpdate(
           {
             type: "Namespace",
-            name: body.metadata.namespace,
+            name: body.namespace,
           },
           {
-            metadata: body.metadata,
-            lastUpdated: new Date().toLocaleDateString("de-DE"),
+            $set: {
+              metadata: body.metadata,
+              lastUpdated: new Date().toLocaleString("de-DE"),
+            }
+          },
+          {
+            upsert: false,
+            returnNewDocument: true,
           }
         )
         .then((resp) => {
           if (resp) {
             logger.info("Updated metadata for namespace", {
-              for: body.metadata.namespace,
+              for: body.namespace,
               metadata: body.metadata,
             });
             response.status(200).json({
