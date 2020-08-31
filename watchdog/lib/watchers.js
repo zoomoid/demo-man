@@ -150,6 +150,12 @@ module.exports = function () {
       try {
         // require can parse JSON, hence we can use it rather than fs for reading the file as a buffer
         config = require(path.join(volume, p)) || {};
+      } catch (err) {
+        // TODO: this is really dirty, we should replace this with a dedicated event handler on deletion, i.e.,
+        // branch the yaml property into handlers for all three cases, add, change and, unlink
+        logger.info("Error occured, probably due to the file being deleted and attempting to read from it", {
+          in: "metadataWatcherFunctions.json",
+        });
       } finally {
         // Send metadata.json contents to API server
         metadata.change(config, p, path.dirname(p)).catch((err) => {
@@ -164,9 +170,14 @@ module.exports = function () {
     yaml: (p) => {
       let config = {};
       try {
-        config = yaml.safeLoad(
-          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
-        );
+        const file = fs.readFileSync(path.join(volume, p), { encoding: "utf-8" });
+        config = yaml.safeLoad(file);
+      } catch(err) {
+        // TODO: this is really dirty, we should replace this with a dedicated event handler on deletion, i.e.,
+        // branch the yaml property into handlers for all three cases, add, change and, unlink
+        logger.info("Error occured, probably due to the file being deleted and attempting to read from it", {
+          in: "metadataWatcherFunctions.yaml",
+        });
       } finally {
         // Send metadata.yaml contents to API server
         metadata.change(config, p, path.dirname(p)).catch((err) => {
