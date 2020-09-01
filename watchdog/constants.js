@@ -15,9 +15,19 @@ const url = JSON.parse(process.env.PUBLIC_PATH) || {
   dir: "files/",
 };
 
+const metadataTemplate = (n) => `colors:
+  accent: "#F58B44"
+  primary: "#1A1A1A"
+description: |
+title: ${n}
+links: []
+`;
+
+
 module.exports = {
-  token: token,
-  volume: volume,
-  url: url,
-  apiEndpoint: apiEndpoint,
+  token,
+  volume,
+  url,
+  apiEndpoint,
+  metadataTemplate,
 };

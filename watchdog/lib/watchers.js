@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const yaml = require("js-yaml");
 const logger = require("@zoomoid/log").v2;
-const { volume } = require("../constants");
+const { volume, metadataTemplate } = require("../constants");
 const { track, namespace, metadata } = require("./requests");
 const { id3 } = require("../util");
 /**
@@ -104,6 +104,9 @@ module.exports = function () {
         timestamp: new Date().toLocaleString("de-DE"),
       });
       let n = path.basename(p);
+      // creates a default metadata.yaml file.
+      // May later be overridden by a fresh one or replaced by a metadata.json file
+      fs.writeFileSync(path.join(volume, n, "metadata.yaml"), metadataTemplate(n));
       namespace.add(n).catch((err) => {
         logger.error("Received error from API server", {
           on: "addDir",
