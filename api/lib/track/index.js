@@ -86,12 +86,11 @@ module.exports = function (router) {
     db.get()
       .findOne({
         type: "Track",
-        namespace: req.params.namespace,
         _id: id(req.params.id),
       })
       .then((resp) => {
         if (resp) {
-          resp.waveform = `${api.url}/${req.params.namespace}/${resp._id}/waveform`;
+          resp.waveform = `${api.url}/track/${resp._id}/waveform`;
           res.json(resp);
         } else {
           res.status(404).json({ message: "Not found" });
@@ -100,7 +99,6 @@ module.exports = function (router) {
       .catch((err) => {
         logger.error("Failed to retrieve track resource", {
           in: "GET /track/:id",
-          namespace: `${req.params.namespace}`,
           "track.id": `${req.params.id}`,
           error: err,
         });
