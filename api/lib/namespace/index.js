@@ -1,5 +1,5 @@
 const { guard, db } = require("../../util/");
-const logger = require("@zoomoid/log");
+const logger = require("@zoomoid/log").v2;
 const { api } = require("../../endpoints");
 
 module.exports = function (router) {
@@ -8,183 +8,227 @@ module.exports = function (router) {
     /**
      * ADD new album to API
      */
-    .post(guard, async (req, res, next) => {
-      try {
-        const namespace = {
-          type: "Namespace",
-          name: req.body.namespace,
-        };
-        const resp = await db.get().insertOne(namespace);
-        logger.info(
-          "Added new namespace",
-          "level",
-          "POST /namespace",
-          "namespace",
-          namespace.name
-        );
-        res.status(200).json({
-          response: resp,
+    .post(guard, (req, res) => {
+      const namespace = {
+        type: "Namespace",
+        name: req.body.namespace,
+      };
+      db.get()
+        .insertOne(namespace)
+        .then(() => {
+          logger.info("Added new namespace", {
+            in: "POST /namespace",
+            namespace: namespace.name,
+          });
+          res.status(200).json({
+            message: "success",
+          });
+        })
+        .catch((err) => {
+          logger.error("Failed to create namespace resource", {
+            in: "POST /namespace",
+            error: err,
+            namespace: `${req.body.namespace}`,
+          });
+          res.status(500).json({ message: "Interal Server Error" });
         });
-      } catch (err) {
-        logger.error(
-          "Received error from MongoDB",
-          "level",
-          "POST /namespace",
-          "response",
-          err
-        );
-        next(err);
-      }
     })
     /**
      * DELETE album from API
      */
-    .delete(guard, async (req, res, next) => {
-      try {
-        const path = req.body.namespace;
-        const c = db.get();
-        const resp = await Promise.all([
-          c.deleteMany({ type: "Track", namespace: path }),
-          c.deleteMany({ type: "Namespace", name: path }),
-          c.deleteMany({ type: "Waveform", namespace: path }),
-        ]);
-        logger.info(
-          "Deleted album",
-          "level",
-          "DELETE /namespace",
-          "namespace",
-          `${req.body.namespace}`
-        );
-        res.status(200).json({
-          response: resp,
+    .delete(guard, (req, res) => {
+      const path = req.body.namespace;
+      const c = db.get();
+      Promise.all([
+        c.deleteMany({ type: "Track", namespace: path }),
+        c.deleteMany({ type: "Namespace", name: path }),
+        c.deleteMany({ type: "Waveform", namespace: path }),
+      ])
+        .then(() => {
+          logger.info("Deleted album", {
+            in: "DELETE /namespace",
+            namespace: `${req.body.namespace}`,
+          });
+          res.status(200).json({
+            message: "success",
+          });
+        })
+        .catch((err) => {
+          logger.error("Failed to delete namespace resources", {
+            in: "DELETE /namespace",
+            namespace: `${req.body.namespace}`,
+            error: err,
+          });
+          res.status(500).json({ message: "Interal Server Error" });
         });
-      } catch (err) {
-        logger.error(
-          "Received error from MongoDB",
-          "level",
-          "DELETE /namespace",
-          "response",
-          err
-        );
-        next(err);
-      }
+    })
+    .get((req, res) => {
+      db.get()
+        .find(
+          { type: "Namespace" },
+          { projection: { metadata: 0, lastUpdated: 0 } }
+        )
+        .toArray()
+        .then((resp) =>
+          resp.map((e) => {
+            return {
+              url: `${api.url}/namespace/${e.name}`,
+              ...e,
+            };
+          })
+        )
+        .then((resp) => {
+          if (resp) {
+            res.status(200).json({
+              namespaces: resp,
+            });
+          } else {
+            res.status(404).json({ message: "Not Found" });
+          }
+        })
+        .catch((err) => {
+          logger.error("Failed to retrieve namespace resources", {
+            in: "GET /namespace",
+            namespace: `${req.params.namespace}`,
+            error: err,
+          });
+          res.status(500).json({ message: "Interal Server Error" });
+        });
     });
-
-  /**
-   * GET all namespaces/albums
-   */
-  router.get("/", async (req, res, next) => {
-    try {
-      let resp = await db.get().find({ type: "Namespace" }).toArray();
-      resp = resp.map((e) => {
-        e.url = `${api.url}/${e.name}`;
-        return e;
-      });
-      res.status(200).json({
-        data: resp,
-      });
-    } catch (err) {
-      logger.error(
-        "Received error from MongoDB",
-        "level",
-        "GET /",
-        "response",
-        err
-      );
-      next(err);
-    }
-  });
 
   /**
    * GET all tracks from the API for a certain namespace from the API
    */
-  router.get("/:namespace", async (req, res, next) => {
-    try {
-      let resp = await db
+  router.get("/namespace/:namespace/tracks", (req, res) => {
+    db.get()
+      .find({ type: "Track", namespace: req.params.namespace })
+      .toArray()
+      .then((resp) =>
+        resp.map((t) => {
+          return {
+            url: `${api.url}/track/${t._id}/`,
+            waveform: `${api.url}/track/${t._id}/waveform`,
+            ...t,
+          };
+        })
+      )
+      .then((resp) => {
+        res.status(200).json({
+          tracks: resp,
+        });
+      })
+      .catch((err) => {
+        logger.error("Failed to retrieve tracks of namespace resource", {
+          in: "GET /namespace/:namespace/tracks",
+          namespace: `${req.params.namespace}`,
+          error: err,
+        });
+        res.status(500).json({ message: "Interal Server Error" });
+      });
+  });
+
+  router.get("/namespace/:namespace", (req, res) => {
+    Promise.all([
+      db.get().findOne({ type: "Namespace", name: req.params.namespace }),
+      db
         .get()
         .find({ type: "Track", namespace: req.params.namespace })
-        .toArray();
-      resp = resp.map((t) => {
-        t.url = `${api.url}/${req.params.namespace}/${t._id}/`;
-        t.waveform = `${api.url}/${req.params.namespace}/${t._id}/waveform`;
-        return t;
+        .toArray()
+        .then((resp) =>
+          resp.map((t) => {
+            return {
+              url: `${api.url}/track/${t._id}/`,
+              waveform: `${api.url}/track/${t._id}/waveform`,
+              ...t,
+            };
+          })
+        ),
+    ])
+      .then((resp) => ({
+        namespace: resp[0],
+        tracks: resp[1],
+      }))
+      .then(({ namespace, tracks }) => {
+        if (namespace) {
+          res.status(200).json({
+            ...namespace,
+            tracks: tracks,
+          });
+        } else {
+          logger.warn("Could not find namespace resource", {
+            namespace: req.param.namespace,
+          });
+          res.status(404).json({ message: "Not found" });
+          return {};
+        }
+      })
+      .catch((err) => {
+        logger.error("Failed to retrieve namespace resource", {
+          in: "GET /namespace/:namespace",
+          namespace: `${req.params.namespace}`,
+          error: err,
+        });
+        res.status(500).json({ message: "Interal Server Error" });
       });
-      res.status(200).json({
-        data: resp,
-      });
-    } catch (err) {
-      logger.error(
-        "Received error from MongoDB",
-        "level",
-        "GET /:namespace",
-        "response",
-        err
-      );
-      next(err);
-    }
   });
 
   /**
    * GET the cover of a specified namespace/album
    */
-  router.get("/:namespace/cover", async (req, res, next) => {
-    try {
-      let resp = await db
-        .get()
-        .findOne({ type: "Track", namespace: req.params.namespace });
-      res.redirect(resp.cover.public_url);
-    } catch (err) {
-      logger.error(
-        "Error while redirecting to cover",
-        "level",
-        "GET /:namespace/cover",
-        "namespace",
-        `${req.params.namespace}`,
-        "error",
-        err
-      );
-      next(err);
-    }
+  router.get("/namespace/:namespace/cover", (req, res) => {
+    db.get()
+      .findOne({ type: "Track", namespace: req.params.namespace })
+      .then((resp) => {
+        res.redirect(resp.cover.public_url);
+      })
+      .catch((err) => {
+        logger.error("Failed to redirect to cover of namespace resource", {
+          in: "GET /namespace/:namespace/cover",
+          namespace: `${req.params.namespace}`,
+          error: err,
+        });
+        res.status(500).json({ message: "Interal Server Error" });
+      });
   });
 
-  router.route("/:namespace/waveform").get(async (req, res, next) => {
-    try {
-      let resp = await db
-        .get()
-        .aggregate([
-          { $match: { type: "Waveform", namespace: req.params.namespace } },
-          {
-            $lookup: {
-              from: "demo",
-              localField: "track_id",
-              foreignField: "_id",
-              as: "track",
-            },
+  router.route("/namespace/:namespace/waveforms").get((req, res) => {
+    db.get()
+      .aggregate([
+        { $match: { type: "Waveform", namespace: req.params.namespace } },
+        {
+          $lookup: {
+            from: "demo",
+            localField: "track_id",
+            foreignField: "_id",
+            as: "track",
           },
-        ])
-        .toArray();
-      resp = resp.map((waveform) => {
-        switch (req.query.mode) {
-          case "small":
-            return { waveform: waveform.small };
-          case "full":
-            return { waveform: waveform.full };
-          default:
-            return { waveform: { full: waveform.full, small: waveform.small } };
-        }
+        },
+      ])
+      .toArray()
+      .then((resp) =>
+        resp.map((waveform) => {
+          switch (req.query.mode) {
+            case "small":
+              return { waveform: waveform.small };
+            case "full":
+              return { waveform: waveform.full };
+            default:
+              return {
+                waveform: { full: waveform.full, small: waveform.small },
+              };
+          }
+        })
+      )
+      .then((resp) => {
+        res.json({ waveforms: resp });
+      })
+      .catch((err) => {
+        logger.error("Failed to retrieve waveforms of namespace resource", {
+          in: "GET /namespace/:namespace/waveforms",
+          namespace: `${req.params.namespace}`,
+          error: err,
+        });
+        res.status(500).json({ message: "Interal Server Error" });
       });
-      res.json({ data: resp });
-    } catch (err) {
-      logger.error(
-        "Error while loading waveforms",
-        "level",
-        "GET /:namespace/waveform",
-        "namespace",
-        `${req.params.namespace}`,
-        "error",
-        err
-      );
-      next(err);
-    }
   });
 };

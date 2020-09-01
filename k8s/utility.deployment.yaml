@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: web
+  name: demo-fileserver
+  labels:
+    app: demo-man
+    svc: fileserver
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: fileserver
+  template:
+    metadata:
+      labels:
+        app: demo-man
+        svc: fileserver
+    spec:
+      containers:
+      - name: fileserver
+        image: nginx:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 10m
+            memory: 50Mi
+        volumeMounts:
+          - name: demo-man-audio
+            mountPath: /var/www/demo/files
+            readOnly: true
+          - name: nginx-config
+            mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: demo-man-audio
+        persistentVolumeClaim:
+          readOnly: true
+          claimName: demo-audio-pvc
+      - name: nginx-config
+        configMap:
+          name: demo-man-fileserver-nginx-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-sftp-server
+  namespace: web
+  labels:
+    app: demo-man
+    svc: sftp-server
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: sftp-server
+  template:
+    metadata:
+      labels:
+        app: demo-man
+        svc: sftp-server
+    spec:
+      containers:
+        - name: sftp-server
+          image: registry.git.rwth-aachen.de/zoomoid/docker-sftp
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 22
+          resources:
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - name: demo-man-audio
+              mountPath: /home/demo-man/demo
+            - name: host-keys
+              readOnly: true
+              mountPath: "/etc/ssh/keys"
+            - name: user-keys
+              readOnly: true
+              mountPath: "/home/demo-man/.ssh/keys"
+            - name: user
+              mountPath: /etc/sftp
+              readOnly: true
+      volumes:
+        - name: demo-man-audio
+          persistentVolumeClaim:
+            claimName: demo-audio-pvc
+        - name: user-keys
+          secret:
+            secretName: demo-man-ssh-user-keys
+        - name: host-keys
+          secret:
+            secretName: demo-man-ssh-host-keys
+            defaultMode: 0600
+        - name: user
+          secret:
+            secretName: demo-man-sftp-user
+            defaultMode: 0600

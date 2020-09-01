@@ -1,8 +1,11 @@
 <template>
-  <div class="wrapper" :style="`--accent: ${this.accent}; --primary: ${this.primary}`">
+  <div
+    class="wrapper"
+    :style="`--accent: ${this.accent}; --primary: ${this.primary}`"
+  >
     <template v-if="this.error">
       <div class="error">
-        <h1>404<br>Not Found</h1>
+        <h1>404<br />Not Found</h1>
         <p>The song you were looking for could not be found.</p>
         <!-- <p class="err">{{ this.error }}</p> -->
         <router-link to="/">
@@ -15,21 +18,43 @@
       <Breadcrump></Breadcrump>
       <div class="spacer"></div>
       <div class="fill">
-        <img :src="`${this.$root.apiEP}/api/v1/demo/${this.$route.params.id}/cover`"/>
+        <img
+          :src="`${this.$root.apiEP}/namespace/${this.namespace}/cover`"
+        />
       </div>
-      <div class="release">
-        <h2 class="artist">{{album.artist}}</h2>
-        <h1 class="title">{{album.title}}</h1>
+      <div class="release" v-if="metadata">
+        <h1 class="title">{{ metadata.title }}</h1>
+        <div
+          v-if="metadata.description"
+          class="description"
+          v-html="description"
+        ></div>
+        <div class="links" v-if="metadata.links">
+          <a
+            v-for="l in metadata.links"
+            :key="l.link"
+            :href="l.link"
+            rel="noreferrer"
+            >{{ l.label }}</a
+          >
+        </div>
       </div>
-      <AudioManager class="players" :queue="queue" :namespace="namespace"></AudioManager>
+      <AudioManager
+        class="players"
+        :queue="queue"
+        :namespace="namespace"
+        :accent="this.accent"
+        :primary="this.primary"
+      ></AudioManager>
     </template>
   </div>
 </template>
 
 <script>
-import AudioManager from '@/components/AudioManager.vue';
-import Breadcrump from '@/components/Breadcrump.vue';
-import axios from 'axios';
+import axios from "axios";
+import marked from "marked";
+import AudioManager from "../components/AudioManager.vue";
+import Breadcrump from "../components/Breadcrump.vue";
 
 export default {
   components: {
@@ -39,37 +64,53 @@ export default {
   data() {
     return {
       error: null,
-      album: {},
       queue: [],
-      accent: '#F58B44',
-      primary: '#242424',
+      metadata: null,
     };
   },
   computed: {
     namespace() {
       return `${this.$route.params.id}`;
     },
+    description() {
+      return marked(this.metadata.description || "");
+    },
+    accent() {
+      if (this.metadata) {
+        return this.metadata.colors.accent || "#242424";
+      }
+      return "#F58B44";
+    },
+    primary() {
+      if (this.metadata) {
+        return this.metadata.colors.primary || "#242424";
+      }
+      return "#242424";
+    },
   },
   mounted() {
-    axios.get(`${this.$root.apiEP}/api/v1/demo/${this.$route.params.id}`).then((response) => {
-      // at this point, v is an array of tracks. We assume they share the same
-      // metadata, hence we just pick the first one and roll with it
-      const f = response.data.data[0];
-      this.album = {
-        title: f.album,
-        artist: f.albumartist,
-        cover: f.cover,
-      };
-      this.queue = response.data.data.sort((a, b) => (a.no - b.no));
-    }).catch((err) => {
-      this.error = err;
+    const vm = this;
+    Promise.all([
+      axios
+        .get(`${this.$root.apiEP}/namespace/${this.namespace}/tracks`)
+        .then(({ data }) => {
+          vm.queue = data.tracks.sort((a, b) => a.no - b.no);
+        }),
+      axios
+        .get(`${this.$root.apiEP}/namespace/${this.namespace}/metadata`)
+        .then(({ data }) => {
+          vm.metadata = data;
+        }),
+    ]).catch((err) => {
+      vm.error = err;
     });
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.release, .fill {
+.release,
+.fill {
   padding: 2em 2em;
   width: 100%;
   // text-align: center;
@@ -98,7 +139,7 @@ export default {
   img {
     display: block;
     margin: 2em auto;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     width: 100%;
     max-width: 450px;
@@ -119,6 +160,21 @@ export default {
     font-size: 3em;
     line-height: 1;
     margin: 0;
+  }
+  .description {
+    font-size: 1.2em;
+  }
+  .links {
+    a {
+      padding: 4px 8px;
+      color: #ffffff;
+      text-decoration: none;
+      &:hover,
+      &:active {
+        color: #ffffff;
+        background: var(--accent);
+      }
+    }
   }
 }
 

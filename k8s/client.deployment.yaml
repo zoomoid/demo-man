@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-client
+  namespace: web
+  labels:
+    svc: client
+    app: demo-man
+spec:
+  selector:
+    matchLabels:
+      app: demo-man
+      svc: client
+  template:
+    metadata:
+      labels:
+        app: demo-man
+        svc: client
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: github
+      - name: gitlab
+      containers:
+      - name: client
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:1.15.7
+        ports:
+        - containerPort: 80

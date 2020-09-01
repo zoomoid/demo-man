@@ -1,75 +1,117 @@
 <template>
-  <div class="wrapper" :style="'--accent: ' + this.accentColor">
-    <div class="error" v-if="!this.directories.length">
-        <h1>There's nothing here...
-        </h1>
-        <p>
-          Either there are currently no demos or we are experiencing
-          issues with our microservices.
-        </p>
-        <p class="err" v-if="this.error">{{ this.error }}</p>
+  <div class="wrapper" :style="{ '--accent': accent, '--primary': primary }">
+    <Header></Header>
+    <div class="error" v-if="!namespaces.length">
+      <h1>There's nothing here...</h1>
+      <p>
+        Either there are currently no demos or we are experiencing issues with
+        our microservices.
+      </p>
+      <p class="err" v-if="error">{{ error }}</p>
     </div>
     <div class="success" v-else>
-      <img class="logo" src="~@/assets/demo-man.png"/>
       <ul>
-        <li v-for="directory in directories" :key="directory">
-          <router-link :to="'/' + directory">{{directory}}</router-link>
+        <li v-for="n in namespaces" :key="n.name">
+          <router-link class="title" :to="'/' + n.name">
+            <img
+              class="cover__preview"
+              :src="`${apiEP}/namespace/${n.name}/cover`"
+            />
+            <span>{{ n.title }}</span>
+          </router-link>
         </li>
       </ul>
     </div>
-    <Footer v-if="this.$route.path === '/'"></Footer>
+    <Footer v-if="$route.path === '/'"></Footer>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-import Footer from '../components/Footer.vue';
+import axios from "axios";
+import Footer from "../components/Footer.vue";
+import Header from "../components/Header.vue";
 
 export default {
   data: () => ({
     error: null,
-    directories: [],
-    accentColor: '#F58B44',
+    namespaces: [],
+    accent: "#F58B44",
+    primary: "#1a1a1a",
   }),
+  computed: {
+    apiEP() {
+      if (this.$root) {
+        return this.$root.apiEP;
+      }
+      return "";
+    },
+  },
   components: {
     Footer,
+    Header,
   },
   mounted() {
-    const apiEP = process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://demo.zoomoid.de';
-    axios.get(`${apiEP}/api/v1/demo`).then((response) => {
-      // at this point, v is an array of tracks. We assume they share the same
-      // metadata, hence we just pick the first one and roll with it
-      this.directories = response.data.data.map((v) => v.name);
-    }).catch((err) => {
-      this.error = err;
-    });
+    const vm = this;
+    axios
+      .get(`${vm.$root.apiEP}/namespace`)
+      .then(({ data }) => {
+        return data.namespaces.map((v) => v.name);
+      })
+      .then((namespaces) =>
+        Promise.all(
+          namespaces.map((n) => {
+            return axios.get(`${vm.$root.apiEP}/namespace/${n}`);
+          })
+        )
+      )
+      .then((resp) => {
+        return resp.map(({ data }) => {
+          return {
+            name: data.name,
+            title: data.metadata.title || "",
+          };
+        });
+      })
+      .then((n) => {
+        vm.namespaces = n;
+      })
+      .catch((err) => {
+        vm.error = err;
+      });
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .success {
-  padding-top: 8em;
+  // padding-top: 8em;
   width: 66%;
   margin: 0 auto;
-  .logo {
-    width: 100%;
-    max-width: 350px;
-  }
   ul {
     padding-left: 2em;
     li {
       padding: 1em 0;
-      list-style: square;
+      list-style: none outside none;
       font-size: 1.5em;
-      a:link, a:visited {
+      .title {
+        display: flex;
+        align-items: center;
         font-weight: 700;
         text-decoration: none;
         color: #1a1a1a;
-        padding: 4px 8px;
+        // padding: 8px;
+        border-radius: 0.5em;
         vertical-align: baseline;
-        &:hover, &:active {
-          color: #F58B44;
+        .cover__preview {
+          width: 96px;
+          border-radius: 0.5em;
+        }
+        span {
+          margin: 0 16px;
+        }
+        &:hover,
+        &:active {
+          color: var(--accent);
           background: #1a1a1a;
         }
       }

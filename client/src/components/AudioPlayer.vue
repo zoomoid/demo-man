@@ -1,33 +1,34 @@
 <template>
-  <div :id="track.no"
-    class="player-wrapper"
-    ref="player"
-    :class="this.css">
+  <div :id="track.no" class="player-wrapper" ref="player" :class="this.css">
     <div class="title-wrapper">
       <div class="title-line">
         <div class="title">
-          {{track.title}}
+          {{ track.title }}
         </div>
       </div>
       <div class="metadata">
         <div class="no" v-if="track.no">
           <span>
-            {{track.no}}
+            {{ track.no }}
           </span>
         </div>
         <div class="comments" v-if="track.comment">
-          <span class="comment" v-for="comment in track.comment" v-bind:key="comment">
-            {{comment}}
+          <span
+            class="comment"
+            v-for="comment in track.comment"
+            v-bind:key="comment"
+          >
+            {{ comment }}
           </span>
         </div>
         <div class="genre" v-if="track.genre">
           <span v-for="genre in track.genre" v-bind:key="genre">
-            {{genre}}
+            {{ genre }}
           </span>
         </div>
         <div class="bpm" v-if="track.bpm">
           <span>
-            {{track.bpm}}
+            {{ track.bpm }}
           </span>
         </div>
         <div class="hfill"></div>
@@ -51,49 +52,68 @@
     </div>
     <div class="player">
       <div class="play-state">
-        <i @click="pause" v-if="this.localPlayState === 'playing'"
-          class="material-icons-sharp">
+        <i
+          @click="pause"
+          v-if="this.localPlayState === 'playing'"
+          class="material-icons-sharp"
+        >
           pause
         </i>
-        <i @click="play" v-else-if="this.localPlayState === 'paused'"
-          class="material-icons-sharp paused">
+        <i
+          @click="play"
+          v-else-if="this.localPlayState === 'paused'"
+          class="material-icons-sharp paused"
+        >
           play_arrow
         </i>
-        <i @click="replay" v-else-if="this.localPlayState === 'finished'"
-          class="material-icons-sharp">
+        <i
+          @click="replay"
+          v-else-if="this.localPlayState === 'finished'"
+          class="material-icons-sharp"
+        >
           replay
         </i>
       </div>
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
-          <div class="bg bg--full" v-bind:style="{
-            backgroundImage: `url('${waveforms.full}')`}"></div>
-          <div class="bg bg--small" v-bind:style="{
-            backgroundImage: `url('${waveforms.small}')`}"></div>
-          <div class="fg" v-bind:style="{ width: `${100 - this.visualProgress}%` }"></div>
+          <div
+            class="bg bg--full"
+            v-bind:style="{
+              backgroundImage: `url('${waveforms.full}')`,
+            }"
+          ></div>
+          <div
+            class="bg bg--small"
+            v-bind:style="{
+              backgroundImage: `url('${waveforms.small}')`,
+            }"
+          ></div>
+          <div
+            class="fg"
+            v-bind:style="{ width: `${100 - this.visualProgress}%` }"
+          ></div>
         </div>
       </div>
       <div class="playback-time-marks">
-        <span class="playback-time-current">{{this.currentTime}}</span>
+        <span class="playback-time-current">{{ this.currentTime }}</span>
         <span class="playback-time-separator"></span>
-        <span class="playback-time-total">{{this.totalDuration}}</span>
+        <span class="playback-time-total">{{ this.totalDuration }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import humanReadableTimestamp from '../main';
+import { mapGetters } from "vuex";
+import humanReadableTimestamp from "../main";
 
 export default {
-  name: 'AudioPlayer',
-  data: () => ({
-  }),
+  name: "AudioPlayer",
+  data: () => ({}),
   computed: {
     localPlayState() {
-      return this.playState[this.url] || 'paused';
+      return this.playState[this.url] || "paused";
     },
     totalDuration() {
       return humanReadableTimestamp(this.track.duration);
@@ -122,34 +142,34 @@ export default {
     css() {
       const classes = [];
       if (this.highlighted) {
-        classes.push('is-highlighted');
+        classes.push("is-highlighted");
       }
       if (this.inAction) {
-        classes.push('is-playing');
+        classes.push("is-playing");
       }
-      return classes.reduce((p, c) => `${p} ${c}`, '');
+      return classes.reduce((p, c) => `${p} ${c}`, "");
     },
     ...mapGetters({
-      progress: 'progress',
-      duration: 'duration',
-      playState: 'playState',
-      playingTrackUrl: 'url',
-      seek: 'seek',
+      progress: "progress",
+      duration: "duration",
+      playState: "playState",
+      playingTrackUrl: "url",
+      seek: "seek",
     }),
   },
   props: {
     track: {
       type: Object,
       default: () => ({
-        url: '',
-        name: '',
-        _id: '',
+        url: "",
+        name: "",
+        _id: "",
         no: -1,
         tags: [],
-        namespace: '',
-        waveformUrlUrl: {
-          full: '',
-          small: '',
+        namespace: "",
+        waveformUrl: {
+          full: "",
+          small: "",
         },
         duration: 0,
       }),
@@ -160,7 +180,7 @@ export default {
     },
     accent: {
       type: String,
-      default: '#F58B44',
+      default: "#F58B44",
     },
     highlighted: {
       type: Boolean,
@@ -173,14 +193,14 @@ export default {
       const seekPos = (e.clientX - pos.left) / pos.width;
       const seekTarget = this.track.duration * seekPos;
       this.$store.commit({
-        type: 'seek',
+        type: "seek",
         seek: seekTarget,
         url: this.url,
       });
     },
     play() {
       this.$store.dispatch({
-        type: 'changeTrack',
+        type: "changeTrack",
         mp3: this.track.mp3,
         url: `${this.track.namespace}/#${this.index}`,
         title: this.track.title,
@@ -191,46 +211,56 @@ export default {
     },
     replay() {
       this.$store.commit({
-        type: 'updateProgress',
+        type: "updateProgress",
         url: this.url,
         progress: 0,
       });
       this.play();
     },
     pause() {
-      if (this.localPlayState === 'playing') {
+      if (this.localPlayState === "playing") {
         this.$store.commit({
-          type: 'updatePlayState',
-          playState: 'paused',
+          type: "updatePlayState",
+          playState: "paused",
           url: this.url,
         });
       }
     },
     share() {
       const prev = window.location.hash;
-      window.location.hash = '';
-      navigator.clipboard.writeText(`${this.$root.publicEP}/${this.track.namespace}/#${this.index}`).then(() => {
-        window.location.hash = `${this.index}`;
-        this.$emit('update:select', this.index);
-      }, () => {
-        window.location.hash = prev; // revert changes to hash
-      });
+      window.location.hash = "";
+      navigator.clipboard
+        .writeText(
+          `${this.$root.publicEP}/${this.track.namespace}/#${this.index}`
+        )
+        .then(
+          () => {
+            window.location.hash = `${this.index}`;
+            this.$emit("update:select", this.index);
+          },
+          () => {
+            window.location.hash = prev; // revert changes to hash
+          }
+        );
     },
   },
   mounted() {
-    this.observer = new IntersectionObserver((entries) => {
-      this.$store.commit({
-        type: 'intersecting',
-        intersecting: entries[0].isIntersecting,
-      });
-    }, {
-      threshold: 0.5,
-    });
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        this.$store.commit({
+          type: "intersecting",
+          intersecting: entries[0].isIntersecting,
+        });
+      },
+      {
+        threshold: 0.5,
+      }
+    );
     this.observer.observe(this.$refs.player);
   },
   beforeDestroy() {
     this.$store.commit({
-      type: 'intersecting',
+      type: "intersecting",
       intersecting: false,
     });
   },
@@ -243,18 +273,25 @@ export default {
 
 @keyframes loading {
   0% {
-    background-position-x: 0%
+    background-position-x: 0%;
   }
   100% {
-    background-position-x: 200%
+    background-position-x: 200%;
   }
 }
 
 $color1: #000000;
 $color2: #161616;
-$loading-fade: linear-gradient(135deg,
-  $color1 0%, $color1 10%, $color2 30%, $color1 50%,
-  $color2 70%, $color1  90%, $color1 100%);
+$loading-fade: linear-gradient(
+  135deg,
+  $color1 0%,
+  $color1 10%,
+  $color2 30%,
+  $color1 50%,
+  $color2 70%,
+  $color1 90%,
+  $color1 100%
+);
 $share: desaturate(#00c853, 33%);
 
 .player-wrapper {
@@ -262,7 +299,7 @@ $share: desaturate(#00c853, 33%);
   background: var(--primary);
   border-top-left-radius: 16pt;
   border-top-right-radius: 16pt;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
   padding: 2em 2em 4em;
   margin-bottom: -16pt;
 
@@ -271,8 +308,10 @@ $share: desaturate(#00c853, 33%);
     div.fg {
       background: var(--accent) !important;
     }
-    a:hover, a:active,
-    .play-state:active, .play-state:hover {
+    a:hover,
+    a:active,
+    .play-state:active,
+    .play-state:hover {
       color: var(--primary) !important;
     }
   }
@@ -281,8 +320,10 @@ $share: desaturate(#00c853, 33%);
     div.fg {
       background: $share !important;
     }
-    a:hover, a:active,
-    .play-state:active, .play-state:hover {
+    a:hover,
+    a:active,
+    .play-state:active,
+    .play-state:hover {
       color: var(--primary) !important;
     }
   }
@@ -340,7 +381,8 @@ $share: desaturate(#00c853, 33%);
       }
       .actions {
         display: flex;
-        .download, .share {
+        .download,
+        .share {
           width: 32px;
           height: 32px;
           cursor: pointer;
@@ -351,10 +393,12 @@ $share: desaturate(#00c853, 33%);
             text-align: center;
             font-size: 150%;
           }
-          a, i {
+          a,
+          i {
             color: inherit;
           }
-          &:hover, &:active {
+          &:hover,
+          &:active {
             color: var(--accent);
           }
         }
@@ -384,10 +428,12 @@ $share: desaturate(#00c853, 33%);
         text-align: center;
         font-size: 1em;
       }
-      a, i {
+      a,
+      i {
         color: inherit;
       }
-      &:hover, &:active {
+      &:hover,
+      &:active {
         color: var(--accent);
       }
     }
@@ -417,7 +463,8 @@ $share: desaturate(#00c853, 33%);
           height: 100%;
           z-index: 7;
         }
-        img, div {
+        img,
+        div {
           position: absolute;
           display: block;
           height: 100%;
@@ -478,7 +525,7 @@ $share: desaturate(#00c853, 33%);
         &.playback-time-separator::after {
           padding-left: 0.5ex;
           padding-right: 0.5ex;
-          content: ':';
+          content: ":";
         }
       }
     }
@@ -504,12 +551,11 @@ $share: desaturate(#00c853, 33%);
 }
 
 .slide-enter-active {
-  animation: slide-in ease .2s;
+  animation: slide-in ease 0.2s;
   animation-fill-mode: forwards;
 }
 .slide-leave-active {
-  animation: slide-out ease .2s;
+  animation: slide-out ease 0.2s;
   animation-fill-mode: forwards;
 }
-
 </style>

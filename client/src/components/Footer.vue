@@ -2,23 +2,21 @@
   <footer>
     <a href="https://github.com/occloxium/demo-man">
       <span class="emoji">🎧</span>
-      <span class="text">demo-man</span>
-    </a><span>&mdash;</span>
+      <span class="text">demo-man</span> </a
+    ><span>&mdash;</span>
     <a href="https://alexander.bartolomey.me/">
       <span class="emoji">👨‍💻</span>
-      <span class="text">@zoomoid</span>
-    </a><span>&mdash;</span>
-    <span class="version">
-      v{{$root.version}}
-    </span>
+      <span class="text">@zoomoid</span> </a
+    ><span>&mdash;</span>
+    <span class="version"> v{{ $root.version }} </span>
   </footer>
 </template>
 
 <script>
 export default {
-  name: 'Footer',
+  name: "Footer",
   props: {
-    'is-empty': {
+    "is-empty": {
       type: Boolean,
       default: false,
     },
@@ -37,15 +35,15 @@ footer {
     text-decoration: none;
     opacity: 0.5;
     .emoji::after {
-      content: ' '
+      content: " ";
     }
-    &:hover, &:active {
+    &:hover,
+    &:active {
       opacity: 1;
       .emoji {
         text-decoration: none;
       }
       .text {
-
         text-decoration: underline;
       }
     }

@@ -6,9 +6,13 @@
     <div class="manager" v-else>
       <header class="settings">
         <div class="autoplay">
-          <label for="autoplay" @click="autoplayControl" :class="[
-            this.autoplay ? 'is-active autoplay__label' : 'autoplay__label'
-          ]">
+          <label
+            for="autoplay"
+            @click="autoplayControl"
+            :class="[
+              this.autoplay ? 'is-active autoplay__label' : 'autoplay__label',
+            ]"
+          >
             <span class="material-icons-sharp">
               playlist_play
             </span>
@@ -18,9 +22,11 @@
           </label>
         </div>
         <div class="loop">
-          <label for="loop" @click="loopControl" :class="[
-            this.loop ? 'is-active loop__label' : 'loop__label'
-          ]">
+          <label
+            for="loop"
+            @click="loopControl"
+            :class="[this.loop ? 'is-active loop__label' : 'loop__label']"
+          >
             <span class="material-icons-sharp">
               repeat
             </span>
@@ -30,8 +36,11 @@
           </label>
         </div>
         <div class="spacer"></div>
-        <div class="play-all" :class="[this.globalPlayState === 'playing' ? 'is-disabled' : '']"
-          @click="playAll">
+        <div
+          class="play-all"
+          :class="[this.globalPlayState === 'playing' ? 'is-disabled' : '']"
+          @click="playAll"
+        >
           <span class="material-icons-sharp">
             play_arrow
           </span>
@@ -57,9 +66,9 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import AudioPlayer from './AudioPlayer.vue';
-import Footer from './Footer.vue';
+import { mapGetters } from "vuex";
+import AudioPlayer from "./AudioPlayer.vue";
+import Footer from "./Footer.vue";
 
 export default {
   components: {
@@ -69,15 +78,15 @@ export default {
   props: {
     queue: {
       type: Array,
-      default: () => ([]),
+      default: () => [],
     },
     accent: {
       type: String,
-      default: '#F58B44',
+      default: "#F58B44",
     },
     primary: {
       type: String,
-      default: '#1a1a1a',
+      default: "#1a1a1a",
     },
     namespace: {
       type: String,
@@ -94,26 +103,26 @@ export default {
   },
   computed: {
     playing() {
-      return this.queue.find((t, i) => `${this.namespace}/#${i + 1}` === this.url);
+      return this.queue.find(
+        (t, i) => `${this.namespace}/#${i + 1}` === this.url,
+      );
     },
-    ...mapGetters([
-      'globalPlayState',
-      'url',
-      'progress',
-    ]),
+    ...mapGetters(["globalPlayState", "url", "progress"]),
   },
   watch: {
     url(n) {
-      this.playIndex = this.queue.findIndex((t, i) => `${this.namespace}/#${i + 1}` === n);
+      this.playIndex = this.queue.findIndex(
+        (t, i) => `${this.namespace}/#${i + 1}` === n,
+      );
     },
     globalPlayState(n) {
-      if (n === 'finished') {
+      if (n === "finished") {
         if (this.autoplay) {
           let nextIndex;
           if (this.loop) {
             nextIndex = (this.playIndex + 1) % this.queue.length;
           } else {
-            nextIndex = (this.playIndex + 1 < this.queue.length ? this.playIndex + 1 : -1);
+            nextIndex = this.playIndex + 1 < this.queue.length ? this.playIndex + 1 : -1;
           }
           if (nextIndex >= 0) {
             const {
@@ -122,7 +131,7 @@ export default {
             const url = `${this.namespace}/#${nextIndex + 1}`;
             const progress = this.progress[url] || 0;
             this.$store.dispatch({
-              type: 'changeTrack',
+              type: "changeTrack",
               mp3,
               url,
               artist,
@@ -155,7 +164,7 @@ export default {
       } = this.queue[0];
       const url = `${this.namespace}/#1`;
       this.$store.dispatch({
-        type: 'changeTrack',
+        type: "changeTrack",
         mp3,
         url,
         artist,
@@ -166,7 +175,7 @@ export default {
     },
   },
   mounted() {
-    this.select(window.location.hash.replace('#', ''));
+    this.select(window.location.hash.replace("#", ""));
   },
 };
 </script>
@@ -179,12 +188,13 @@ export default {
     background: var(--primary);
     border-top-left-radius: 16pt;
     border-top-right-radius: 16pt;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
     padding: 1em 2em 3em;
     margin-bottom: -28pt;
     display: flex;
     align-items: center;
-    .autoplay, .loop {
+    .autoplay,
+    .loop {
       padding: 1em 1em 0 0;
       label {
         user-select: none;
@@ -205,7 +215,8 @@ export default {
           display: block;
           transition: opacity 0.1s ease, transform 0.1s ease;
         }
-        &:hover, &:active {
+        &:hover,
+        &:active {
           span:last-child {
             opacity: 1;
             width: auto;
@@ -238,7 +249,8 @@ export default {
         display: block;
         transition: opacity 0.1s ease, transform 0.1s ease;
       }
-      &:hover, &:active {
+      &:hover,
+      &:active {
         span:last-child {
           opacity: 1;
           width: auto;
@@ -248,7 +260,7 @@ export default {
       cursor: pointer;
       &.is-disabled {
         cursor: initial;
-        color: rgba(128,128,128,0.5);
+        color: rgba(128, 128, 128, 0.5);
       }
     }
   }
@@ -267,8 +279,8 @@ export default {
   background: var(--primary);
   border-top-left-radius: 16pt;
   border-top-right-radius: 16pt;
-  border-top: solid 1px rgba(0,0,0,0.33);
+  border-top: solid 1px rgba(0, 0, 0, 0.33);
   padding: 3em 0;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
 }
 </style>

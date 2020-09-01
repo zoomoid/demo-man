@@ -1,7 +1,8 @@
 const { guard, waveform, db } = require("../../util/");
 const { ObjectID } = require("mongodb");
-const logger = require("@zoomoid/log");
+const logger = require("@zoomoid/log").v2;
 const { api, waveman } = require("../../endpoints");
+const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
   router
@@ -9,94 +10,99 @@ module.exports = function (router) {
     /**
      * Add new track to API and queries wave-man for waveforms
      */
-    .post(guard, async (req, res, next) => {
-      // logger.info('Received POST request on /file route');
-      try {
-        const track = req.body.track;
-        track.type = "Track";
-        track._id = new ObjectID();
-        waveform(track.namespace, track.filename, track._id, waveman.url);
-        const resp = await db.get().insertOne(track);
-        logger.info(
-          "Added track to namespace",
-          "level",
-          "POST /track",
-          "namespace",
-          track.namespace
-        );
-        res.status(200).json({
-          response: resp,
+    .post(guard, ({ body }, res) => {
+      const track = {
+        ...body.track,
+        _id: new ObjectID(),
+        type: "Track",
+      };
+      waveform(track.namespace, track.filename, track._id, waveman.url);
+      db.get()
+        .insertOne(track)
+        .then(() => {
+          logger.info("Added track to namespace", {
+            in: "POST /track",
+            namespace: track.namespace,
+          });
+          res.status(200).json({
+            message: "success",
+          });
+        })
+        .catch((err) => {
+          logger.error("Failed to create track resource", {
+            in: "POST /track",
+            error: err,
+          });
+          res.status(500).json({ message: "Interal Server Error" });
         });
-      } catch (err) {
-        logger.error(
-          "Received error from MongoDB",
-          "level",
-          "POST /track",
-          "response",
-          err
-        );
-        next(err);
-      }
     })
     /**
      * DELETE track from API
      */
-    .delete(guard, async (req, res, next) => {
-      try {
-        const resp = await db
-          .get()
-          .deleteMany({ path: req.body.path, type: "Track" });
-        logger.info(
-          "Deleted track from namespace",
-          "level",
-          "DELETE /track",
-          "track",
-          `${req.body.path}`
-        );
-        res.status(200).json({
-          response: resp,
+    .delete(guard, (req, res) => {
+      db.get()
+        .deleteMany({ path: req.body.path, type: "Track" })
+        .then(() => {
+          logger.info("Deleted track from namespace", {
+            in: "DELETE /track",
+            track: `${req.body.path}`,
+          });
+          res.status(200).json({
+            message: "success",
+          });
+        })
+        .catch((err) => {
+          logger.error("Failed to delete track resource", {
+            in: "DELETE /track",
+            error: err,
+          });
+          res.status(500).json({ message: "Interal Server Error" });
         });
-      } catch (err) {
-        logger.error(
-          "Received error from MongoDB",
-          "level",
-          "DELETE /track",
-          "response",
-          err
-        );
-        next(err);
-      }
+    })
+    .get((req, res) => {
+      db.get()
+        .find({ type: "Track" })
+        .toArray()
+        .then((resp) => {
+          if (resp) {
+            res.status(200).json({ tracks: resp });
+          } else {
+            res.status(404).json({ message: "Not Found" });
+          }
+        })
+        .catch((err) => {
+          logger.error("Failed to retrieve track resources", {
+            in: "GET /track",
+            error: err,
+          });
+          res.status(500).json({ message: "Interal Server Error" });
+        });
     });
 
   /**
    * GET a specific track from the API
    */
-  router.get("/:namespace/:track", async (req, res, next) => {
-    try {
-      const resp = await db.get().findOne({
+  router.get("/track/:id", (req, res) => {
+    db.get()
+      .findOne({
         type: "Track",
-        namespace: req.params.namespace,
-        _id: ObjectID.createFromHexString(req.params.track),
+        _id: id(req.params.id),
+      })
+      .then((resp) => {
+        if (resp) {
+          resp.waveform = `${api.url}/track/${resp._id}/waveform`;
+          res.json(resp);
+        } else {
+          res.status(404).json({ message: "Not found" });
+        }
+      })
+      .catch((err) => {
+        logger.error("Failed to retrieve track resource", {
+          in: "GET /track/:id",
+          "track.id": `${req.params.id}`,
+          error: err,
+        });
+        res.status(500).json({ message: "Interal Server Error" });
       });
-      if (resp) {
-        resp.waveform = `${api.url}/${req.params.namespace}/${resp._id}/waveform`;
-        res.json(resp);
-      } else {
-        res.status(404).send("Not found");
-      }
-    } catch (err) {
-      logger.error(
-        "Error while loading track",
-        "level",
-        "GET /:namespace/:track",
-        "namespace",
-        `${req.params.namespace}`,
-        "track.id",
-        `${req.params.track}`,
-        "error",
-        err
-      );
-      next(err);
-    }
   });
 };
