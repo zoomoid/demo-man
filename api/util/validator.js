@@ -1,4 +1,4 @@
-const { isHexColor, isURL, isAlphanumerical } = require("validator");
+const { isHexColor, isURL, isAlphanumeric } = require("validator");
 const logger = require("@zoomoid/log").v2;
 
 Object.prototype.has = function (prop) {
@@ -60,7 +60,7 @@ const colors = (o) => {
 const title = (o) => {
   return {
     warings: [],
-    errors: [isAlphanumerical(o.name, "de-DE")],
+    errors: [isAlphanumeric(o.name || "", "de-DE")],
   };
 };
 
