@@ -64,7 +64,10 @@ module.exports = function (router) {
     })
     .get((req, res) => {
       db.get()
-        .find({ type: "Namespace" }, {"metadata": 0, "lastUpdated": 0})
+        .find(
+          { type: "Namespace" },
+          { projection: { metadata: 0, lastUpdated: 0 } }
+        )
         .toArray()
         .then((resp) =>
           resp.map((e) => {
@@ -111,7 +114,7 @@ module.exports = function (router) {
       )
       .then((resp) => {
         res.status(200).json({
-          data: resp,
+          tracks: resp,
         });
       })
       .catch((err) => {
@@ -126,9 +129,7 @@ module.exports = function (router) {
 
   router.get("/namespace/:namespace", (req, res) => {
     Promise.all([
-      db
-        .get()
-        .findOne({ type: "Namespace", name: req.params.namespace }),
+      db.get().findOne({ type: "Namespace", name: req.params.namespace }),
       db
         .get()
         .find({ type: "Track", namespace: req.params.namespace })
@@ -147,12 +148,12 @@ module.exports = function (router) {
         namespace: resp[0],
         tracks: resp[1],
       }))
-      .then(({namespace, tracks}) => {
-        if(namespace){
+      .then(({ namespace, tracks }) => {
+        if (namespace) {
           res.status(200).json({
             ...namespace,
             tracks: tracks,
-          });  
+          });
         } else {
           logger.warn("Could not find namespace resource", {
             namespace: req.param.namespace,
@@ -219,7 +220,7 @@ module.exports = function (router) {
         })
       )
       .then((resp) => {
-        res.json({ data: resp });
+        res.json({ waveforms: resp });
       })
       .catch((err) => {
         logger.error("Failed to retrieve waveforms of namespace resource", {
