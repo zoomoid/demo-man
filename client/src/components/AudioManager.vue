@@ -182,8 +182,6 @@ export default {
 
 <style lang="scss" scoped>
 .manager {
-  max-width: 1024px;
-  margin: 0 auto;
   .settings {
     background: var(--primary);
     border-top-left-radius: 16pt;
