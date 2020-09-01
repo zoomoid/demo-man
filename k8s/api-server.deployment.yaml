@@ -23,14 +23,14 @@ spec:
       - name: gitlab
       containers:
       - name: api
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:2.0.1
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:2.0.2
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"
         - name: DB
           value: "demo"
         - name: WAVE_ENDPOINT
-          value: http://demo-waveman:8080/
+          value: http://demo-waveman:8083/
         - name: API_ENDPOINT
           value: https://demo.zoomoid.de/api/v1/demo
         - name: PORT
