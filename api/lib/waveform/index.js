@@ -18,7 +18,6 @@ module.exports = function (router) {
         .findOne({
           type: "Waveform",
           track_id: id(req.params.track),
-          namespace: req.params.namespace,
         })
         .then((resp) => {
           if (resp) {
