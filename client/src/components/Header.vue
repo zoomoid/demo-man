@@ -1,7 +1,7 @@
 <template>
   <header>
     <div class="backdrop"></div>
-    <img class="logo" src="~@/assets/demo-man.png" />
+    <img class="logo" src="~@/assets/demo-man-accent.svg" />
   </header>
 </template>
 
