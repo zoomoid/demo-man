@@ -18,7 +18,7 @@
               :style="{display: placeholder[i] ? 'none' : 'block'}"
               class="cover__preview"
               :src="`${apiEP}/namespace/${n.name}/cover`"
-              @error="Vue.set(placeholder, i, true)"
+              @error="setPlaceholder(i)"
             />
             <span>{{ n.title }}</span>
           </router-link>
@@ -31,6 +31,7 @@
 
 <script>
 import axios from "axios";
+import Vue from "vue";
 import Footer from "../components/Footer.vue";
 import Header from "../components/Header.vue";
 
@@ -53,6 +54,11 @@ export default {
   components: {
     Footer,
     Header,
+  },
+  methods: {
+    setPlaceholder(i) {
+      Vue.set(this.placeholder, i, true);
+    },
   },
   mounted() {
     const vm = this;
