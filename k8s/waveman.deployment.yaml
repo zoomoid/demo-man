@@ -20,7 +20,7 @@ spec:
       - name: gitlab
       containers:
       - name: waveman
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:1.15.7
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:2.0.1
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -30,8 +30,7 @@ spec:
           mountPath: /app/config
         resources:
           limits:
-            memory: "1Gi"
-          requests:
+            memory: "512Mi"
             cpu: "500m"
       volumes:
       - name: audio-volume

@@ -22,7 +22,7 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:1.15.7
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:2.0.1
         env:
         - name: VOLUME
           value: "/app/files"
@@ -38,6 +38,10 @@ spec:
         volumeMounts:
         - mountPath: "/app/files"
           name: audio-volume
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
       volumes:
       - name: audio-volume
         persistentVolumeClaim:
