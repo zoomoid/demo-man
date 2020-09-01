@@ -11,11 +11,14 @@
     </div>
     <div class="success" v-else>
       <ul>
-        <li v-for="n in namespaces" :key="n.name">
+        <li v-for="(n, i) in namespaces" :key="n.name">
           <router-link class="title" :to="'/' + n.name">
+            <div class="placeholder" :style="{display: placeholder[i] ? 'block' : 'none'}"></div>
             <img
+              :style="{display: placeholder[i] ? 'none' : 'block'}"
               class="cover__preview"
               :src="`${apiEP}/namespace/${n.name}/cover`"
+              @error="Vue.set(placeholder, i, true)"
             />
             <span>{{ n.title }}</span>
           </router-link>
@@ -37,6 +40,7 @@ export default {
     namespaces: [],
     accent: "#F58B44",
     primary: "#1a1a1a",
+    placeholder: [],
   }),
   computed: {
     apiEP() {
@@ -68,12 +72,13 @@ export default {
         return resp.map(({ data }) => {
           return {
             name: data.name,
-            title: data.metadata.title || "",
+            title: data.metadata ? data.metadata.title : "",
           };
         });
       })
       .then((n) => {
         vm.namespaces = n;
+        vm.placeholder = Array(n.length).fill(false);
       })
       .catch((err) => {
         vm.error = err;
@@ -83,6 +88,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@keyframes pulse {
+  0% {
+    opacity: .5;
+  }
+  50% {
+    opacity: .2;
+  }
+  100% {
+    opacity: .5;
+  }
+}
 .success {
   // padding-top: 8em;
   width: 66%;
@@ -106,6 +122,13 @@ export default {
           width: 96px;
           border-radius: 0.5em;
         }
+        .placeholder {
+          width: 96px;
+          height: 96px;
+          background: #0e0e0e;
+          border-radius: 16px;
+          animation: pulse 2s ease infinite;
+        }
         span {
           margin: 0 16px;
         }
@@ -122,12 +145,11 @@ export default {
 .error {
   font-size: 24pt;
   width: 66%;
-  padding-top: 8em;
   margin: 0 auto;
   h1 {
     font-weight: 900;
-    font-size: 3em;
-    margin-bottom: 16pt;
+    font-size: 2em;
+    margin-bottom: 1rem;
   }
   p {
     opacity: 0.3;
