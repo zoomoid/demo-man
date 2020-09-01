@@ -6,7 +6,7 @@
     <template v-if="this.error">
       <div class="error">
         <h1>404<br />Not Found</h1>
-        <p>The song you were looking for could not be found.</p>
+        <p>The namespace you were looking for could not be found.</p>
         <!-- <p class="err">{{ this.error }}</p> -->
         <router-link to="/">
           <i class="material-icons-sharp">arrow_back</i>
@@ -17,10 +17,11 @@
     <template v-else>
       <Breadcrump></Breadcrump>
       <div class="spacer"></div>
-      <div class="fill">
-        <img
-          :src="`${this.$root.apiEP}/namespace/${this.namespace}/cover`"
-        />
+      <div class="cover-container">
+        <div class="placeholder" v-if="placeholder"></div>
+        <img :class="[placeholder ? 'cover--hidden' : 'cover']"
+        :src="`${$root.apiEP}/namespace/${namespace}/cover`"
+        @error="placeholder = true"/>
       </div>
       <div class="release" v-if="metadata">
         <h1 class="title">{{ metadata.title }}</h1>
@@ -39,13 +40,20 @@
           >
         </div>
       </div>
-      <AudioManager
-        class="players"
-        :queue="queue"
-        :namespace="namespace"
-        :accent="this.accent"
-        :primary="this.primary"
-      ></AudioManager>
+      <div class="queue" v-if="queue.length !== 0">
+        <AudioManager
+          class="players"
+          :queue="queue"
+          :namespace="namespace"
+          :accent="accent"
+          :primary="primary"
+        ></AudioManager>
+      </div>
+      <div class="queue" v-else>
+        <p class="queue--empty">
+          It's currently really empty here...
+        </p>
+      </div>
     </template>
   </div>
 </template>
@@ -66,6 +74,7 @@ export default {
       error: null,
       queue: [],
       metadata: null,
+      placeholder: false,
     };
   },
   computed: {
@@ -109,8 +118,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@keyframes pulse {
+  0% {
+    opacity: .5;
+  }
+  50% {
+    opacity: .2;
+  }
+  100% {
+    opacity: .5;
+  }
+}
 .release,
-.fill {
+.cover-container {
   padding: 2em 2em;
   width: 100%;
   // text-align: center;
@@ -129,20 +149,31 @@ export default {
 
 .players {
   width: 100%;
-  // text-align: center;
-  // max-width: 1024px;
   margin: 0 auto;
 }
 
-.fill {
+.cover-container {
   padding-top: 0;
-  img {
+  .cover {
     display: block;
     margin: 2em auto;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     width: 100%;
     max-width: 450px;
+  }
+  .cover--hidden {
+    display: none;
+  }
+  .placeholder {
+    width: 100vw;
+    max-width: 320px;
+    height: 100vh;
+    max-height: 320px;
+    background: #0e0e0e;
+    border-radius: 16px;
+    margin: 0 auto;
+    animation: pulse 2s ease infinite;
   }
 }
 
@@ -160,6 +191,7 @@ export default {
     font-size: 3em;
     line-height: 1;
     margin: 0;
+    text-align: center;
   }
   .description {
     font-size: 1.2em;
@@ -209,6 +241,18 @@ export default {
     }
   }
 }
+
+.queue {
+  max-width: 1024px;
+  // margin: 0 auto;
+  .queue--empty {
+    font-size: 2em;
+    opacity: 0.33;
+    margin-bottom: 4em;
+    text-align: center;
+  }
+}
+
 .wrapper {
   background-color: var(--primary);
   min-height: 100vh;
