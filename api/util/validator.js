@@ -1,7 +1,7 @@
-const { isHexColor, isURL } = require("validator");
+const { isHexColor, isURL, isAlphanumerical } = require("validator");
 const logger = require("@zoomoid/log").v2;
 
-Object.prototype.has = function(prop){
+Object.prototype.has = function (prop) {
   return Object.prototype.hasOwnProperty.call(this, prop);
 };
 
@@ -54,6 +54,13 @@ const colors = (o) => {
   return {
     errors: [],
     warnings,
+  };
+};
+
+const title = (o) => {
+  return {
+    warings: [],
+    errors: [isAlphanumerical(o.name, "de-DE")],
   };
 };
 
@@ -162,7 +169,7 @@ const metadata = (request, response, next) => {
   const o = request.body;
   const e = [];
   const w = [];
-  [colors(o), description(o), links(o), namespace(o)].forEach(
+  [colors(o), description(o), links(o), namespace(o), title(o)].forEach(
     ({ errors, warnings }) => {
       e.concat(errors);
       w.concat(warnings);
