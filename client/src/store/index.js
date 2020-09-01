@@ -1,21 +1,21 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from "vue";
+import Vuex from "vuex";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  strict: process.env.NODE_ENV !== 'production',
+  strict: process.env.NODE_ENV !== "production",
   state: {
     volume: 1,
-    url: '',
-    title: '',
-    artist: '',
+    url: "",
+    title: "",
+    artist: "",
     progress: {},
     duration: {},
-    globalPlayState: 'paused',
+    globalPlayState: "paused",
     playState: {},
     intersecting: false,
-    mp3: '',
+    mp3: "",
     seek: 0,
   },
   getters: {
@@ -50,7 +50,7 @@ export default new Vuex.Store({
       state.seek = seek;
     },
     updatePlayState(state, { playState, url }) {
-      if (['playing', 'finished', 'paused'].includes(playState)) {
+      if (["playing", "finished", "paused"].includes(playState)) {
         state.globalPlayState = playState;
         Vue.set(state.playState, url, playState);
       }
@@ -67,7 +67,7 @@ export default new Vuex.Store({
       url, mp3, title, artist, progress, duration,
     }) {
       commit({
-        type: 'updateMetadata',
+        type: "updateMetadata",
         url,
         mp3,
         title,
@@ -77,6 +77,5 @@ export default new Vuex.Store({
       });
     },
   },
-  modules: {
-  },
+  modules: {},
 });
