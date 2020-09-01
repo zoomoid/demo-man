@@ -26,7 +26,7 @@ export default {
 
 <style lang="scss" scoped>
 footer {
-  padding: 0.5em 0;
+  padding: 2em 0 0;
   font-size: 12pt;
   text-align: center;
   a {
