@@ -150,6 +150,7 @@ export default {
 .players {
   width: 100%;
   margin: 0 auto;
+  max-width: 1024px;
 }
 
 .cover-container {
@@ -243,7 +244,7 @@ export default {
 }
 
 .queue {
-  max-width: 1024px;
+  // max-width: 1024px;
   // margin: 0 auto;
   .queue--empty {
     font-size: 2em;
