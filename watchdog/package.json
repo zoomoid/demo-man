@@ -9,7 +9,7 @@
     "start": "node --trace-warnings index.js"
   },
   "dependencies": {
-    "@zoomoid/log": "^2.0.0",
+    "@occloxium/log": "^2.0.0",
     "chokidar": "^3.4.2",
     "js-yaml": "^3.14.0",
     "music-metadata": "^6.4.0",

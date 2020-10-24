@@ -9,11 +9,11 @@
   "author": "Alexander Bartolomey",
   "license": "MIT",
   "dependencies": {
-    "@zoomoid/log": "^2.0.0",
+    "@occloxium/log": "^2.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "mongodb": "^3.6.0",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "showdown": "^1.9.1",
     "validator": "^13.1.1"
   },
