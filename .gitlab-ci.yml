@@ -72,6 +72,8 @@ build:waveman:
   - kubectl set image deployment/demo-$SVC $SVC=$CI_REGISTRY_IMAGE/$SVC:$VERSION --record
 
 deploy:api:
+  needs:
+  - build:api
   extends: .deploy:prototype
   variables:
     SVC: api
@@ -80,6 +82,8 @@ deploy:api:
         - api/**/*
   
 deploy:client:
+  needs:
+  - build:client
   extends: .deploy:prototype
   variables:
     SVC: client
@@ -88,6 +92,8 @@ deploy:client:
         - client/**/*
   
 deploy:watchdog:
+  needs:
+  - build:watchdog
   extends: .deploy:prototype
   variables:
     SVC: watchdog
@@ -96,6 +102,8 @@ deploy:watchdog:
         - watchdog/**/*
   
 deploy:waveman:
+  needs:
+  - build:waveman
   extends: .deploy:prototype
   variables:
     SVC: waveman
