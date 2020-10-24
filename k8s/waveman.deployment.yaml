@@ -20,7 +20,8 @@ spec:
       - name: gitlab
       containers:
       - name: waveman
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:2.0.2
+        imagePullPolicy: Always
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:latest
         ports:
         - containerPort: 8080
         volumeMounts:

@@ -23,7 +23,8 @@ spec:
       - name: gitlab
       containers:
       - name: client
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:2.0.2
+        imagePullPolicy: Always
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:latest
         ports:
         - containerPort: 80
         resources:

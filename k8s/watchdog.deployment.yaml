@@ -22,7 +22,8 @@ spec:
       - name: gitlab
       containers:
       - name: watchdog
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:2.0.2
+        imagePullPolicy: Always
+        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:latest
         env:
         - name: VOLUME
           value: "/app/files"
