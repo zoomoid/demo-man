@@ -215,6 +215,7 @@ module.exports = function (router) {
             default:
               return {
                 waveform: { full: waveform.full, small: waveform.small },
+                url: `${api.url}/track/${waveform.track._id}/waveform`,
               };
           }
         })

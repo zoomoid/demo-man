@@ -36,6 +36,9 @@ module.exports = function (router) {
             }
             let color = req.query.color || "000000";
             waveform = waveform.replace(/{{.color}}/g, `#${color}`);
+            if(req.query.aspectRatio && req.query.aspectRatio === "keep"){
+              waveform.replace("preserveAspectRatio=\"none\"", "preserveAspectRatio=\"keep\"");
+            }
             res.set("Content-Type", "image/svg+xml").send(waveform);
           } else {
             logger.warn("Could not find original document", {
