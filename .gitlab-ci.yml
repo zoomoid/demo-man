@@ -32,8 +32,9 @@ build:api:
   script: 
     - cd api/
     - docker build -t $CI_REGISTRY_IMAGE/api:$VERSION . --build-arg VERSION=$VERSION
+    - docker tag $CI_REGISTRY_IMAGE/api:$VERSION $CI_REGISTRY_IMAGE/api:latest
     - docker push $CI_REGISTRY_IMAGE/api:$VERSION
-
+    - docker push $CI_REGISTRY_IMAGE/api:latest
 build:client:
   extends: .build-pre
   rules:
