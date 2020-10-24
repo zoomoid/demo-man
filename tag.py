@@ -61,6 +61,7 @@ def git_hook(version, message):
     v = version_str(version)
     subprocess.run(["git", "tag", "-a", "v{}".format(v), "-m", "{}: [{}]".format(message, v)])
     subprocess.run(["git", "push", "--tags"])
+    subprocess.run(["git", "commit", "--amend", "./.version"])
     print("☝️ Created and pushed new version tag!")
     print("  Currently at:")
     print("  {}: {}: [{}]".format(v, message, v))
