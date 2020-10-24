@@ -42,7 +42,9 @@ build:client:
   script: 
     - cd client/
     - docker build -t $CI_REGISTRY_IMAGE/client:$VERSION . --build-arg VERSION=$VERSION
+    - docker tag $CI_REGISTRY_IMAGE/client:$VERSION $CI_REGISTRY_IMAGE/client:latest
     - docker push $CI_REGISTRY_IMAGE/client:$VERSION
+    - docker push $CI_REGISTRY_IMAGE/client:latest
 
 build:watchdog:
   extends: .build-pre
@@ -52,7 +54,9 @@ build:watchdog:
   script: 
     - cd watchdog/
     - docker build -t $CI_REGISTRY_IMAGE/watchdog:$VERSION . --build-arg VERSION=$VERSION
+    - docker tag $CI_REGISTRY_IMAGE/watchdog:$VERSION $CI_REGISTRY_IMAGE/watchdog:latest
     - docker push $CI_REGISTRY_IMAGE/watchdog:$VERSION
+    - docker push $CI_REGISTRY_IMAGE/watchdog:latest
 
 build:waveman:
   extends: .build-pre
@@ -62,7 +66,9 @@ build:waveman:
   script: 
     - cd waveman/
     - docker build -t $CI_REGISTRY_IMAGE/waveman:$VERSION . --build-arg VERSION=$VERSION
+    - docker tag $CI_REGISTRY_IMAGE/waveman:$VERSION $CI_REGISTRY_IMAGE/waveman:latest
     - docker push $CI_REGISTRY_IMAGE/waveman:$VERSION
+    - docker push $CI_REGISTRY_IMAGE/waveman:latest
 
 .deploy:prototype:
   stage: deploy
