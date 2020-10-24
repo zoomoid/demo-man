@@ -65,6 +65,7 @@ build:waveman:
     - docker push $CI_REGISTRY_IMAGE/waveman:$VERSION
 
 .deploy:prototype:
+  stage: deploy
   extends: .kubectl
   script:
   - echo "Upgrading images to version $VERSION" 
