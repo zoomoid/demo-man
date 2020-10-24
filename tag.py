@@ -16,6 +16,7 @@ def main():
         print("❌ Corrupted version file encountered")
         print("🚪 Exiting.")
         return 1
+    
     v=version_str(version)
     if args.type in ["major", "maj", "M"]:
         print("👑 Adding new major version")
@@ -42,7 +43,12 @@ def main():
         f = open(".version", "wt")
         f.write(v)
     elif args.type in ["get"]:
+        v = subprocess.check_output(["git", "describe"], text=True)
+        v = v.replace("v", "").strip()
         print(v)
+        f = open(".version", "wt")
+        f.write(v)
+        f.close()
         return
     else:
         print("❌ Invalid version type supplied")
