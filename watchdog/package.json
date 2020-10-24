@@ -1,6 +1,6 @@
 {
   "name": "watchdog",
-  "version": "1.15.0",
+  "version": "2.0.4",
   "description": "fs watchdog to notify the api of newly added files to the demo man",
   "main": "index.js",
   "author": "Alexander Bartolomey",
