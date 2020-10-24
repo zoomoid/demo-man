@@ -1,5 +1,5 @@
 const { guard, db } = require("../../util/");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const { api } = require("../../endpoints");
 
 module.exports = function (router) {

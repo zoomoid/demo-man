@@ -1,5 +1,5 @@
 const { isHexColor, isURL, isAlphanumeric } = require("validator");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 
 Object.prototype.has = function (prop) {
   return Object.prototype.hasOwnProperty.call(this, prop);

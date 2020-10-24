@@ -1,6 +1,6 @@
 const cors = require("cors");
 const express = require("express");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const fetch = require("node-fetch");
 const endpoints = require("./endpoints");
 

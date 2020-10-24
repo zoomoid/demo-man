@@ -1,4 +1,4 @@
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const path = require("path");
 const { add, remove, change } = require("../util/http");
 const { apiEndpoint } = require("../constants");

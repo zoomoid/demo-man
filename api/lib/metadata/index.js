@@ -1,5 +1,5 @@
 const { guard, db, validator } = require("../../util");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 
 module.exports = function (router) {
   router

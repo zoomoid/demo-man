@@ -1,4 +1,4 @@
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const fetch = require("node-fetch");
 
 function WavemanError(track, message, fileName, lineNumber) {

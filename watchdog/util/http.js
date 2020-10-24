@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const { token } = require("../constants");
 
 /**

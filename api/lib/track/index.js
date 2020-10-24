@@ -1,6 +1,6 @@
 const { guard, waveform, db } = require("../../util/");
 const { ObjectID } = require("mongodb");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const { api, waveman } = require("../../endpoints");
 const id = ObjectID.createFromHexString;
 

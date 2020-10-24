@@ -1,5 +1,5 @@
 const metadata = require("music-metadata");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const path = require("path");
 const fs = require("fs");
 const { volume, url } = require("../constants");

@@ -1,5 +1,5 @@
 const mongodb = require("mongodb");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 
 const state = {
   name: null,

@@ -1,5 +1,5 @@
 const { ObjectID } = require("mongodb");
-const logger = require("@zoomoid/log").v2;
+const logger = require("@occloxium/log").v2;
 const { guard, wavemanHook, db } = require("../../util/");
 
 const id = ObjectID.createFromHexString;

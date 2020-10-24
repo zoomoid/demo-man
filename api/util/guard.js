@@ -1,4 +1,4 @@
-const logger = require("@zoomoid/log");
+const logger = require("@occloxium/log");
 
 /**
  * A very simply express.js route guard middleware which just compares a sent token against an expected one.
