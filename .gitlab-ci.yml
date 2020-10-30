@@ -17,7 +17,7 @@ stages:
 
 determine-version:
   stage: preflight
-  image: python:alpine
+  image: python:latest
   script:
   - python3 tag.py get > .version
   artifacts:
