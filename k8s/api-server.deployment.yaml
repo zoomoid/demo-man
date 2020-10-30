@@ -24,7 +24,7 @@ spec:
       containers:
       - name: api
         imagePullPolicy: Always
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/api:latest
+        image: registry.git.rwth-aachen.de/z-cloud/demo-man/api:latest
         env:
         - name: MONGOURL
           value: "mongodb://demo-mongodb:27017"

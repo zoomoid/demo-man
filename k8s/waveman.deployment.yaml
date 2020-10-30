@@ -21,7 +21,7 @@ spec:
       containers:
       - name: waveman
         imagePullPolicy: Always
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/waveman:latest
+        image: registry.git.rwth-aachen.de/z-cloud/demo-man/waveman:latest
         ports:
         - containerPort: 8080
         volumeMounts:

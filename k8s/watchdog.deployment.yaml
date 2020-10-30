@@ -23,7 +23,7 @@ spec:
       containers:
       - name: watchdog
         imagePullPolicy: Always
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/watchdog:latest
+        image: registry.git.rwth-aachen.de/z-cloud/demo-man/watchdog:latest
         env:
         - name: VOLUME
           value: "/app/files"

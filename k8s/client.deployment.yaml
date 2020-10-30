@@ -24,7 +24,7 @@ spec:
       containers:
       - name: client
         imagePullPolicy: Always
-        image: registry.git.rwth-aachen.de/occloxium-webdev/demo-zoomoid-de/client:latest
+        image: registry.git.rwth-aachen.de/z-cloud/demo-man/client:latest
         ports:
         - containerPort: 80
         resources:
