@@ -1,4 +1,5 @@
 stages:
+  - preflight
   - build
   - deploy
 
@@ -14,14 +15,24 @@ stages:
   tags:
   - kubernetes
 
+determine-version:
+  stage: preflight
+  image: python:alpine
+  script:
+  - python3 tag.py get > .version
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - .version
+
 .build-pre:
   stage: build
   image: docker:latest
   rules:
   - if: $CI_COMMIT_TAG
   before_script:
-  - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin 
-  - export VERSION=$(python3 tag.py get)
+  - echo "$CI_JOB_TOKEN" | docker login registry.git.rwth-aachen.de --username gitlab-ci-token --password-stdin
+  - export VERSION=$(cat .version)
   - echo $VERSION
   tags:
   - kubernetes
