@@ -92,10 +92,12 @@ def wavify():
   Logger.info("Rendered small SVG waveform")
   cleanup(wave_fn)
   Logger.info("Cleaned up and removed wav file")
-  return {
+  o = {
     "full": template(config.full.width, config.full.height, "".join(blocks["full"])),
     "small": template(config.small.width, config.small.height, "".join(blocks["small"]))
   }
+  print(o['full'])
+  return o
 
 """
 Handler for service discovery
@@ -144,14 +146,18 @@ data point previously calculated in the read audio logic.
 This way, we can easily patch in different drawing routines.
 """
 def drawHook(x, y, w, h, r, c='{{.color}}'):
-  return f'<rect width="{w}" height="{h}" x="{x}" y="{y}" rx="{r}" ry="{r}" fill="{c}" />'
+  return f'<rect width="{w}" height="{h}" x="{x}" y="{y}" rx="{r}" ry="{r}"/>'
+  # return f'h{w/4} v{h/2} h{w/4} v-{h} h{w/4} v{h/2} '
+  # return f'l {w/4} {h/2} l {w/2} -{h} l {w/4} {h/2} '
 
 """
 Binds the calculated svg elements into the SVG canvas, which is the final template in question
 This string is then responded to the client
 """
 def template(w, h, d):
-  return f'<svg baseProfile="tiny" height="100%" preserveAspectRatio="none" version="1.2" viewBox="0 0 {w} {h}" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink"><defs/>{d}</svg>'
+  style = "<defs><style>rect { fill: {{.color}}; }</style></defs>"
+  return f'<svg baseProfile="tiny" height="100%" preserveAspectRatio="none" version="1.2" viewBox="0 0 {w} {h}" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">{style}{d}</svg>'
+  # return f'<svg baseProfile="tiny" height="100%" preserveAspectRatio="none" version="1.2" viewBox="0 0 {w} {h}" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink"><defs/><path stroke="black" fill="transparent" d="M 0 {h/2} {d}"></path></svg>'
 
 """
 Normalizes a given list of numbers
