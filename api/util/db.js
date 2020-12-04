@@ -35,6 +35,9 @@ exports.connect = (url, database) => {
   });
 };
 
+/**
+ * @returns {mongodb.Collection}
+ */
 exports.get = () => {
   return state.collection;
 };
