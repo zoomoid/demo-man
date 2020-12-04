@@ -9,7 +9,6 @@ const { db } = require("./util");
 var app = express();
 const demoRouter = express.Router();
 
-
 app.use(cors());
 
 app.use(
@@ -33,6 +32,10 @@ if (!process.env.TOKEN) {
   logger.error("No auth token provided as ENV variable");
   process.exit(1);
 }
+
+app.get("/", (_, response) => {
+  response.redirect("/api");
+});
 
 app.get("/api", (_, response) => {
   response.json({
