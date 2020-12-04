@@ -2,7 +2,7 @@ version: "3"
 
 services:
   client:
-    image: node:latest
+    image: node:lts
     container_name: demo-client
     restart: on-failure
     volumes: 
@@ -38,12 +38,12 @@ services:
 
   watchdog:
     # build: ../watchdog
-    image: node:alpine
+    image: node:lts-alpine
     container_name: demo-watchdog
     restart: on-failure
     environment: 
       VOLUME: /app/files
-      PUBLIC_PATH: '{"prefix": "https", "hostname": "demo.zoomoid.de", "dir": "files/"}'
+      PUBLIC_PATH: '{"prefix": "http", "hostname": "localhost:8084", "dir": ""}'
       TOKEN: demotoken
       API_ENDPOINT: 'http://api:8080/api/v1/demo'
       VERSION: 0.0.0-dev
@@ -56,7 +56,6 @@ services:
     - "8082:8080"
 
   waveman:
-    image: wave-man
     build:
       context: ../waveman
       dockerfile: Dockerfile
@@ -81,6 +80,14 @@ services:
     ports:
     - "27017:27017"
 
+  fileserver:
+    image: nginx:alpine
+    container_name: demo-fileserver
+    restart: on-failure
+    volumes:
+    - ./files:/usr/share/nginx/html
+    ports:
+    - "8084:80"
 
 volumes:
   db-data:
