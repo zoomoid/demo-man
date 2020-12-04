@@ -9,7 +9,7 @@ const { apiEndpoint } = require("../constants");
  */
 function removeTrack(p) {
   logger.info("Deleting track...", { track: p, endpoint: apiEndpoint });
-  return remove(`${apiEndpoint}/track`, { path: p })
+  return remove(`${apiEndpoint}/tracks`, { path: p })
     .then(() => {
       logger.info("Deleted track", { track: `${path.basename(p)}` });
     })
@@ -31,7 +31,7 @@ function removeNamespace(namespace) {
     namespace: namespace,
     endpoint: apiEndpoint,
   });
-  return remove(`${apiEndpoint}/namespace`, { namespace: namespace })
+  return remove(`${apiEndpoint}/namespaces`, { namespace: namespace })
     .then(() => {
       logger.info("Deleted namespace", { namespace: namespace });
     })
@@ -53,7 +53,7 @@ function addNamespace(namespace) {
     namespace: namespace,
     endpoint: apiEndpoint,
   });
-  return add(`${apiEndpoint}/namespace`, { namespace })
+  return add(`${apiEndpoint}/namespaces`, { namespace })
     .then(() => {
       logger.info("Added namespace", { namespace: namespace });
     })
@@ -75,7 +75,7 @@ function addTrack(track) {
     track: track.filename,
     endpoint: apiEndpoint,
   });
-  return add(`${apiEndpoint}/track`, { track: track })
+  return add(`${apiEndpoint}/tracks`, { track: track })
     .then(() => {
       logger.info("Added track", { track: track.filename });
     })
@@ -93,7 +93,7 @@ function changeMetadata(o, p, n) {
     path: p,
     data: o,
   });
-  return change(`${apiEndpoint}/namespace/metadata`, {
+  return change(`${apiEndpoint}/namespaces/metadata`, {
     namespace: n,
     metadata: o
   })

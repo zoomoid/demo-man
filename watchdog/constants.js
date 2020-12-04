@@ -15,9 +15,10 @@ const url = JSON.parse(process.env.PUBLIC_PATH) || {
   dir: "/",
 };
 
-const metadataTemplate = (n) => `colors:
-  accent: "#F58B44"
-  primary: "#1A1A1A"
+const metadataTemplate = (n) => `theme:
+  accent: "#f58b44"
+  color: "#1a1a1a"
+  textColor: "#fefefe"
 description: |
 title: ${n}
 links: []
