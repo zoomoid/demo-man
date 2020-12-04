@@ -41,22 +41,26 @@ module.exports = function (router) {
      */
     .delete(guard, (req, res) => {
       db.get()
-        .deleteMany({ path: req.body.path, type: "Track" })
-        .then(() => {
-          logger.info("Deleted track from namespace", {
-            in: "DELETE /track",
-            track: `${req.body.path}`,
-          });
-          res.status(200).json({
-            message: "success",
-          });
-        })
-        .catch((err) => {
-          logger.error("Failed to delete track resource", {
-            in: "DELETE /track",
-            error: err,
-          });
-          res.status(500).json({ message: "Interal Server Error" });
+        .findOne({ path: req.body.path, type: "Track" })
+        .then((resp) => {
+          db.get()
+            .deleteMany({ $or: [{ path: req.body.path, type: "Track" }, { type: "Waveform", track_id: id(resp._id) }]})
+            .then(() => {
+              logger.info("Deleted track and waveform from namespace", {
+                in: "DELETE /track",
+                track: `${resp.title}`,
+              });
+              res.status(200).json({
+                message: "success",
+              });
+            })
+            .catch((err) => {
+              logger.error("Failed to delete track resource", {
+                in: "DELETE /track",
+                error: err,
+              });
+              res.status(500).json({ message: "Interal Server Error" });
+            });
         });
     })
     .get((req, res) => {
