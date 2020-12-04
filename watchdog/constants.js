@@ -10,9 +10,9 @@ const volume = process.env.VOLUME || ".";
 
 /** composite object to assemble the routes to the fileserver */
 const url = JSON.parse(process.env.PUBLIC_PATH) || {
-  prefix: "https",
-  hostname: "demo.zoomoid.de",
-  dir: "files/",
+  prefix: "http",
+  hostname: "localhost:8084",
+  dir: "/",
 };
 
 const metadataTemplate = (n) => `colors:
