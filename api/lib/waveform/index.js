@@ -21,32 +21,40 @@ module.exports = function (router) {
         })
         .then((resp) => {
           if (resp) {
-            let waveform;
-            // console.log(resp);
             switch (req.query.mode) {
               case "small":
-                waveform = resp.small.replace(/\\/g, "");
-                break;
+                return resp.small.replace(/\\/g, "");
               case "full":
-                waveform = resp.full.replace(/\\/g, "");
-                break;
+                return resp.full.replace(/\\/g, "");
               default:
-                res.status(405).send("Unsupported mode");
-                return;
+                res.status(405).json({ message: "Unsupported Mode" });
+                break;
             }
-            let color = req.query.color || "000000";
-            waveform = waveform.replace(/{{.color}}/g, `#${color}`);
-            if(req.query.aspectRatio && req.query.aspectRatio === "keep"){
-              waveform = waveform.replace("preserveAspectRatio=\"none\"", "preserveAspectRatio=\"keep\"");
-            }
-            res.set("Content-Type", "image/svg+xml").send(waveform);
           } else {
             logger.warn("Could not find original document", {
               namespace: req.param.namespace,
               "track.id": req.params.track,
             });
-            res.status(404).json({ message: "Not found" });
           }
+        }, () => {
+          res.status(404).json({ message: "Not Found" });
+        })
+        .then((waveform) => {
+          let color = req.query.color || "000000";
+          return waveform.replace(/{{.color}}/g, `${color}`);
+        })
+        .then((waveform) => {
+          if (req.query.aspectRatio) {
+            return waveform.replace(
+              "preserveAspectRatio=\"none\"",
+              `preserveAspectRatio="${req.query.aspectRatio}"`
+            );
+          } else {
+            return waveform;
+          }
+        })
+        .then((waveform) => {
+          res.set("Content-Type", "image/svg+xml").send(waveform);
         })
         .catch((err) => {
           logger.error("Failed to retrieve waveform resource", {
@@ -114,4 +122,38 @@ module.exports = function (router) {
           res.status(500).json({ message: "Interal Server Error" });
         });
     });
+
+  router.route("/waveforms/by_namespace/:namespace").get((req, res) => {
+    db.get()
+      .find({
+        type: "Waveform",
+        namespace: req.body.namespace,
+      })
+      .then((resp) => {
+        res.json(resp);
+      })
+      .catch((err) => {
+        logger.error("Failed to get waveforms by namespace", {
+          namespace: req.params.namespace,
+          error: err,
+        });
+      });
+  });
+
+  router.route("/waveforms/by_track/:id").get((req, res) => {
+    db.get()
+      .find({
+        type: "Waveform",
+        track_id: id(req.params.id),
+      })
+      .then((resp) => {
+        res.json(resp);
+      })
+      .catch((err) => {
+        logger.error("Failed to get waveforms by track", {
+          track_id: req.params.id,
+          error: err,
+        });
+      });
+  });
 };
