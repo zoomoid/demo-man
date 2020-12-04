@@ -6,6 +6,7 @@ const logger = require("@occloxium/log").v2;
 const { volume, metadataTemplate } = require("../constants");
 const { track, namespace, metadata } = require("./requests");
 const { id3 } = require("../util");
+
 /**
  * Volume path to watch
  *
@@ -30,8 +31,8 @@ const { id3 } = require("../util");
  *    |- track2.mp3
  * |- namespace
  *
- * This is a valid file tree for our example watchdog */
-
+ * This is a valid file tree for our example watchdog 
+ */
 module.exports = function () {
   /** mp3 watcher */
   chokidar
