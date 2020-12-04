@@ -6,7 +6,7 @@ const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
   router
-    .route("/track/:track/waveform")
+    .route("/tracks/:track/waveform")
     /**
      * GET a specific waveform for a specific track from the API server
      * :track is supposed to be a string of ObjectId of the track in question
@@ -19,26 +19,28 @@ module.exports = function (router) {
           type: "Waveform",
           track_id: id(req.params.track),
         })
-        .then((resp) => {
-          if (resp) {
-            switch (req.query.mode) {
-              case "small":
-                return resp.small.replace(/\\/g, "");
-              case "full":
-                return resp.full.replace(/\\/g, "");
-              default:
-                res.status(405).json({ message: "Unsupported Mode" });
-                break;
+        .then(
+          (resp) => {
+            if (resp) {
+              switch (req.query.mode) {
+                case "small":
+                  return resp.small.replace(/\\/g, "");
+                case "full":
+                  return resp.full.replace(/\\/g, "");
+                default:
+                  res.status(405).json({ message: "Unsupported Mode" });
+                  break;
+              }
+            } else {
+              logger.warn("Could not find original document", {
+                "track.id": req.params.track,
+              });
             }
-          } else {
-            logger.warn("Could not find original document", {
-              namespace: req.param.namespace,
-              "track.id": req.params.track,
-            });
+          },
+          () => {
+            res.status(404).json({ message: "Not Found" });
           }
-        }, () => {
-          res.status(404).json({ message: "Not Found" });
-        })
+        )
         .then((waveform) => {
           let color = req.query.color || "000000";
           return waveform.replace(/{{.color}}/g, `${color}`);
@@ -58,12 +60,15 @@ module.exports = function (router) {
         })
         .catch((err) => {
           logger.error("Failed to retrieve waveform resource", {
-            in: "GET /:namespace/:track/waveform/",
+            in: "GET /tracks/:track/waveform/",
             namespace: `${req.params.namespace}`,
             "track.id": `${req.params.track}`,
             error: err,
           });
-          res.status(500).json({ message: "Interal Server Error" });
+          if (!res.headersSent) {
+            // we've not yet sent header information to indicate a client error
+            res.status(500).json({ message: "Interal Server Error" });
+          }
         });
     })
     /**
@@ -109,7 +114,7 @@ module.exports = function (router) {
             logger.warn(
               "Could not find waveform by id. Not updating waveform",
               {
-                namespace: req.param.namespace,
+                namespace: req.params.namespace,
                 "track.id": req.params.track,
               }
             );
@@ -129,6 +134,7 @@ module.exports = function (router) {
         type: "Waveform",
         namespace: req.body.namespace,
       })
+      .toArray()
       .then((resp) => {
         res.json(resp);
       })

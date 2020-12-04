@@ -6,7 +6,7 @@ const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
   router
-    .route("/track")
+    .route("/tracks")
     /**
      * Add new track to API and queries wave-man for waveforms
      */
@@ -21,7 +21,7 @@ module.exports = function (router) {
         .insertOne(track)
         .then(() => {
           logger.info("Added track to namespace", {
-            in: "POST /track",
+            in: "POST /tracks",
             namespace: track.namespace,
           });
           res.status(200).json({
@@ -30,7 +30,7 @@ module.exports = function (router) {
         })
         .catch((err) => {
           logger.error("Failed to create track resource", {
-            in: "POST /track",
+            in: "POST /tracks",
             error: err,
           });
           res.status(500).json({ message: "Interal Server Error" });
@@ -44,10 +44,10 @@ module.exports = function (router) {
         .findOne({ path: req.body.path, type: "Track" })
         .then((resp) => {
           db.get()
-            .deleteMany({ $or: [{ path: req.body.path, type: "Track" }, { type: "Waveform", track_id: id(resp._id) }]})
+            .deleteMany({ $or: [{ path: req.body.path, type: "Track" }, { type: "Waveform", track_id: resp._id }]})
             .then(() => {
               logger.info("Deleted track and waveform from namespace", {
-                in: "DELETE /track",
+                in: "DELETE /tracks",
                 track: `${resp.title}`,
               });
               res.status(200).json({
@@ -56,7 +56,7 @@ module.exports = function (router) {
             })
             .catch((err) => {
               logger.error("Failed to delete track resource", {
-                in: "DELETE /track",
+                in: "DELETE /tracks",
                 error: err,
               });
               res.status(500).json({ message: "Interal Server Error" });
@@ -76,7 +76,7 @@ module.exports = function (router) {
         })
         .catch((err) => {
           logger.error("Failed to retrieve track resources", {
-            in: "GET /track",
+            in: "GET /tracks",
             error: err,
           });
           res.status(500).json({ message: "Interal Server Error" });
@@ -86,7 +86,7 @@ module.exports = function (router) {
   /**
    * GET a specific track from the API
    */
-  router.get("/track/:id", (req, res) => {
+  router.get("/tracks/:id", (req, res) => {
     db.get()
       .findOne({
         type: "Track",
@@ -94,7 +94,7 @@ module.exports = function (router) {
       })
       .then((resp) => {
         if (resp) {
-          resp.waveform = `${api.url}/track/${resp._id}/waveform`;
+          resp.waveform = `${api.url}/tracks/${resp._id}/waveform`;
           res.json(resp);
         } else {
           res.status(404).json({ message: "Not found" });
@@ -102,7 +102,7 @@ module.exports = function (router) {
       })
       .catch((err) => {
         logger.error("Failed to retrieve track resource", {
-          in: "GET /track/:id",
+          in: "GET /tracks/:id",
           "track.id": `${req.params.id}`,
           error: err,
         });

@@ -4,7 +4,7 @@ const { api } = require("../../endpoints");
 
 module.exports = function (router) {
   router
-    .route("/namespace")
+    .route("/namespaces")
     /**
      * ADD new album to API
      */
@@ -46,7 +46,7 @@ module.exports = function (router) {
       ])
         .then(() => {
           logger.info("Deleted album", {
-            in: "DELETE /namespace",
+            in: "DELETE /namespaces",
             namespace: `${req.body.namespace}`,
           });
           res.status(200).json({
@@ -55,7 +55,7 @@ module.exports = function (router) {
         })
         .catch((err) => {
           logger.error("Failed to delete namespace resources", {
-            in: "DELETE /namespace",
+            in: "DELETE /namespaces",
             namespace: `${req.body.namespace}`,
             error: err,
           });
@@ -72,7 +72,7 @@ module.exports = function (router) {
         .then((resp) =>
           resp.map((e) => {
             return {
-              url: `${api.url}/namespace/${e.name}`,
+              url: `${api.url}/namespaces/${e.name}`,
               ...e,
             };
           })
@@ -88,7 +88,7 @@ module.exports = function (router) {
         })
         .catch((err) => {
           logger.error("Failed to retrieve namespace resources", {
-            in: "GET /namespace",
+            in: "GET /namespaces",
             namespace: `${req.params.namespace}`,
             error: err,
           });
@@ -99,15 +99,15 @@ module.exports = function (router) {
   /**
    * GET all tracks from the API for a certain namespace from the API
    */
-  router.get("/namespace/:namespace/tracks", (req, res) => {
+  router.get("/namespaces/:namespace/tracks", (req, res) => {
     db.get()
       .find({ type: "Track", namespace: req.params.namespace })
       .toArray()
       .then((resp) =>
         resp.map((t) => {
           return {
-            url: `${api.url}/track/${t._id}/`,
-            waveform: `${api.url}/track/${t._id}/waveform`,
+            url: `${api.url}/tracks/${t._id}/`,
+            waveform: `${api.url}/tracks/${t._id}/waveform`,
             ...t,
           };
         })
@@ -119,7 +119,7 @@ module.exports = function (router) {
       })
       .catch((err) => {
         logger.error("Failed to retrieve tracks of namespace resource", {
-          in: "GET /namespace/:namespace/tracks",
+          in: "GET /namespaces/:namespace/tracks",
           namespace: `${req.params.namespace}`,
           error: err,
         });
@@ -127,7 +127,7 @@ module.exports = function (router) {
       });
   });
 
-  router.get("/namespace/:namespace", (req, res) => {
+  router.get("/namespaces/:namespace", (req, res) => {
     Promise.all([
       db.get().findOne({ type: "Namespace", name: req.params.namespace }),
       db
@@ -164,7 +164,7 @@ module.exports = function (router) {
       })
       .catch((err) => {
         logger.error("Failed to retrieve namespace resource", {
-          in: "GET /namespace/:namespace",
+          in: "GET /namespaces/:namespace",
           namespace: `${req.params.namespace}`,
           error: err,
         });
@@ -175,7 +175,7 @@ module.exports = function (router) {
   /**
    * GET the cover of a specified namespace/album
    */
-  router.get("/namespace/:namespace/cover", (req, res) => {
+  router.get("/namespaces/:namespace/cover", (req, res) => {
     db.get()
       .findOne({ type: "Track", namespace: req.params.namespace })
       .then((resp) => {
@@ -183,7 +183,7 @@ module.exports = function (router) {
       })
       .catch((err) => {
         logger.error("Failed to redirect to cover of namespace resource", {
-          in: "GET /namespace/:namespace/cover",
+          in: "GET /namespaces/:namespace/cover",
           namespace: `${req.params.namespace}`,
           error: err,
         });
@@ -191,7 +191,7 @@ module.exports = function (router) {
       });
   });
 
-  router.route("/namespace/:namespace/waveforms").get((req, res) => {
+  router.route("/namespaces/:namespace/waveforms").get((req, res) => {
     db.get()
       .aggregate([
         { $match: { type: "Waveform", namespace: req.params.namespace } },
@@ -215,7 +215,7 @@ module.exports = function (router) {
             default:
               return {
                 waveform: { full: waveform.full, small: waveform.small },
-                url: `${api.url}/track/${waveform.track[0]._id}/waveform`,
+                url: `${api.url}/tracks/${waveform.track[0]._id}/waveform`,
               };
           }
         })
@@ -225,7 +225,7 @@ module.exports = function (router) {
       })
       .catch((err) => {
         logger.error("Failed to retrieve waveforms of namespace resource", {
-          in: "GET /namespace/:namespace/waveforms",
+          in: "GET /namespaces/:namespace/waveforms",
           namespace: `${req.params.namespace}`,
           error: err,
         });

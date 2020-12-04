@@ -3,7 +3,7 @@ const logger = require("@occloxium/log").v2;
 
 module.exports = function (router) {
   router
-    .route("/namespace/metadata")
+    .route("/namespaces/metadata")
     /**
      * Updates the metadata to a given namespace
      */
@@ -42,14 +42,14 @@ module.exports = function (router) {
         })
         .catch((err) => {
           logger.error("Received error from MongoDB", {
-            in: "PATCH /namespace/metadata",
+            in: "PATCH /namespaces/metadata",
             error: err,
           });
           response.status(500).json({ message: "Interal Server Error" });
         });
     });
 
-  router.route("/namespace/:namespace/metadata").get((req, res) => {
+  router.route("/namespaces/:namespace/metadata").get((req, res) => {
     db.get()
       .findOne(
         { type: "Namespace", name: req.params.namespace },
@@ -74,7 +74,7 @@ module.exports = function (router) {
         logger.error("Failed to load metadata for namespace", {
           namespace: req.params.namespace,
           error: err,
-          in: "GET /namespace/:namespace/:metadata",
+          in: "GET /namespaces/:namespace/:metadata",
         });
         res.status(500).json({ message: "Interal Server Error" });
       });
