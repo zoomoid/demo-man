@@ -1,7 +1,6 @@
-const { guard, waveform, db } = require("../../util/");
+const { guard, waveform, palette, db, logger } = require("../../util/");
 const { ObjectID } = require("mongodb");
-const logger = require("@occloxium/log").v2;
-const { api, waveman } = require("../../endpoints");
+const { api, waveman, picasso } = require("../../endpoints");
 const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
@@ -16,7 +15,13 @@ module.exports = function (router) {
         _id: new ObjectID(),
         type: "Track",
       };
+      // Dispatch waveform creation
       waveform(track.namespace, track.filename, track._id, waveman.url);
+      if (track.cover && track.cover.local_url) {
+        // Dispatch computed theme creation only if cover is present
+        palette(track.namespace, track.cover.local_url, track._id, picasso.url);
+      }
+      // Insert entry into DB
       db.get()
         .insertOne(track)
         .then(() => {
@@ -43,24 +48,31 @@ module.exports = function (router) {
       db.get()
         .findOne({ path: req.body.path, type: "Track" })
         .then((resp) => {
-          db.get()
-            .deleteMany({ $or: [{ path: req.body.path, type: "Track" }, { type: "Waveform", track_id: resp._id }]})
-            .then(() => {
-              logger.info("Deleted track and waveform from namespace", {
-                in: "DELETE /tracks",
-                track: `${resp.title}`,
+          if (resp) {
+            db.get()
+              .deleteMany({
+                $or: [
+                  { path: req.body.path, type: "Track" },
+                  { type: "Waveform", track_id: resp._id },
+                ],
+              })
+              .then(() => {
+                logger.info("Deleted track and waveform from namespace", {
+                  in: "DELETE /tracks",
+                  track: `${resp.title}`,
+                });
+                res.status(200).json({
+                  message: "success",
+                });
+              })
+              .catch((err) => {
+                logger.error("Failed to delete track resource", {
+                  in: "DELETE /tracks",
+                  error: err,
+                });
+                res.status(500).json({ message: "Interal Server Error" });
               });
-              res.status(200).json({
-                message: "success",
-              });
-            })
-            .catch((err) => {
-              logger.error("Failed to delete track resource", {
-                in: "DELETE /tracks",
-                error: err,
-              });
-              res.status(500).json({ message: "Interal Server Error" });
-            });
+          }
         });
     })
     .get((req, res) => {

@@ -1,4 +1,4 @@
-const logger = require("@occloxium/log").v2;
+const logger = require("./logger");
 const fetch = require("node-fetch");
 const db = require("./db");
 const { reconcile, WavemanError } = require("./reconcile");

@@ -1,5 +1,5 @@
 const { isHexColor, isURL, isAlphanumeric } = require("validator");
-const logger = require("@occloxium/log").v2;
+const logger = require("./logger");
 
 Object.prototype.has = function (prop) {
   return Object.prototype.hasOwnProperty.call(this, prop);
@@ -8,7 +8,7 @@ Object.prototype.has = function (prop) {
 /** Color validator helper function */
 const colors = (o) => {
   const warnings = [];
-  if (!o.has("colors")) {
+  if (!o["colors"]) {
     warnings.push({
       name: "colors",
       expected: "object",
@@ -16,7 +16,7 @@ const colors = (o) => {
       found: "undefined",
     });
   } else {
-    if (!o.colors.has("primary")) {
+    if (!o.colors["primary"]) {
       warnings.push({
         name: "colors.primary",
         expected: "string",
@@ -33,7 +33,7 @@ const colors = (o) => {
         });
       }
     }
-    if (!o.colors.has("accent")) {
+    if (!o.colors["accent"]) {
       warnings.push({
         name: "colors.accent",
         expected: "string",
@@ -68,7 +68,7 @@ const title = (o) => {
 const links = (o) => {
   const warnings = [];
   const errors = [];
-  if (!o.has("links")) {
+  if (!o["links"]) {
     warnings.push({
       name: "links",
       expected: "array",
@@ -123,7 +123,7 @@ const links = (o) => {
 /** namespace validator helper function */
 const namespace = (o) => {
   const warnings = [];
-  if (!o.has("namespace")) {
+  if (!o["namespace"]) {
     warnings.push({
       name: "namespace",
       expected: "string",
@@ -141,7 +141,7 @@ const namespace = (o) => {
 const description = (o) => {
   const warnings = [];
   const errors = [];
-  if (!o.has("description")) {
+  if (!o["description"]) {
     warnings.push({
       name: "description",
       expected: "string[type=Markdown]",

@@ -1,5 +1,4 @@
-const { guard, db, validator } = require("../../util");
-const logger = require("@occloxium/log").v2;
+const { guard, db, validator, logger } = require("../../util");
 
 module.exports = function (router) {
   router

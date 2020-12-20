@@ -1,6 +1,5 @@
 const { ObjectID } = require("mongodb");
-const logger = require("@occloxium/log").v2;
-const { guard, wavemanHook, db } = require("../../util/");
+const { guard, wavemanHook, db, logger } = require("../../util/");
 
 const id = ObjectID.createFromHexString;
 

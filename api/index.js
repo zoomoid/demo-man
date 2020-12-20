@@ -1,10 +1,9 @@
 const cors = require("cors");
 const express = require("express");
-const logger = require("@occloxium/log").v2;
 const fetch = require("node-fetch");
 const endpoints = require("./endpoints");
 
-const { db } = require("./util");
+const { db, logger } = require("./util");
 
 var app = express();
 const demoRouter = express.Router();

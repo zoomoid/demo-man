@@ -15,7 +15,8 @@
     "mongodb": "^3.6.2",
     "node-fetch": "^2.6.1",
     "showdown": "^1.9.1",
-    "validator": "^13.1.17"
+    "validator": "^13.1.17",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "eslint": "^7.12.0",
