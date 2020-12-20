@@ -1,9 +1,6 @@
 const { isHexColor, isURL, isAlphanumeric } = require("validator");
 const logger = require("./logger");
 
-Object.prototype.has = function (prop) {
-  return Object.prototype.hasOwnProperty.call(this, prop);
-};
 
 /** Color validator helper function */
 const colors = (o) => {
