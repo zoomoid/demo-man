@@ -15,7 +15,7 @@ services:
     - "8081:8080"
 
   api:
-    image: node:alpine
+    image: node:lts
     container_name: demo-api
     restart: on-failure
     depends_on: 
@@ -26,6 +26,7 @@ services:
       VERSION: 0.0.0-dev
       MONGOURL: mongodb://demo-mongodb:27017
       WAVE_ENDPOINT: 'http://waveman:8083'
+      PICASSO_ENDPOINT: 'http://picasso:8085/palette/3'
       API_ENDPOINT: 'http://localhost:8080/api/v1/demo'
       DB: demo
       TOKEN: demotoken
@@ -38,7 +39,7 @@ services:
 
   watchdog:
     # build: ../watchdog
-    image: node:lts-alpine
+    image: node:lts
     container_name: demo-watchdog
     restart: on-failure
     environment: 
@@ -68,6 +69,20 @@ services:
     - ./files:/app/files
     ports:
     - "8083:8083"
+
+  picasso:
+    build:
+      context: ../picasso
+      dockerfile: Dockerfile
+    container_name: demo-picasso
+    restart: on-failure
+    environment:
+      VOLUME: /app/files/
+      VERSION: 0.0.0-dev
+    volumes:
+    - ./files:/app/files
+    ports:
+    - "8085:8085"
 
   db:
     image: mongo:4.2.5
