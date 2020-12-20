@@ -35,8 +35,10 @@ Returns the dominant color palette of an image
 @app.route("/palette/<no>", methods=["POST"])
 def palette(no):
   image_url = request.json["url"]
-  path = f"{os.environ["VOLUME"]}{image_url}"
+  print(f"Calculating color palette for cover at {image_url}")
+  path = f"{os.environ['VOLUME']}{image_url}"
   palette = ColorThief(path).get_palette(color_count=no, quality=5)
+  print(f"Calculated palette {palette}")
   return {"palette": palette}
 
 
@@ -44,8 +46,8 @@ def palette(no):
 Returns the dominant color palette of an image
 """
 @app.route("/color/<quality>", methods=["POST"])
-def palette(quality):
+def color(quality):
   image_url = request.json["url"]
-  path = f"{os.environ["VOLUME"]}{image_url}"
+  path = f"{os.environ['VOLUME']}{image_url}"
   palette = ColorThief(path).get_color(quality=quality)
   return {"color": color}
