@@ -106,7 +106,7 @@ module.exports = function (router) {
       })
       .then((resp) => {
         if (resp) {
-          resp.waveform = `${api.url}/tracks/${resp._id}/waveform`;
+          resp.waveform = `${api.url}/waveforms/by_track/${resp._id}`;
           res.json(resp);
         } else {
           res.status(404).json({ message: "Not found" });

@@ -1,75 +1,11 @@
 const { ObjectID } = require("mongodb");
 const { guard, wavemanHook, db, logger } = require("../../util/");
-
+const { api } = require("../../endpoints");
 const id = ObjectID.createFromHexString;
 
 module.exports = function (router) {
   router
     .route("/tracks/:track/waveform")
-    /**
-     * GET a specific waveform for a specific track from the API server
-     * :track is supposed to be a string of ObjectId of the track in question
-     * :mode has to be either "full" or "small", otherway an error is returned
-     * You can also send addition query "color" such that all templated colors get replaced with your color
-     */
-    .get((req, res) => {
-      db.get()
-        .findOne({
-          type: "Waveform",
-          track_id: id(req.params.track),
-        })
-        .then(
-          (resp) => {
-            if (resp) {
-              switch (req.query.mode) {
-                case "small":
-                  return resp.small.replace(/\\/g, "");
-                case "full":
-                  return resp.full.replace(/\\/g, "");
-                default:
-                  res.status(405).json({ message: "Unsupported Mode" });
-                  break;
-              }
-            } else {
-              logger.warn("Could not find original document", {
-                "track.id": req.params.track,
-              });
-            }
-          },
-          () => {
-            res.status(404).json({ message: "Not Found" });
-          }
-        )
-        .then((waveform) => {
-          let color = req.query.color || "000000";
-          return waveform.replace(/{{.color}}/g, `${color}`);
-        })
-        .then((waveform) => {
-          if (req.query.aspectRatio) {
-            return waveform.replace(
-              "preserveAspectRatio=\"none\"",
-              `preserveAspectRatio="${req.query.aspectRatio}"`
-            );
-          } else {
-            return waveform;
-          }
-        })
-        .then((waveform) => {
-          res.set("Content-Type", "image/svg+xml").send(waveform);
-        })
-        .catch((err) => {
-          logger.error("Failed to retrieve waveform resource", {
-            in: "GET /tracks/:track/waveform/",
-            namespace: `${req.params.namespace}`,
-            "track.id": `${req.params.track}`,
-            error: err,
-          });
-          if (!res.headersSent) {
-            // we've not yet sent header information to indicate a client error
-            res.status(500).json({ message: "Interal Server Error" });
-          }
-        });
-    })
     /**
      * for a given track, regenerate waveforms by querying the wave-man again. This might be useful
      * if we change the config maps for the wave-man and do not want to remove the existing track to
@@ -131,32 +67,109 @@ module.exports = function (router) {
     db.get()
       .find({
         type: "Waveform",
-        namespace: req.body.namespace,
+        namespace: req.params.namespace,
       })
       .toArray()
       .then((resp) => {
-        res.json(resp);
+        res.json(
+          resp.map((waveform) => ({
+            ...waveform,
+            full: `${api.url}/waveforms/by_track/${waveform.track_id}/full`,
+            small: `${api.url}/waveforms/by_track/${waveform.track_id}/small`,
+          }))
+        );
       })
       .catch((err) => {
         logger.error("Failed to get waveforms by namespace", {
+          in: "GET /waveforms/by_namespace/:namespace",
           namespace: req.params.namespace,
           error: err,
         });
       });
   });
 
-  router.route("/waveforms/by_track/:id").get((req, res) => {
+  /**
+   * GET a specific waveform for a specific track from the API server
+   * :track is supposed to be a string of ObjectId of the track in question
+   * :mode has to be either "full" or "small", otherway an error is returned
+   * You can also send addition query "color" such that all templated colors get replaced with your color
+   */
+  router.route("/waveforms/by_track/:track_id/:mode").get((req, res) => {
     db.get()
-      .find({
+      .findOne({
         type: "Waveform",
-        track_id: id(req.params.id),
+        track_id: id(req.params.track_id),
+      })
+      .then(
+        (resp) => {
+          if (resp) {
+            switch (req.params.mode) {
+              case "small":
+                return resp.small.replace(/\\/g, "");
+              case "full":
+                return resp.full.replace(/\\/g, "");
+              default:
+                res.status(405).json({ message: "Unsupported Mode" });
+                break;
+            }
+          } else {
+            logger.warn("Could not find original document", {
+              "track.id": req.params.track_id,
+            });
+          }
+        },
+        () => {
+          res.status(404).json({ message: "Not Found" });
+        }
+      )
+      .then((waveform) => {
+        let color = req.query.color || "000000";
+        return waveform.replace(/{{.color}}/g, `${color}`);
+      })
+      .then((waveform) => {
+        if (req.query.aspectRatio) {
+          return waveform.replace(
+            "preserveAspectRatio=\"none\"",
+            `preserveAspectRatio="${req.query.aspectRatio}"`
+          );
+        } else {
+          return waveform;
+        }
+      })
+      .then((waveform) => {
+        res.set("Content-Type", "image/svg+xml").send(waveform);
+      })
+      .catch((err) => {
+        logger.error("Failed to retrieve waveform resource", {
+          in: "GET /waveforms/by_track/:track_id/:mode",
+          namespace: `${req.params.namespace}`,
+          "track.id": `${req.params.track_id}`,
+          error: err,
+        });
+        if (!res.headersSent) {
+          // we've not yet sent header information to indicate a client error
+          res.status(500).json({ message: "Interal Server Error" });
+        }
+      });
+  });
+
+  router.route("/waveforms/by_track/:track_id").get((req, res) => {
+    db.get()
+      .findOne({
+        type: "Waveform",
+        track_id: id(req.params.track_id),
       })
       .then((resp) => {
-        res.json(resp);
+        res.json({
+          ...resp,
+          full: `${api.url}/waveforms/by_track/${req.params.track_id}/full`,
+          small: `${api.url}/waveforms/by_track/${req.params.track_id}/small`,
+        });
       })
       .catch((err) => {
         logger.error("Failed to get waveforms by track", {
-          track_id: req.params.id,
+          in: "GET /waveforms/by_track/:track",
+          track_id: req.params.track_id,
           error: err,
         });
       });
