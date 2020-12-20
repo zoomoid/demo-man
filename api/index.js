@@ -22,6 +22,7 @@ require("./lib/namespace")(demoRouter);
 require("./lib/track")(demoRouter);
 require("./lib/waveform")(demoRouter);
 require("./lib/metadata")(demoRouter);
+require("./lib/theme")(demoRouter);
 
 demoRouter.get("/", (_, response) => {
   response.redirect("/api/v1/demo/namespaces");
