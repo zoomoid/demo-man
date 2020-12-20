@@ -24,7 +24,7 @@ require("./lib/waveform")(demoRouter);
 require("./lib/metadata")(demoRouter);
 
 demoRouter.get("/", (_, response) => {
-  response.redirect("/api/v1/demo/namespace");
+  response.redirect("/api/v1/demo/namespaces");
 });
 
 if (!process.env.TOKEN) {
