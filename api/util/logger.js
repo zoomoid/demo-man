@@ -10,10 +10,10 @@ const logger = createLogger({
     format.splat(),
     format.json()
   ),
-  defaultMeta: { service: "conductor-man" },
+  defaultMeta: { service: "api" },
   transports: [
-    new transports.File({ filename: "conductor-buddy.error", level: "error" }),
-    new transports.File({ filename: "conductor-buddy.log" }),
+    new transports.File({ filename: "api.error", level: "error" }),
+    new transports.File({ filename: "api.log" }),
   ],
 });
 
