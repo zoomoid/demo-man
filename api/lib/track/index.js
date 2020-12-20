@@ -17,9 +17,9 @@ module.exports = function (router) {
       };
       // Dispatch waveform creation
       waveform(track.namespace, track.filename, track._id, waveman.url);
-      if (track.cover && track.cover.local_url) {
+      if (track.cover && track.cover.localUrl) {
         // Dispatch computed theme creation only if cover is present
-        palette(track.namespace, track.cover.local_url, track._id, picasso.url);
+        palette(track.namespace, track.cover.localUrl, track._id, picasso.url);
       }
       // Insert entry into DB
       db.get()
