@@ -73,7 +73,7 @@ module.exports = function (router) {
         logger.error("Failed to load metadata for namespace", {
           namespace: req.params.namespace,
           error: err,
-          in: "GET /namespaces/:namespace/:metadata",
+          in: "GET /namespaces/:namespace/metadata",
         });
         res.status(500).json({ message: "Interal Server Error" });
       });
