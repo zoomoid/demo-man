@@ -48,13 +48,12 @@ const picassoHook = async (path, url) => {
  * @param {String} url picasso API endpoint
  */
 const palette = (ns, fn, id, url) => {
-  const path = `${ns}/${fn}`;
   logger.info("Requesting color palette from picasso", {
     url: url,
     track: fn,
     namespace: ns,
   });
-  return picassoHook(path, url)
+  return picassoHook(fn, url)
     .then((palette) => {
       let computedTheme = {
         color: palette[0],
