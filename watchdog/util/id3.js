@@ -4,6 +4,14 @@ const path = require("path");
 const fs = require("fs");
 const { volume, url } = require("../constants");
 
+/**
+ *
+ * @param {() => string} closure
+ */
+function absolutePath(closure) {
+  return `${url.prefix}://${url.hostname}/${url.dir}${closure()}`;
+}
+
 function writeCover(src, p) {
   try {
     if (src.common.picture) {
@@ -18,11 +26,14 @@ function writeCover(src, p) {
         mimeType: mimeType,
       });
       fs.writeFileSync(abspath, src.common.picture[0].data);
+      const localImagePath = path.join(
+        path.basename(path.dirname(p)),
+        `cover.${mimeType.replace("image/", "")}`
+      );
       return {
         mimeType: mimeType,
-        public_url: `${url.prefix}://${url.hostname}/${url.dir}${path.basename(
-          path.dirname(p)
-        )}${path.sep}cover.${mimeType.replace("image/", "")}`,
+        publicUrl: absolutePath(() => localImagePath),
+        localUrl: localImagePath,
       };
     } else {
       logger.warn("Audio file metadata has no cover yet, omitting for now", {
@@ -70,9 +81,9 @@ function readMetadata(p) {
           path: p,
           filename: path.basename(p),
           namespace: path.basename(path.dirname(p)),
-          mp3: `${url.prefix}://${url.hostname}/${url.dir}${path.basename(
-            path.dirname(p)
-          )}${path.sep}${path.basename(p)}`,
+          mp3: absolutePath(() =>
+            path.join(path.basename(path.dirname(p)), path.basename(p))
+          ),
         });
       })
       .catch((err) => {
