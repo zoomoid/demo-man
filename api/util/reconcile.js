@@ -1,5 +1,4 @@
 const logger = require("./logger");
-const fetch = require("node-fetch");
 
 function WavemanError(track, message, fileName, lineNumber) {
   var instance = new Error(message, fileName, lineNumber);
@@ -26,37 +25,17 @@ if (typeof Object.setPropertyOf != "undefined") {
   WavemanError.__proto__ = Error;
 }
 
-function reconcile({ payload, url, method, reconciles }) {
+function reconcile({ f, params, reconciles }) {
   const waitTimeFactor = Math.random() * (Math.pow(2, reconciles) - 1); // BEB factor, BEB base rate is 1sec in our scenario
+  logger.debug("Reconcile run %d on %s", reconciles, f);
   setTimeout(() => {
-    fetch(url, {
-      method,
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((resp) => {
-        if (resp.ok) {
-          return resp;
-        } else {
-          throw new WavemanError(
-            payload.url,
-            "wave-man responded unexpectedly"
-          );
-        }
-      })
-      .catch((err) => {
-        logger.error(err.message, {
-          path: payload.url,
-          waveman: url,
-          error: err,
-        });
-        reconcile({
-          payload,
-          url,
-          method,
-          reconciles: reconciles + 1,
-        });
+    f(params.path, params.url).catch(() => {
+      reconcile({
+        f,
+        params,
+        reconciles: reconciles + 1,
       });
+    });
   }, 1000 * waitTimeFactor);
 }
 
