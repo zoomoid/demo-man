@@ -1,6 +1,6 @@
 const cors = require("cors");
 const express = require("express");
-const fetch = require("node-fetch");
+const axios = require("axios").default;
 const endpoints = require("./endpoints");
 
 const { db, logger } = require("./util");
@@ -53,7 +53,7 @@ app.get("/api/healthz", (_, response) => {
 });
 
 app.get("/api/test", (_, response) => {
-  fetch(`${endpoints.waveman.url}/healthz`, { method: "GET" })
+  axios.get(`${endpoints.waveman.url}/healthz`)
     .then((res) => {
       if (res.status == 200) {
         response.status(200).send("ok");
@@ -66,6 +66,21 @@ app.get("/api/test", (_, response) => {
     })
     .catch((err) => {
       logger.error("Error establishing link to wave-man", { error: err });
+      response.status(500).send(err);
+    });
+  axios.get(`${endpoints.picasso.url}/healthz`)
+    .then((res) => {
+      if (res.status == 200) {
+        response.status(200).send("ok");
+      } else {
+        logger.error("Error establishing link to picasso", {
+          error: res.statusText,
+        });
+        response.status(res.status).send(res.statusText);
+      }
+    })
+    .catch((err) => {
+      logger.error("Error establishing link to picasso", { error: err });
       response.status(500).send(err);
     });
 });
