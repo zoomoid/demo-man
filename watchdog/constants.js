@@ -1,4 +1,3 @@
-
 /** API Server endpoint to query */
 const apiEndpoint = process.env.API_ENDPOINT || "http://demo-api/api/v1/demo";
 
@@ -15,15 +14,17 @@ const url = JSON.parse(process.env.PUBLIC_PATH) || {
   dir: "/",
 };
 
-const metadataTemplate = (n) => `theme:
-  accent: "#f58b44"
-  color: "#1a1a1a"
-  textColor: "#fefefe"
+const metadataTemplate = (
+  n
+) => `# Activate custom theming by uncommenting the following lines:
+# theme:
+#   accent: "#f58b44"
+#   color: "#1a1a1a"
+#   textColor: "#fefefe"
 description: |
 title: ${n}
 links: []
 `;
-
 
 module.exports = {
   token,
