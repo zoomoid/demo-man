@@ -37,7 +37,7 @@ def palette(no):
   image_url = request.json["url"]
   print(f"Calculating color palette for cover at {image_url}")
   path = f"{os.environ['VOLUME']}{image_url}"
-  palette = ColorThief(path).get_palette(color_count=no, quality=5)
+  palette = ColorThief(path).get_palette(color_count=int(no), quality=5)
   print(f"Calculated palette {palette}")
   return {"palette": palette}
 
