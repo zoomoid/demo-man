@@ -178,7 +178,7 @@ module.exports = function (router) {
     db.get()
       .findOne({ type: "Track", namespace: req.params.namespace })
       .then((resp) => {
-        res.redirect(resp.cover.public_url);
+        res.redirect(resp.cover.publicUrl);
       })
       .catch((err) => {
         logger.error("Failed to redirect to cover of namespace resource", {
