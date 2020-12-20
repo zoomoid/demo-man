@@ -6,6 +6,9 @@ const endpoints = {
   waveman: {
     url: process.env.WAVE_ENDPOINT || "http://demo-wave-man:8083",
   },
+  picasso: {
+    url: process.env.PICASSO_ENDPOINT || "http://demo-picasso:8085",
+  },
   api: {
     url: process.env.API_ENDPOINT || "http://demo-api:8080/api/v1/demo",
     port: process.env.PORT || "8080",
