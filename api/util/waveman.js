@@ -1,5 +1,5 @@
 const logger = require("./logger");
-const fetch = require("node-fetch");
+const axios = require("axios").default;
 const db = require("./db");
 const { reconcile, WavemanError } = require("./reconcile");
 
@@ -7,20 +7,13 @@ const { reconcile, WavemanError } = require("./reconcile");
  * Query the waveman url with a given path and resolve with the svg data in question
  */
 const wavemanHook = async (path, url) => {
-  return fetch(url, {
-    method: "POST",
-    body: JSON.stringify({
+  return axios
+    .post(url, {
       url: path,
-    }),
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((resp) => {
-      if (resp.ok) {
-        logger.info("wave-man rendered audio waveform", { path: path });
-        return resp.json();
-      } else {
-        throw new WavemanError(path, "wave-man responded unexpectedly");
-      }
+    })
+    .then(({ data }) => {
+      logger.info("wave-man rendered audio waveform", { path: path });
+      return data;
     })
     .catch((err) => {
       logger.error(err.message, {
@@ -28,14 +21,16 @@ const wavemanHook = async (path, url) => {
         waveman: url,
         error: err,
       });
+      // Branch asynchronously
       reconcile({
-        url,
-        payload: {
-          url: path,
+        wavemanHook,
+        params: {
+          path,
+          url,
         },
-        method: "POST",
         reconciles: 1,
       });
+      throw new WavemanError(path, "wave-man responded unexpectedly");
     });
 };
 
