@@ -29,7 +29,8 @@ determine-version:
 
 .build-pre:
   stage: build
-  needs: determine-version
+  needs: 
+  - determine-version
   image: docker:latest
   rules:
   - if: $CI_COMMIT_TAG
