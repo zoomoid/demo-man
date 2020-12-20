@@ -1,4 +1,4 @@
 node_modules/
 Dockerfile
-.eslintrc.js
-.prettierrc.json
+*.log
+*.error
