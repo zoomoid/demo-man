@@ -3,6 +3,7 @@ import uuid
 import json
 import os
 from colorthief import ColorThief
+from . import utils
 
 app = Flask(__name__)
 
@@ -41,7 +42,6 @@ def palette(no):
   print(f"Calculated palette {palette}")
   return {"palette": palette}
 
-
 """
 Returns the dominant color palette of an image
 """
@@ -49,5 +49,5 @@ Returns the dominant color palette of an image
 def color(quality):
   image_url = request.json["url"]
   path = f"{os.environ['VOLUME']}{image_url}"
-  palette = ColorThief(path).get_color(quality=quality)
+  color = ColorThief(path).get_color(quality=quality)
   return {"color": color}
