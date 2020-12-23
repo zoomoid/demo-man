@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+const axios = require("axios").default;
 const logger = require("@occloxium/log").v2;
 const { token } = require("../constants");
 
@@ -30,51 +30,39 @@ function change(ep, data) {
 }
 
 /**
- * Your generic http wrapper using node-fetch
+ * Your generic http wrapper using axios
  * @param {string} method http method
  * @param {string} ep endpoint url
  * @param {*} data data object to be posted
  */
-function request(method, ep, data) {
-  // logger.info("Requesting resource", {
-  //   method,
-  //   ep,
-  //   data,
-  // });
+function request(method, endpoint, data) {
   if (!process.env.DRY_RUN) {
-    data.token = token;
-    return fetch(ep, {
-      mode: "cors",
-      method: method,
-      cache: "no-cache",
-      headers: {
-        "Content-Type": "application/json",
+    return axios({
+      url: endpoint,
+      auth: {
+        username: "watchdog",
+        password: token,
       },
-      body: JSON.stringify(data),
+      method,
+      data,
     })
-      .then(async (res) => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          const message = await res.json();
-          throw new Error(message);
-        }
+      .then(({data}) => {
+        return data;
       })
       .catch((err) => {
         logger.error("Received error from API server", {
-          in: "__request",
           response: err,
-          endpoint: `${ep}`,
+          endpoint: `${endpoint}`,
         });
       });
   } else {
-    logger.warn("Dry run! Not sending request to API server", {
-      endpoint: `${ep}`,
+    logger.verbose("Dry run - Not sending request to API server", {
+      endpoint: `${endpoint}`,
       data: data,
     });
     return Promise.resolve({
       success: true,
-      note: "dry_run",
+      dryRun: true,
       data: data,
     });
   }
