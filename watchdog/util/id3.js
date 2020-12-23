@@ -5,7 +5,7 @@ const fs = require("fs");
 const { volume, url } = require("../constants");
 
 /**
- *
+ * Constructs an FQDN URL to a given resource closure
  * @param {() => string} closure
  */
 function absolutePath(closure) {
@@ -62,28 +62,31 @@ function readMetadata(p) {
         });
         let cover = writeCover(src, p);
         resolve({
-          year: src.common.year,
-          no: src.common.track.no,
-          title: src.common.title,
-          artist: src.common.artist,
-          albumartist: src.common.albumartist,
-          album: src.common.album,
-          genre: src.common.genre,
-          composer: src.common.composer,
-          comment: src.common.comment,
-          bpm: src.common.bpm,
-          // type: src.format.container,
-          duration: src.format.duration,
-          sr: src.format.sampleRate,
-          // lossless: src.format.lossless,
-          bitrate: src.format.bitrate,
-          cover: cover,
-          path: p,
-          filename: path.basename(p),
-          namespace: path.basename(path.dirname(p)),
-          mp3: absolutePath(() =>
-            path.join(path.basename(path.dirname(p)), path.basename(p))
-          ),
+          metadata: {
+            namespace: path.basename(path.dirname(p)),
+            name: src.common.title,
+          },
+          track: {
+            year: src.common.year,
+            no: src.common.track.no,
+            title: src.common.title,
+            artist: src.common.artist,
+            albumartist: src.common.albumartist,
+            album: src.common.album,
+            genre: src.common.genre,
+            composer: src.common.composer,
+            comment: src.common.comment,
+            bpm: src.common.bpm,
+            duration: src.format.duration,
+            sr: src.format.sampleRate,
+            bitrate: src.format.bitrate,
+            cover: cover,
+            path: p,
+            filename: path.basename(p),
+            mp3: absolutePath(() =>
+              path.join(path.basename(path.dirname(p)), path.basename(p))
+            ),
+          },
         });
       })
       .catch((err) => {
