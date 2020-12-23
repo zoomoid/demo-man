@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@occloxium/log": "^2.0.0",
+    "axios": "^0.21.1",
     "chokidar": "^3.4.3",
     "js-yaml": "^3.14.0",
-    "music-metadata": "^6.4.0",
-    "node-fetch": "^2.6.1"
+    "music-metadata": "^6.4.0"
   },
   "devDependencies": {
     "eslint": "^7.12.0",
