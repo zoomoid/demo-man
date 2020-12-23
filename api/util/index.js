@@ -6,5 +6,9 @@ module.exports = {
   palette: require("./picasso").palette,
   db: require("./db"),
   validator: require("./validator"),
-  logger: require("./logger"),
+  logger: require("./logger").logger,
+  failed: require("./logger").failed,
+  failedAssociated: require("./logger").failedAssociated,
+  dnsName: require("./dnsName"),
+  pluralize: require("./pluralize"),
 };
