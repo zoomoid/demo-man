@@ -1,5 +1,21 @@
 const { createLogger, format, transports } = require("winston");
 
+/**
+ * Generalizes database promise rejects and resource creation logging
+ * @param {{action: string, resource: string, namespace: string}} s configuration object
+ */
+const failed = (s) => {
+  logger.error(`Failed to ${s.action} ${s.resource}/${s.namespace}`);
+};
+
+/**
+ * Generalizes database promise rejects and resource creation logging
+ * @param {{action: string, resource: string, namespace: string}} s configuration object
+ */
+const failedAssociated = (s) => {
+  logger.error(`Failed to ${s.action} ${s.resource}/${s.namespace}`);
+};
+
 const logger = createLogger({
   level: "debug",
   format: format.combine(
@@ -25,4 +41,8 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
-module.exports = logger;
+module.exports = {
+  logger,
+  failed,
+  failedAssociated
+};
