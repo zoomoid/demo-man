@@ -1,69 +1,75 @@
-const logger = require("./logger");
+const { logger, db, failedAssociated } = require("./");
 const axios = require("axios").default;
-const db = require("./db");
-const { reconcile, WavemanError } = require("./reconcile");
 
 /**
  * Query the waveman url with a given path and resolve with the svg data in question
+ * @param {string} path filename path for waveman
+ * @param {string} url waveman endpoint
  */
 const wavemanHook = async (path, url) => {
+  logger.verbose("Requesting waveform from waveman", {
+    url,
+    path,
+  });
   return axios
     .post(url, {
       url: path,
     })
     .then(({ data }) => {
-      logger.info("wave-man rendered audio waveform", { path: path });
+      logger.verbose("Rendered Waveform", { path });
       return data;
     })
     .catch((err) => {
-      logger.error(err.message, {
-        path: path,
-        waveman: url,
-        error: err,
-      });
-      // Branch asynchronously
-      reconcile({
-        wavemanHook,
-        params: {
-          path,
-          url,
-        },
-        reconciles: 1,
-      });
-      throw new WavemanError(path, "wave-man responded unexpectedly");
+      throw err;
     });
 };
 
 /**
  * Manages waveform creation and negotiation with the waveman
- * @param {String} ns namespace of the track
- * @param {String} fn filename of the mp3
- * @param {mongodb.ObjectID} id mongodb track id
- * @param {String} url waveman API endpoint
+ * @param {Object} track namespace of the track
+ * @param {string} url waveman API endpoint
  */
-const waveform = (ns, fn, id, url) => {
-  const path = `${ns}/${fn}`;
-  logger.info("Requesting waveform from wave-man", {
-    url: url,
-    track: fn,
-    namespace: ns,
-  });
+const waveform = (track, url) => {
+  const path = `${track.metadata.namespace}/${track.data.filename}`;
+  const waveform = {
+    type: "Waveform",
+    metadata: {
+      name: track.metadata.name + "-waveform",
+      namespace: track.metadata.namespace,
+      track_id: track._id,
+      createdAt: new Date().toUTCString(),
+      updatedAt: new Date().toUTCString(),
+      revision: 1,
+    },
+    data: {}, // empty data object to be filled in the promise resolve function 
+  };
   return wavemanHook(path, url)
     .then((svg) => {
-      let waveform = {
-        type: "Waveform",
-        namespace: ns,
-        track_id: id,
+      waveform.data = {
         full: svg.full,
         small: svg.small,
       };
       return db.get().insertOne(waveform);
     })
+    .then((waveform) => {
+      return db.get().findOneAndUpdate({
+        _id: waveform._id,
+      }, {
+        $set: {
+          "metadata.last-applied-configuration": JSON.stringify(waveform),
+        }
+      });
+    })
     .then(() => {
-      logger.info("Added waveform to DB", { track: fn, namespace: ns });
+      logger.verbose(`Added Waveform/${waveform.metadata.name}`);
     })
     .catch((err) => {
-      logger.info("Error on inserting waveform into DB", { error: err });
+      failedAssociated({
+        action: "create",
+        resource: "Waveform",
+        namespace: waveform.metadata.namespace,
+      });
+      logger.debug(err);
     });
 };
 
