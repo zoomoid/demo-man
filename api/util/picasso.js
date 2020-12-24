@@ -1,8 +1,11 @@
-const logger = require("./logger");
+const { logger, failedAssociated } = require("./");
 const axios = require("axios").default;
 const db = require("./db");
 
-/** Given the color as a 3-element array, invert the color tuple */
+/** 
+ * Given the color as a 3-element array, invert the color tuple
+ * @param {Array} color List of 8-bit RGB color components
+ */
 const invert = (color) => {
   try {
     return color.map((t) => 255 - t);
@@ -12,75 +15,77 @@ const invert = (color) => {
   }
 };
 
-const colorToString = (color = [0, 0, 0]) => {
-  return `${color[0]}, ${color[1]}, ${color[2]}`;
-};
-
 /**
  * Query picasso with a given file URL and resolve with the color palette
+ * @param {string} path cover filename
+ * @param {string} url picasso endpoint
  */
 const picassoHook = async (path, url) => {
+  logger.verbose("Requesting color palette from picasso", {
+    url,
+    path,
+  });
   return axios
     .post(url, {
       url: path,
     })
     .then(({ data }) => {
-      logger.info("picasso calculated palette", { path: path });
+      logger.verbose("Calculated Theme", { data });
       return data;
     })
     .catch((err) => {
-      logger.error(err.message, {
-        path: path,
-        picasso: url,
-        error: err,
-      });
-      throw new Error(path, "picasso responded unexpectedly");
+      throw err;
     });
 };
 
 /**
  * Manages theme creation and negotiation with picasso
- * @param {String} ns namespace of the track
- * @param {String} fn filename of the mp3
- * @param {mongodb.ObjectID} id mongodb namespace id
+ * @param {Object} track track data
  * @param {String} url picasso API endpoint
  */
-const palette = (ns, fn, id, url) => {
-  logger.info("Requesting color palette from picasso", {
-    url: url,
-    track: fn,
-    namespace: ns,
-  });
-  return picassoHook(fn, url)
-    .then(({ palette }) => {
-      logger.debug(
-        "picasso responded with palette: %s",
-        JSON.stringify(palette)
+const palette = (track, url) => {
+  const path = `${track.metadata.namespace}/${track.data.cover.filename}`;
+  return picassoHook(path, url)
+    .then((theme) => {
+      return db.get().findOneAndUpdate(
+        {
+          type: "Theme",
+          "metadata.namespace": track.metadata.namespace,
+          "metadata.name": track.metadata.namespace + "-theme",
+        },
+        {
+          $set: { computedTheme: theme },
+          $inc: {
+            "metadata.revision": 1,
+          },
+        },
+        {
+          returnOriginal: false,
+        }
       );
-      let computedTheme = {
-        color: colorToString(palette[0]),
-        textColor: colorToString(invert(palette[0])),
-        palette: palette.map((c) => colorToString(c)),
-      };
-      return db
-        .get()
-        .findOneAndUpdate(
-          { type: "Namespace", name: ns },
-          { $set: { computedTheme } }
-        )
-        .catch((err) => {
-          throw err;
-        });
+    })
+    .then((theme) => {
+      db.get().findOneAndUpdate(
+        {
+          _id: theme._id,
+        },
+        {
+          $set: {
+            "metadata.last-applied-configuration": JSON.stringify(theme),
+          },
+        }
+      );
     })
     .then(() => {
-      logger.info("Added calculated theme to database", {
-        track: fn,
-        namespace: ns,
-      });
+      logger.verbose(`Updated Theme/${track.metadata.namespace}-theme`);
     })
     .catch((err) => {
-      console.error(err);
-      logger.error("Error on inserting theme into database", { error: err });
+      failedAssociated({
+        action: "update",
+        resource: "Theme",
+        namespace: track.metadata.namespace,
+      });
+      logger.debug(err);
     });
 };
 
