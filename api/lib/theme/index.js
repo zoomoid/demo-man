@@ -1,35 +1,36 @@
-const { db, logger } = require("../../util");
+const { db, logger, failedAssociated } = require("../../util");
+const { api } = require("../../endpoints");
 
 module.exports = function (router) {
-  router.route("/namespaces/:namespace/theme").get((req, res) => {
+  /**
+   * READ theme associated with a namespace from the API
+   */
+  router.get("/namespaces/:namespace/theme", ({ params }, res) => {
     db.get()
-      .findOne(
-        { type: "Namespace", name: req.params.namespace },
-        { metadata: 1, computedTheme: 1, name: 1, lastUpdated: 1 }
-      )
-      .then((resp) => {
-        if (resp) {
+      .findOne({
+        type: "Theme",
+        "metadata.namespace": params.namespace,
+        "metadata.name": params.namespace + "-theme",
+      })
+      .then((theme) => {
+        if (theme) {
           res.status(200).json({
-            theme: resp.metadata.theme
-              ? resp.metadata.theme
-              : resp.computedTheme,
-            name: resp.name,
-            lastUpdated: resp.lastUpdated,
-            computedTheme: resp.computedTheme,
+            links: {
+              self: `${api.url}/namespaces/${params.namespace}/theme`,
+              namespace: `${api.url}/namespaces/${params.namespace}`,
+            },
+            theme,
           });
         } else {
-          logger.warn("Could not find namespace", {
-            namespace: req.params.namespace,
+          logger.warn("Could not find Theme", {
+            namespace: params.namespace,
           });
           res.status(404).json({ message: "Not Found" });
         }
       })
       .catch((err) => {
-        logger.error("Failed to load theme for namespace", {
-          namespace: req.params.namespace,
-          error: err,
-          in: "GET /namespaces/:namespace/theme",
-        });
+        failedAssociated({action: "read", "resource": "Theme", namespace: params.namespace});
+        logger.debug(err);
         res.status(500).json({ message: "Interal Server Error" });
       });
   });
