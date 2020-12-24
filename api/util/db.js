@@ -1,5 +1,5 @@
 const mongodb = require("mongodb");
-const logger = require("./logger");
+const {logger} = require("./logger");
 
 const state = {
   name: null,

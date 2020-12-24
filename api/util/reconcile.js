@@ -1,4 +1,4 @@
-const logger = require("./logger");
+const {logger} = require("./logger");
 
 function WavemanError(track, message, fileName, lineNumber) {
   var instance = new Error(message, fileName, lineNumber);

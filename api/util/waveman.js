@@ -1,4 +1,5 @@
-const { logger, db, failedAssociated } = require("./");
+const { logger, failedAssociated } = require("./logger");
+const db = require("./db");
 const axios = require("axios").default;
 
 /**
@@ -41,7 +42,7 @@ const waveform = (track, url) => {
       updatedAt: new Date().toUTCString(),
       revision: 1,
     },
-    data: {}, // empty data object to be filled in the promise resolve function 
+    data: {}, // empty data object to be filled in the promise resolve function
   };
   return wavemanHook(path, url)
     .then((svg) => {
@@ -52,13 +53,16 @@ const waveform = (track, url) => {
       return db.get().insertOne(waveform);
     })
     .then((waveform) => {
-      return db.get().findOneAndUpdate({
-        _id: waveform._id,
-      }, {
-        $set: {
-          "metadata.last-applied-configuration": JSON.stringify(waveform),
+      return db.get().findOneAndUpdate(
+        {
+          _id: waveform._id,
+        },
+        {
+          $set: {
+            "metadata.last-applied-configuration": JSON.stringify(waveform),
+          },
         }
-      });
+      );
     })
     .then(() => {
       logger.verbose(`Added Waveform/${waveform.metadata.name}`);

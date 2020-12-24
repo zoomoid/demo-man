@@ -1,4 +1,4 @@
-const logger = require("./logger");
+const {logger} = require("./logger");
 /**
  * A very simply express.js route guard middleware which just compares a sent token against an expected one.
  * Neither uses atomic comparison of passwords nor does it cover all expected cases.

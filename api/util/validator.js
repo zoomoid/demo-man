@@ -1,5 +1,5 @@
 const { isHexColor, isURL, isAlphanumeric } = require("validator");
-const logger = require("./logger");
+const {logger} = require("./logger");
 
 
 /** Color validator helper function */

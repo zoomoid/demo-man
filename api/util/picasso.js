@@ -1,4 +1,4 @@
-const { logger, failedAssociated } = require("./");
+const { logger, failedAssociated } = require("./logger");
 const axios = require("axios").default;
 const db = require("./db");
 
