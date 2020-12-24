@@ -12,6 +12,11 @@ function absolutePath(closure) {
   return `${url.prefix}://${url.hostname}/${url.dir}${closure()}`;
 }
 
+/**
+ * Writes a cover file to the disk
+ * @param {Object} src id3 metadata object
+ * @param {string} p file descriptor
+ */
 function writeCover(src, p) {
   try {
     if (src.common.picture) {
@@ -34,6 +39,7 @@ function writeCover(src, p) {
         mimeType: mimeType,
         publicUrl: absolutePath(() => localImagePath),
         localUrl: localImagePath,
+        filename: path.basename(p),
       };
     } else {
       logger.warn("Audio file metadata has no cover yet, omitting for now", {
