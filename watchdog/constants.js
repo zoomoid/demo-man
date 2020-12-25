@@ -8,11 +8,16 @@ const token = process.env.TOKEN;
 const volume = process.env.VOLUME || ".";
 
 /** composite object to assemble the routes to the fileserver */
-const url = JSON.parse(process.env.PUBLIC_PATH) || {
-  prefix: "http",
-  hostname: "localhost:8084",
-  dir: "/",
-};
+let url;
+try {
+  url = JSON.parse(process.env.PUBLIC_PATH);
+} catch (err) {
+  url = {
+    prefix: "http",
+    hostname: "localhost:8084",
+    dir: "/",
+  };
+}
 
 const metadataTemplate = (
   n

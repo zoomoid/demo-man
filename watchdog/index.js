@@ -1,13 +1,9 @@
-const logger = require("@occloxium/log").v2;
+const { logger } = require("./util");
 const watchers = require("./lib/watchers");
 const { volume, token } = require("./constants");
 
 if (!token) {
-  logger.warn(
-    "No API token provided. Protected routes will not work properly."
-  );
+  logger.warn("No token provided. Requests to protected API routes will fail.");
 }
-
 logger.info("Watching directory", { volume: volume });
-
-watchers();
+watchers.runWatchers(volume);
