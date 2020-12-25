@@ -6,9 +6,9 @@
 module.exports = function dnsName(name = "") {
   return name
     .toLowerCase() // convert to lowercase
-    .replace(" ", "-") // replace spaces with -
-    .replace("_", "-") // replace other separation characters
-    .replace(".", "-") // replace other separation characters
-    .replace(/[^a-z0-9-]/, "") // remove all non-lowercase letters or non-numbers
-    .substr(0, 63); // limit length to maximum of 64 chars
+    .replace(/\s/g, "-") // replace spaces with -
+    .replace(/_/g, "-") // replace other separation characters
+    .replace(/\./g, "-") // replace other separation characters
+    .replace(/[^a-z0-9-]/g, "") // remove all non-lowercase letters or non-numbers
+    .substr(0, 64); // limit length to maximum of 64 chars
 };
