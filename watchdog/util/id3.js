@@ -1,5 +1,6 @@
 const metadata = require("music-metadata");
-const logger = require("@occloxium/log").v2;
+const logger = require("./logger");
+const {dnsName} = require("./dnsName");
 const path = require("path");
 const fs = require("fs");
 const { volume, url } = require("../constants");
@@ -13,42 +14,31 @@ function absolutePath(closure) {
 }
 
 /**
- * Writes a cover file to the disk
- * @param {Object} src id3 metadata object
- * @param {string} p file descriptor
+ * Writes a cover image for a Track to the namespace
+ * @param {{metadata: Object, track: Object}} resource track resource
+ * @param {metadata.IPicture[]} cover cover images attached to file
  */
-function writeCover(src, p) {
+function writeCover({ metadata, track }, cover) {
   try {
-    if (src.common.picture) {
-      let mimeType = src.common.picture[0].format;
-      let abspath = path.join(
-        volume,
-        path.dirname(p),
-        `cover.${mimeType.replace("image/", "")}`
-      );
-      logger.info("Writing cover to file", {
-        cover: abspath,
-        mimeType: mimeType,
-      });
-      fs.writeFileSync(abspath, src.common.picture[0].data);
-      const localImagePath = path.join(
-        path.basename(path.dirname(p)),
-        `cover.${mimeType.replace("image/", "")}`
-      );
+    if (cover) {
+      let format = cover[0].format.replace("image/", "");
+      let abspath = path.join(volume, track.file.directory, `cover.${format}`);
+      logger.verbose("Writing cover to file for");
+      fs.writeFileSync(abspath, cover[0].data);
+      const localImagePath = path.join(track.file.directory, `cover.${format}`);
       return {
-        mimeType: mimeType,
+        mimeType: `image/${format}`,
         publicUrl: absolutePath(() => localImagePath),
         localUrl: localImagePath,
-        filename: path.basename(p),
+        filename: track.file.name,
       };
     } else {
-      logger.warn("Audio file metadata has no cover yet, omitting for now", {
-        path: `${p}`,
-      });
+      logger.warn(`Track/${metadata.name} has no cover yet!`);
       return {};
     }
   } catch (err) {
-    console.error(err);
+    logger.error("Failed to write cover to file", { path: track.file.path });
+    logger.debug(err);
   }
 }
 
@@ -58,49 +48,51 @@ function writeCover(src, p) {
  */
 function readMetadata(p) {
   return new Promise((resolve, reject) => {
-    logger.info("Reading IDv3 off of audio file", { path: p });
+    logger.verbose("Extracting IDv3 from new Track", { path: p });
     metadata
       .parseFile(path.join(volume, p))
       .then((src) => {
-        logger.info("Parsed audio metadata", {
-          dirname: path.dirname(p),
-          filename: path.basename(p),
-        });
-        let cover = writeCover(src, p);
-        resolve({
+        const directory = path.basename(path.dirname(p));
+        const file = path.basename(p);
+        const resource = {
           metadata: {
-            namespace: path.basename(path.dirname(p)),
-            name: src.common.title,
+            namespace: dnsName(directory),
+            name: dnsName(src.common.title),
           },
           track: {
-            year: src.common.year,
-            no: src.common.track.no,
-            title: src.common.title,
-            artist: src.common.artist,
-            albumartist: src.common.albumartist,
-            album: src.common.album,
-            genre: src.common.genre,
-            composer: src.common.composer,
-            comment: src.common.comment,
-            bpm: src.common.bpm,
-            duration: src.format.duration,
-            sr: src.format.sampleRate,
-            bitrate: src.format.bitrate,
-            cover: cover,
-            path: p,
-            filename: path.basename(p),
-            mp3: absolutePath(() =>
-              path.join(path.basename(path.dirname(p)), path.basename(p))
-            ),
+            general: {
+              title: src.common.title,
+              artist: src.common.artist,
+              albumartist: src.common.albumartist,
+              album: src.common.album,
+              year: src.common.year,
+              no: src.common.track.no,
+              genre: src.common.genre,
+              composer: src.common.composer,
+              comment: src.common.comment,
+              bpm: src.common.bpm,
+              duration: src.format.duration,
+            },
+            file: {
+              sr: src.format.sampleRate,
+              bitrate: src.format.bitrate,
+              path: p,
+              directory: directory,
+              name: file,
+              mp3: absolutePath(() => path.join(directory, file)),
+            },
+            cover: {},
           },
-        });
+        };
+        logger.verbose(
+          `Extracted id3 data from new Track/${resource.metadata.name}`
+        );
+        resource.track.cover = writeCover(resource);
+        resolve(resource, src.common.picture);
       })
       .catch((err) => {
-        logger.error("Error while parsing audio metadata", {
-          error: err,
-          file: p,
-          in: "readMetadata",
-        });
+        logger.error("Failed to parse id3 metadata for Track", { file: p });
+        logger.debug(err);
         reject(err);
       });
   });
