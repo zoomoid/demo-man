@@ -1,5 +1,5 @@
 const axios = require("axios").default;
-const logger = require("@occloxium/log").v2;
+const logger = require("./logger");
 const { token } = require("../constants");
 
 /**
