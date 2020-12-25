@@ -1,11 +1,113 @@
 const chokidar = require("chokidar");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs").promises;
 const yaml = require("js-yaml");
-const logger = require("@occloxium/log").v2;
-const { volume, metadataTemplate } = require("../constants");
+const { metadataTemplate } = require("../constants");
 const { track, namespace, metadata } = require("./requests");
-const { id3 } = require("../util");
+const { id3, logger } = require("../util");
+
+/**
+ * Builder for FSWatchers
+ * @param {string} volume base volume path
+ */
+const buildWatchers = (volume) => {
+  const trackWatcher = chokidar.watch(`${volume}/[\\w-]*/*.mp3`, {
+    cwd: `${volume}`,
+    ignoreInitial: true,
+    persistent: true,
+    atomic: true,
+    usePolling: true,
+    depth: 2,
+    awaitWriteFinish: {
+      stabilityThreshold: 3000,
+      pollInterval: 1000,
+    },
+  });
+
+  const namespaceWatcher = chokidar.watch(`${volume}/`, {
+    cwd: `${volume}`,
+    ignored: [/(^|[/\\])\../, "private-keys-v1.d"], // exclude some FileZilla intermediary directories
+    ignoreInitial: true,
+    persistent: true,
+    atomic: true,
+    usePolling: true,
+    depth: 1,
+  });
+
+  const metadataWatcherOptions = {
+    cwd: `${volume}`,
+    ignoreInitial: true,
+    persistent: true,
+    atomic: true,
+    usePolling: true,
+    depth: 2,
+    awaitWriteFinish: {
+      stabilityThreshold: 3000,
+      pollInterval: 1000,
+    },
+  };
+
+  const m = {
+    loaders: {
+      json: (p) =>
+        JSON.parse(
+          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
+        ),
+      yaml: (p) =>
+        yaml.safeLoad(
+          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
+        ),
+    },
+    add: (loader, p) => {
+      const config = loader(p);
+      metadata.change(config, p, path.dirname(p)).catch((err) => {
+        logger.debug(err);
+      });
+    },
+    remove: (p) => {
+      metadata.change({}, p, path.dirname(p)).catch((err) => {
+        logger.debug(err);
+      });
+    },
+  };
+
+  const metadataWatcherJSON = chokidar.watch(
+    `${volume}/[\\w-]*/metadata.json`,
+    metadataWatcherOptions
+  );
+  const metadataWatcherYAML = chokidar.watch(
+    `${volume}/[\\w-]*/metadata.yaml`,
+    metadataWatcherOptions
+  );
+
+  const gcWatcher = chokidar.watch([".cache", ".gnupg", "private-keys-v1.d"], {
+    cwd: `${volume}`,
+  });
+  return {
+    watchers: {
+      namespace: namespaceWatcher,
+      track: trackWatcher,
+      metadata: {
+        json: metadataWatcherJSON,
+        yaml: metadataWatcherYAML,
+      },
+      gc: gcWatcher,
+    },
+    options: m,
+  };
+};
+
+/**
+ * Writes a metadata.yaml for a namespace to a volume
+ * @param {string} volume local data volume
+ * @param {string} namespace namespace for metadata
+ */
+const writeMetadata = (volume, namespace) => {
+  fs.writeFileSync(
+    path.join(volume, namespace, "metadata.yaml"),
+    metadataTemplate(namespace)
+  );
+};
 
 /**
  * Volume path to watch
@@ -31,92 +133,54 @@ const { id3 } = require("../util");
  *    |- track2.mp3
  * |- namespace
  *
- * This is a valid file tree for our example watchdog 
+ * This is a valid file tree for our example watchdog
+ * 
+ * @param {string} volume global data volume path
+ * @returns set of watchers with Event Listeners subscribed to the FSWatchers
  */
-module.exports = function () {
+const runWatchers = function (volume) {
   /** mp3 watcher */
-  chokidar
-    .watch(`${volume}/[a-zA-Z0-9]*/*.mp3`, {
-      cwd: `${volume}`,
-      ignoreInitial: true,
-      persistent: true,
-      atomic: true,
-      usePolling: true,
-      depth: 2,
-      awaitWriteFinish: {
-        stabilityThreshold: 3000,
-        pollInterval: 1000,
-      },
-    })
+  const { watchers, options } = buildWatchers(volume);
+  watchers.track
     .on("add", async (path) => {
-      logger.info("File added", {
-        file: path,
-        timestamp: new Date().toLocaleString("de-DE"),
-      });
+      logger.info("File added: %s", path);
       const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
       id3(reducedFilename)
         .then((t) => track.add(t))
-        .catch((err) => {
-          logger.error("Received error from API server", {
-            on: "add",
-            path: path,
-            error: err,
-          });
-          logger.info("Reverting changes to file system", { path: path });
-          fs.unlink(path, (err) => {
-            logger.error("I/O Error on unlink. Exiting...", { error: err });
+        .catch(() => {
+          logger.info("Reverting changes to file system: %s", path);
+          fs.rm(path).catch((err) => {
+            logger.error("I/O Error on rm. Exiting...");
+            logger.debug(err);
             process.exit(1);
           });
         });
     })
     .on("unlink", (path) => {
       const reducedFilename = path.replace(`${volume}/`, "");
-      logger.info("File removed", {
-        file: reducedFilename,
-        time: new Date().toLocaleString("de-DE"),
-      });
+      logger.info("File removed: %s", reducedFilename);
       track.remove(reducedFilename).catch((err) => {
-        logger.error("Received error from API server. USER ACTION REQUIRED!", {
-          on: "unlink",
-          path: path,
-          error: err,
-        });
+        logger.debug(err);
       });
     });
 
   /** namespace watcher */
-  chokidar
-    .watch(`${volume}/`, {
-      cwd: `${volume}`,
-      ignored: [/(^|[/\\])\../, "private-keys-v1.d"], // exclude some FileZilla bullshit directories
-      ignoreInitial: true,
-      persistent: true,
-      atomic: true,
-      usePolling: true,
-      depth: 1,
-    })
+  watchers.namespace
     .on("addDir", (p) => {
-      if (p == `${volume}/`) {
+      if (p === `${volume}/`) {
         logger.info("Skipping docker volume mount event", { directory: p });
         return;
       }
       logger.info("Directory added", {
         directory: p,
-        timestamp: new Date().toLocaleString("de-DE"),
       });
-      let n = path.basename(p);
-      // creates a default metadata.yaml file.
-      // May later be overridden by a fresh one or replaced by a metadata.json file
-      fs.writeFileSync(path.join(volume, n, "metadata.yaml"), metadataTemplate(n));
-      namespace.add(n).catch((err) => {
-        logger.error("Received error from API server", {
-          on: "addDir",
-          path: p,
-          error: err,
-        });
+      let directory = path.basename(p);
+      writeMetadata(volume, directory);
+      namespace.add(directory).catch(() => {
         logger.info("Reverting changes to file system", { path: p });
-        fs.unlink(p, (err) => {
-          logger.error("I/O Error on unlink. Exiting...", { error: err });
+        fs.rm(p, { recursive: true }).catch((err) => {
+          logger.error("I/O Error on unlink. Exiting...");
+          logger.debug(err);
           process.exit(1);
         });
       });
@@ -125,99 +189,49 @@ module.exports = function () {
       const reducedFilename = p.replace(`${volume}/`, "");
       logger.info("Directory removed", {
         directory: reducedFilename,
-        time: new Date().toLocaleString("de-DE"),
       });
       await namespace.remove(reducedFilename).catch((err) => {
-        logger.error("Received error from API server. USER ACTION REQUIRED!", {
-          on: "unlinkDir",
-          error: err,
-        });
+        logger.debug(err);
       });
     });
-
-  const metadataWatcherOptions = {
-    cwd: `${volume}`,
-    ignoreInitial: true,
-    persistent: true,
-    atomic: true,
-    usePolling: true,
-    depth: 2,
-    awaitWriteFinish: {
-      stabilityThreshold: 3000,
-      pollInterval: 1000,
-    },
-  };
-
-  const m = {
-    options: {
-      cwd: `${volume}`,
-      ignoreInitial: true,
-      persistent: true,
-      atomic: true,
-      usePolling: true,
-      depth: 2,
-      awaitWriteFinish: {
-        stabilityThreshold: 3000,
-        pollInterval: 1000,
-      },
-    },
-    loaders: {
-      json: (p) => require(path.join(volume, p)),
-      yaml: (p) =>
-        yaml.safeLoad(
-          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
-        ),
-    },
-    add: (event, loader, p) => {
-      const config = loader(p);
-      metadata.change(config, p, path.dirname(p)).catch((err) => {
-        logger.error("Failed to update namespace metadata", {
-          on: event,
-          error: err,
-          path: p,
-        });
-      });
-    },
-    remove: (p) => {
-      metadata.change({}, p, path.dirname(p)).catch((err) => {
-        logger.error("Failed to update namespace metadata", {
-          on: "unlink",
-          error: err,
-          path: p,
-        });
-      });
-    },
-  };
 
   /**
    * metadata watchers
    * Supports both json and yaml files
    */
-  chokidar
-    .watch(`${volume}/[A-Za-z0-9]*/metadata.json`, m.options)
-    .on("add", m.add.bind(null, "add", m.loaders.json))
-    .on("change", m.add.bind(null, "change", m.loaders.json))
-    .on("unlink", m.remove);
+  watchers.metadata.json
+    .on("add", options.add.bind(null, "add", options.loaders.json))
+    .on("change", options.add.bind(null, "change", options.loaders.json))
+    .on("unlink", options.remove);
 
-  chokidar
-    .watch(`${volume}/[A-Za-z0-9]*/metadata.yaml`, metadataWatcherOptions)
-    .on("add", m.add.bind(null, "add", m.loaders.yaml))
-    .on("change", m.add.bind(null, "change", m.loaders.yaml))
-    .on("unlink", m.remove);
+  watchers.metadata.yaml
+    .on("add", options.add.bind(null, "add", options.loaders.yaml))
+    .on("change", options.add.bind(null, "change", options.loaders.yaml))
+    .on("unlink", options.remove);
 
   /**
    * Garbage collector removes any files and directories created in the process of SFTP handshakes by FileZilla
    */
-  chokidar
-    .watch([".cache", ".gnupg", "private-keys-v1.d"], { cwd: `${volume}` })
-    .on("addDir", (path) => {
-      logger.info("Cleaning up trash directories", { directory: path });
-      fs.rmdir(path, { recursive: true }, (err) => {
-        if (err) {
-          logger.error("Error on rmdir w/ recursive option", { error: err });
-          return;
-        }
-        logger.info("Finish cleanup round", { directory: path });
-      });
+  watchers.gc.on("addDir", (path) => {
+    logger.info("Cleaning up trash directories", { directory: path });
+    fs.rmdir(path, { recursive: true }, (err) => {
+      if (err) {
+        logger.error("Error on rmdir w/ recursive option", { error: err });
+        return;
+      }
+      logger.info("Finish GC cleanup round", { directory: path });
     });
+  });
+
+  return {
+    namespace: watchers.namespace,
+    track: watchers.track,
+    metadata: watchers.metadata,
+    gc: watchers.gc,
+  };
+};
+
+module.exports = {
+  runWatchers,
+  buildWatchers
 };
