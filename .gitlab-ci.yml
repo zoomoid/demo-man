@@ -29,8 +29,6 @@ determine-version:
 
 .build-pre:
   stage: build
-  needs: 
-  - determine-version
   image: docker:latest
   rules:
   - if: $CI_COMMIT_TAG
@@ -44,7 +42,8 @@ determine-version:
 build:api:
   extends: .build-pre
   rules:
-    - changes:
+    - if: $CI_COMMIT_TAG
+      changes:
         - api/**/*
   script: 
     - cd api/
@@ -52,10 +51,12 @@ build:api:
     - docker tag $CI_REGISTRY_IMAGE/api:$VERSION $CI_REGISTRY_IMAGE/api:latest
     - docker push $CI_REGISTRY_IMAGE/api:$VERSION
     - docker push $CI_REGISTRY_IMAGE/api:latest
+
 build:client:
   extends: .build-pre
   rules:
-    - changes:
+    - if: $CI_COMMIT_TAG
+      changes:
         - client/**/*
   script: 
     - cd client/
@@ -67,7 +68,8 @@ build:client:
 build:watchdog:
   extends: .build-pre
   rules:
-    - changes:
+    - if: $CI_COMMIT_TAG
+      changes:
         - watchdog/**/*
   script: 
     - cd watchdog/
@@ -76,10 +78,24 @@ build:watchdog:
     - docker push $CI_REGISTRY_IMAGE/watchdog:$VERSION
     - docker push $CI_REGISTRY_IMAGE/watchdog:latest
 
+build:picasso:
+  extends: .build-pre
+  rules:
+    - if: $CI_COMMIT_TAG
+      changes:
+        - picasso/**/*
+  script: 
+    - cd watchdog/
+    - docker build -t $CI_REGISTRY_IMAGE/picasso:$VERSION . --build-arg VERSION=$VERSION
+    - docker tag $CI_REGISTRY_IMAGE/picasso:$VERSION $CI_REGISTRY_IMAGE/picasso:latest
+    - docker push $CI_REGISTRY_IMAGE/picasso:$VERSION
+    - docker push $CI_REGISTRY_IMAGE/picasso:latest
+
 build:waveman:
   extends: .build-pre
   rules:
-    - changes:
+    - if: $CI_COMMIT_TAG
+      changes:
         - waveman/**/*
   script: 
     - cd waveman/
