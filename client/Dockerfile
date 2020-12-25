@@ -1,5 +1,5 @@
 # 1st stage build client
-FROM node:latest as builder
+FROM node:lts as builder
 
 WORKDIR /app
 # copy package-lock.json (mainly) and package.json
