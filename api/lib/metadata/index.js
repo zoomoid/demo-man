@@ -137,7 +137,7 @@ module.exports = function (router) {
    */
   router.get("/namespaces/:namespace/metadata", ({ params }, res) => {
     db.get()
-      .findOne({ type: "Namespace", "metadata.namespace": params.namespace })
+      .findOne({ type: "Namespace", "metadata.name": params.namespace })
       .then((namespace) => {
         if (namespace) {
           res.status(200).json({
@@ -148,9 +148,7 @@ module.exports = function (router) {
             ...namespace.data,
           });
         } else {
-          logger.warn("Could not find namespace", {
-            namespace: params.namespace,
-          });
+          logger.warn(`Could not find Namespace/${params.namespace}`);
           res.status(404).json({ message: "Not Found" });
         }
       })
