@@ -1,68 +1,49 @@
-const logger = require("@occloxium/log").v2;
 const path = require("path");
-const { add, remove, change } = require("../util/http");
+const { logger, http } = require("../util");
 const { apiEndpoint } = require("../constants");
 
 /**
  * Requests deletion of a previously added audio file
- * @param {string} p path of the audio file to query the DB with
+ * @param {string} p path of the audiofile to delete the track for
  */
 function removeTrack(p) {
-  logger.info("Deleting track...", { track: p, endpoint: apiEndpoint });
-  return remove(`${apiEndpoint}/tracks`, { path: p })
+  return http.remove(`${apiEndpoint}/tracks`, { path: p })
     .then(() => {
-      logger.info("Deleted track", { track: `${path.basename(p)}` });
+      logger.verbose(`Deleted Track/${path.basename(p)}`);
     })
     .catch((err) => {
-      logger.error("Received error status from API", {
-        track: `${path.basename(p)}`,
-        in: "removeTrack",
-        error: err,
-      });
+      logger.error(`Failed to delete Track/${path.basename(p)}`);
+      logger.debug(err);
     });
 }
 
 /**
  * Requests deletion of a previously added album
- * @param {*} path directory name that we need to delete
+ * @param {string} namespace namespace to delete
  */
 function removeNamespace(namespace) {
-  logger.info("Deleting namespace...", {
-    namespace: namespace,
-    endpoint: apiEndpoint,
-  });
-  return remove(`${apiEndpoint}/namespaces`, { namespace: namespace })
+  return http.remove(`${apiEndpoint}/namespaces`, { namespace: namespace })
     .then(() => {
-      logger.info("Deleted namespace", { namespace: namespace });
+      logger.verbose(`Deleted Namespace/${namespace}`);
     })
     .catch((err) => {
-      logger.error("Received error status from API", {
-        namespace: namespace,
-        in: "removeNamespace",
-        error: err,
-      });
+      logger.error(`Failed to delete Namespace/${namespace}`);
+      logger.debug(err);
     });
 }
 
 /**
  * Requests creation of a new album
- * @param {string} album album title
+ * @param {string} namespace album title
  */
 function addNamespace(namespace) {
-  logger.info("Adding namespace...", {
-    namespace: namespace,
-    endpoint: apiEndpoint,
-  });
-  return add(`${apiEndpoint}/namespaces`, { namespace })
+  return http.add(`${apiEndpoint}/namespaces`, { namespace })
     .then(() => {
-      logger.info("Added namespace", { namespace: namespace });
+      logger.verbose(`Created Namespace/${namespace}`);
     })
     .catch((err) => {
-      logger.error("Received error status from API", {
-        namespace: namespace,
-        in: "addNamespace",
-        error: err,
-      });
+      logger.error(`Failed to create Namespace/${namespace}`);
+      logger.debug(err);
     });
 }
 
@@ -71,46 +52,32 @@ function addNamespace(namespace) {
  * @param {*} track track data to post to the API
  */
 function addTrack(track) {
-  logger.info("Adding track...", {
-    track: track.filename,
-    endpoint: apiEndpoint,
-  });
-  return add(`${apiEndpoint}/tracks`, { track: track })
+  return http.add(`${apiEndpoint}/tracks`, { track: track })
     .then(() => {
-      logger.info("Added track", { track: track.filename });
+      logger.verbose(`Added Track/${track.metadata.name}`);
     })
     .catch((err) => {
-      logger.error("Received error status from API", {
-        namespace: track.filename,
-        in: "addTrack",
-        error: err,
-      });
+      logger.error(`Failed to create Track/${track.metadata.name}`);
+      logger.debug(err);
     });
 }
 
-function changeMetadata(o, p, n) {
-  logger.info("Metadata changed", {
-    path: p,
-    data: o,
-  });
-  return change(`${apiEndpoint}/namespaces/metadata`, {
-    namespace: n,
-    metadata: o
+/**
+ * Requests an update to a namespace's data
+ * @param {Object} metadata namespace metadata object
+ * @param {string} namespace namespace
+ */
+function changeMetadata(metadata, namespace) {
+  return http.change(`${apiEndpoint}/namespaces/metadata`, {
+    namespace,
+    ...metadata,
   })
     .then(() => {
-      logger.info("Updated namespace metadata", {
-        namespace: n,
-        path: p,
-        data: o,
-      });
+      logger.verbose(`Updated Namespace/${namespace}`);
     })
     .catch((err) => {
-      logger.error("Received error status from API", {
-        namespace: n,
-        path: p,
-        in: "changeMetadata",
-        error: err,
-      });
+      logger.error(`Failed to update Namespace/${namespace}`);
+      logger.debug(err);
     });
 }
 
