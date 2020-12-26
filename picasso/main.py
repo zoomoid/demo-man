@@ -49,8 +49,8 @@ def palette(no: str) -> dict:
     image_url = request.json["url"]
     # print(f"Calculating color palette for cover at {image_url}")
     path = f"{os.environ['VOLUME']}{image_url}"
-    palette = ColorThief(path).get_palette(color_count=int(no), quality=5)
-    color = ColorThief(path).get_color(quality=5)
+    palette = ColorThief(path).get_palette(color_count=int(no), quality=8)
+    color = ColorThief(path).get_color(quality=8)
     # print(f"Calculated palette {palette}")
     return {
         "color": color,
