@@ -1,7 +1,8 @@
-const chokidar = require("chokidar");
-const path = require("path");
 const fs = require("fs").promises;
+const chokidar = require("chokidar");
 const yaml = require("js-yaml");
+const path = require("path");
+
 const { metadataTemplate } = require("../constants");
 const { track, namespace, metadata } = require("./requests");
 const { id3, logger } = require("../util");
@@ -11,7 +12,7 @@ const { id3, logger } = require("../util");
  * @param {string} volume base volume path
  */
 const buildWatchers = (volume) => {
-  const trackWatcher = chokidar.watch(`${volume}/[\\w-]*/*.mp3`, {
+  const trackWatcher = chokidar.watch(`${volume}/**/*.mp3`, {
     cwd: `${volume}`,
     ignoreInitial: true,
     persistent: true,
@@ -49,14 +50,18 @@ const buildWatchers = (volume) => {
 
   const m = {
     loaders: {
-      json: (p) =>
-        JSON.parse(
-          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
-        ),
-      yaml: (p) =>
-        yaml.safeLoad(
-          fs.readFileSync(path.join(volume, p), { encoding: "utf-8" })
-        ),
+      json: async (p) => {
+        const c = await fs.readFile(path.join(volume, p), {
+          encoding: "utf-8",
+        });
+        return JSON.parse(c);
+      },
+      yaml: async (p) => {
+        const c = await fs.readFile(path.join(volume, p), {
+          encoding: "utf-8",
+        });
+        return yaml.safeLoad(c);
+      },
     },
     add: (loader, p) => {
       const config = loader(p);
@@ -83,6 +88,7 @@ const buildWatchers = (volume) => {
   const gcWatcher = chokidar.watch([".cache", ".gnupg", "private-keys-v1.d"], {
     cwd: `${volume}`,
   });
+
   return {
     watchers: {
       namespace: namespaceWatcher,
@@ -102,8 +108,8 @@ const buildWatchers = (volume) => {
  * @param {string} volume local data volume
  * @param {string} namespace namespace for metadata
  */
-const writeMetadata = (volume, namespace) => {
-  fs.writeFileSync(
+const writeMetadata = async (volume, namespace) => {
+  await fs.writeFile(
     path.join(volume, namespace, "metadata.yaml"),
     metadataTemplate(namespace)
   );
@@ -124,17 +130,17 @@ const writeMetadata = (volume, namespace) => {
  * Hierarchy:
  *
  * ./ (relative root; determined by "VOLUME")
- * |- namespace
+ * |- namespace1
  *    |- track1.mp3
  *    |- track2.mp3
  *    |- track3.mp3
- * |- namespace
+ * |- namespace2
  *    |- track1.mp3
  *    |- track2.mp3
- * |- namespace
+ * |- namespace2
  *
  * This is a valid file tree for our example watchdog
- * 
+ *
  * @param {string} volume global data volume path
  * @returns set of watchers with Event Listeners subscribed to the FSWatchers
  */
@@ -142,9 +148,9 @@ const runWatchers = function (volume) {
   /** mp3 watcher */
   const { watchers, options } = buildWatchers(volume);
   watchers.track
-    .on("add", async (path) => {
-      logger.info("File added: %s", path);
+    .on("add", (path) => {
       const reducedFilename = path.replace(`${volume}/`, ""); // strips the volume mount prefix from the filename
+      // logger.info("File added: %s", reducedFilename);
       id3(reducedFilename)
         .then((t) => track.add(t))
         .catch(() => {
@@ -168,29 +174,28 @@ const runWatchers = function (volume) {
   watchers.namespace
     .on("addDir", (p) => {
       if (p === `${volume}/`) {
-        logger.info("Skipping docker volume mount event", { directory: p });
+        logger.info("Skipping docker volume mount event");
         return;
       }
-      logger.info("Directory added", {
-        directory: p,
-      });
       let directory = path.basename(p);
-      writeMetadata(volume, directory);
-      namespace.add(directory).catch(() => {
-        logger.info("Reverting changes to file system", { path: p });
-        fs.rm(p, { recursive: true }).catch((err) => {
-          logger.error("I/O Error on unlink. Exiting...");
-          logger.debug(err);
-          process.exit(1);
+      logger.info("Directory added: %s", directory);
+      writeMetadata(volume, directory)
+        .then(() => namespace.add(directory))
+        .catch(() => {
+          logger.info("Reverting changes to file system", { path: p });
+          fs.rm(p, { recursive: true }).catch((err) => {
+            logger.error("I/O Error on unlink. Exiting...");
+            logger.debug(err);
+            process.exit(2);
+          });
         });
-      });
     })
-    .on("unlinkDir", async (p) => {
+    .on("unlinkDir", (p) => {
       const reducedFilename = p.replace(`${volume}/`, "");
       logger.info("Directory removed", {
         directory: reducedFilename,
       });
-      await namespace.remove(reducedFilename).catch((err) => {
+      namespace.remove(reducedFilename).catch((err) => {
         logger.debug(err);
       });
     });
@@ -214,13 +219,14 @@ const runWatchers = function (volume) {
    */
   watchers.gc.on("addDir", (path) => {
     logger.info("Cleaning up trash directories", { directory: path });
-    fs.rmdir(path, { recursive: true }, (err) => {
-      if (err) {
-        logger.error("Error on rmdir w/ recursive option", { error: err });
-        return;
-      }
-      logger.info("Finish GC cleanup round", { directory: path });
-    });
+    fs.rmdir(path, { recursive: true })
+      .then(() => {
+        logger.info("Finish GC cleanup round", { directory: path });
+      })
+      .catch((err) => {
+        logger.error("Error on rmdir w/ recursive option");
+        logger.debug(err);
+      });
   });
 
   return {
@@ -233,5 +239,5 @@ const runWatchers = function (volume) {
 
 module.exports = {
   runWatchers,
-  buildWatchers
+  buildWatchers,
 };

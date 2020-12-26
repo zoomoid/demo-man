@@ -52,7 +52,7 @@ function addNamespace(namespace) {
  * @param {*} track track data to post to the API
  */
 function addTrack(track) {
-  return http.add(`${apiEndpoint}/tracks`, { track: track })
+  return http.add(`${apiEndpoint}/tracks`, { ...track })
     .then(() => {
       logger.verbose(`Added Track/${track.metadata.name}`);
     })
