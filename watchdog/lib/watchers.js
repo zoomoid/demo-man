@@ -77,11 +77,11 @@ const buildWatchers = (volume) => {
   };
 
   const metadataWatcherJSON = chokidar.watch(
-    `${volume}/[\\w-]*/metadata.json`,
+    `${volume}/**/metadata.json`,
     metadataWatcherOptions
   );
   const metadataWatcherYAML = chokidar.watch(
-    `${volume}/[\\w-]*/metadata.yaml`,
+    `${volume}/**/metadata.yaml`,
     metadataWatcherOptions
   );
 
