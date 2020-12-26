@@ -94,7 +94,7 @@ module.exports = function (router) {
     db.get()
       .find({
         type: "Waveform",
-        namespace: params.namespace,
+        "metadata.namespace": params.namespace,
       })
       .toArray()
       .then((waveform) => {
@@ -195,6 +195,7 @@ module.exports = function (router) {
         res.json({
           links: {
             self: `${api.url}/waveforms/by_track/${params.track_id}`,
+            track: `${api.url}/tracks/${params.track_id}`,
             full: `${api.url}/waveforms/by_track/${params.track_id}/full`,
             small: `${api.url}/waveforms/by_track/${params.track_id}/small`,
           },
