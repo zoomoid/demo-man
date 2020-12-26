@@ -50,7 +50,7 @@ def determine_text_color(color: tuple) -> tuple:
     black = (0, 0, 0)
     ratioWhite = contrast_ratio(color, white)
     ratioBlack = contrast_ratio(color, black)
-    if(ratioBlack > ratioWhite):
+    if(ratioBlack < ratioWhite):
         return white
     else:
         return black
