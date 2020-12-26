@@ -29,7 +29,7 @@ module.exports = function (router) {
             },
             {
               $set: {
-                theme: body.theme,
+                "data.theme": body.theme,
                 "metadata.updatedAt": new Date().toUTCString(),
               },
               $inc: {
