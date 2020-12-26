@@ -12,15 +12,15 @@
   "dependencies": {
     "axios": "^0.21.1",
     "chokidar": "^3.4.3",
-    "js-yaml": "^3.14.0",
-    "music-metadata": "^6.4.0",
+    "js-yaml": "^3.14.1",
+    "music-metadata": "^7.5.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^7.12.0",
-    "eslint-config-prettier": "^6.14.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^6.15.0",
     "mocha": "^8.2.1",
-    "prettier": "^2.1.2"
+    "prettier": "^2.2.1"
   }
 }
