@@ -31,7 +31,7 @@ const wavemanHook = async (path, url) => {
  * @param {string} url waveman API endpoint
  */
 const waveform = (track, url) => {
-  const path = `${track.metadata.namespace}/${track.data.filename}`;
+  const path = `${track.metadata.namespace}/${track.data.file.name}`;
   const waveform = {
     type: "Waveform",
     metadata: {

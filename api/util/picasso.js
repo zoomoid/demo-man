@@ -10,7 +10,8 @@ const invert = (color) => {
   try {
     return color.map((t) => 255 - t);
   } catch (err) {
-    logger.warn("Error inverting color tuple", { error: err });
+    logger.warn("Error inverting color tuple");
+    logger.debug(err);
     return color;
   }
 };
