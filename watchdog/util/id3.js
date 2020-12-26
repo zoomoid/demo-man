@@ -30,7 +30,7 @@ function writeCover({ metadata, track }, cover) {
         mimeType: `image/${format}`,
         publicUrl: absolutePath(() => localImagePath),
         localUrl: localImagePath,
-        filename: track.file.name,
+        filename: `cover.${format}`,
       };
     } else {
       logger.warn(`Track/${metadata.name} has no cover yet!`);
@@ -87,8 +87,8 @@ function readMetadata(p) {
         logger.verbose(
           `Extracted id3 data from new Track/${resource.metadata.name}`
         );
-        resource.track.cover = writeCover(resource);
-        resolve(resource, src.common.picture);
+        resource.track.cover = writeCover(resource, src.common.picture);
+        resolve(resource);
       })
       .catch((err) => {
         logger.error("Failed to parse id3 metadata for Track", { file: p });
