@@ -244,6 +244,7 @@ module.exports = function (router) {
             links: {
               self: `${api.url}/namespaces/${params.namespace}/`,
               cover: `${api.url}/namespaces/${params.namespace}/cover`,
+              theme: `${api.url}/namespaces/${params.namespace}/theme`,
               tracks: `${api.url}/namespaces/${params.namespace}/tracks`,
               metadata: `${api.url}/namespaces/${params.namespace}/metadata`,
               waveforms: `${api.url}/waveforms/by_namespace/${params.namespace}`,

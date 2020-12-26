@@ -19,7 +19,7 @@ module.exports = function (router) {
               self: `${api.url}/namespaces/${params.namespace}/theme`,
               namespace: `${api.url}/namespaces/${params.namespace}`,
             },
-            theme,
+            ...theme,
           });
         } else {
           logger.warn("Could not find Theme", {
