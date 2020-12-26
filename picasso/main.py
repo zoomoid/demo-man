@@ -47,11 +47,11 @@ def palette(no: str) -> dict:
     :rtype: dict
     """
     image_url = request.json["url"]
-    print(f"Calculating color palette for cover at {image_url}")
+    # print(f"Calculating color palette for cover at {image_url}")
     path = f"{os.environ['VOLUME']}{image_url}"
     palette = ColorThief(path).get_palette(color_count=int(no), quality=5)
     color = ColorThief(path).get_color(quality=5)
-    print(f"Calculated palette {palette}")
+    # print(f"Calculated palette {palette}")
     return {
         "color": color,
         "textColor": determine_text_color(color),

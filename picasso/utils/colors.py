@@ -29,7 +29,7 @@ def contrast_ratio(c1: tuple, c2: tuple) -> float:
     :rtype: float
     """
     luminance = list(map(lambda c: rel_luminance(c), [c1, c2]))
-    print(luminance)
+    # print(luminance)
     if(luminance[0] >= luminance[1]):
         return (luminance[0] + 0.05) / (luminance[1] + 0.05)
     else:
