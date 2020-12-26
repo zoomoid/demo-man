@@ -53,6 +53,7 @@ const palette = (track, url) => {
           type: "Theme",
           "metadata.namespace": track.metadata.namespace,
           "metadata.name": track.metadata.namespace + "-theme",
+          "metadata.updatedAt": new Date().toUTCString(),
         },
         {
           $set: { computedTheme: theme },
