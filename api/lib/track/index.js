@@ -96,7 +96,7 @@ module.exports = function (router) {
             const c = db.get();
             Promise.all([
               c
-                .deleteMany({ Type: "Track", "track.path": body.path })
+                .deleteMany({ Type: "Track", "track.file.path": body.path })
                 .then(({ deletedCount }) => {
                   logger.verbose(
                     `Deleted ${pluralize(
@@ -148,7 +148,7 @@ module.exports = function (router) {
           }
         });
     })
-    .get((res) => {
+    .get((_, res) => {
       db.get()
         .find({ type: "Track" })
         .toArray()
