@@ -56,7 +56,7 @@ const palette = (track, url) => {
           "metadata.updatedAt": new Date().toUTCString(),
         },
         {
-          $set: { computedTheme: theme },
+          $set: { "data.computedTheme": theme },
           $inc: {
             "metadata.revision": 1,
           },
