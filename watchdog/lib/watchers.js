@@ -205,13 +205,13 @@ const runWatchers = function (volume) {
    * Supports both json and yaml files
    */
   watchers.metadata.json
-    .on("add", options.add.bind(null, "add", options.loaders.json))
-    .on("change", options.add.bind(null, "change", options.loaders.json))
+    .on("add", options.add.bind(null, options.loaders.json))
+    .on("change", options.add.bind(null, options.loaders.json))
     .on("unlink", options.remove);
 
   watchers.metadata.yaml
-    .on("add", options.add.bind(null, "add", options.loaders.yaml))
-    .on("change", options.add.bind(null, "change", options.loaders.yaml))
+    .on("add", options.add.bind(null, options.loaders.yaml))
+    .on("change", options.add.bind(null, options.loaders.yaml))
     .on("unlink", options.remove);
 
   /**
