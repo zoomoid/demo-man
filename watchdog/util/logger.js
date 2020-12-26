@@ -10,9 +10,9 @@ const logger = createLogger({
     format.splat(),
     format.json()
   ),
-  defaultMeta: { service: "api" },
+  defaultMeta: { service: "watchdog" },
   transports: [
-    new transports.File({ filename: "api.error", level: "error" }),
+    // new transports.File({ filename: "api.error", level: "error" }),
     new transports.File({ filename: "api.log" }),
   ],
 });
