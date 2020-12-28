@@ -1,17 +1,17 @@
 import { Track } from "./Track";
 
 type QueueStatePaused = {
-  state: "paused";
+  type: "paused";
   index: number;
 };
 
 type QueueStatePlaying = {
-  state: "playing";
+  type: "playing";
   index: number;
 };
 
 type QueueStateStopped = {
-  state: "stopped";
+  type: "stopped";
   finished: boolean;
   started: boolean;
 };

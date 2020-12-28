@@ -1,16 +1,16 @@
 export type TrackStatePaused = {
-  state: "paused",
+  type: "paused",
   progress: number,
 }
 
 export type TrackStateStopped = {
-  state: "stopped",
+  type: "stopped",
   finished: boolean,
   started: boolean,
 }
 
 export type TrackStatePlaying = {
-  state: "playing",
+  type: "playing",
   progress: number,
 }
 
