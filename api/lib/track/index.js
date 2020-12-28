@@ -1,7 +1,6 @@
 const {
   guard,
-  waveform,
-  palette,
+  hooks,
   db,
   logger,
   dnsName,
@@ -10,7 +9,7 @@ const {
   failedAssociated,
 } = require("../../util/");
 const { ObjectID } = require("mongodb");
-const { api, waveman, picasso } = require("../../endpoints");
+const { api, picasso, waveman } = require("../../endpoints");
 const id = ObjectID.createFromHexString;
 
 /**
@@ -29,8 +28,8 @@ module.exports = function (router) {
      */
     .post(guard, ({ body }, res) => {
       const track = {
-        _id: new ObjectID(),
         type: "Track",
+        _id: new ObjectID(),
         metadata: {
           namespace: dnsName(body.metadata.namespace),
           name: dnsName(body.metadata.name),
@@ -41,46 +40,90 @@ module.exports = function (router) {
           ...body.track,
         },
       };
+      const waveform = {
+        type: "Waveform",
+        _id: new ObjectID(),
+        metadata: {
+          name: track.metadata.name + "-waveform",
+          namespace: track.metadata.namespace,
+          track_id: track._id,
+          createdAt: new Date().toUTCString(),
+          updatedAt: new Date().toUTCString(),
+          revision: 0,
+        },
+        data: {}, // empty data object to be filled in the promise resolve function
+      };
       dispatch([
-        waveform(track, waveman.url).catch((err) => {
+        hooks.waveman(waveform, track, waveman.url).catch((err) => {
           logger.error("Failed to complete waveform hook", {
             message: err.message,
           });
         }),
-        palette(track, picasso.url).catch((err) => {
+        hooks.picasso(track, picasso.url).catch((err) => {
           logger.error("Failed to complete picasso hook", {
             message: err.message,
           });
         }),
       ]);
-      db.get()
-        .insertOne(track)
-        .then((track) => {
-          return db.get().findOneAndUpdate(
-            {
-              _id: track._id,
-            },
-            {
-              $set: {
-                "metadata.last-applied-configuration": JSON.stringify(track),
+      const c = db.get();
+      Promise.all([
+        c
+          .insertOne(track)
+          .then(() => {
+            return db.get().findOneAndUpdate(
+              {
+                _id: track._id,
               },
-            }
-          );
-        })
+              {
+                $set: {
+                  "metadata.lastAppliedConfiguration": JSON.stringify(track),
+                },
+              }
+            );
+          })
+          .then(() => {
+            logger.verbose(`Created Track/${track.metadata.name}`);
+          })
+          .catch((err) => {
+            failed({
+              action: "create",
+              resource: "Track",
+              namespace: track.metadata.namespace,
+            });
+            logger.debug(err);
+          }),
+        c
+          .insertOne(waveform)
+          .then(() => {
+            return db.get().findOneAndUpdate(
+              {
+                _id: waveform._id,
+              },
+              {
+                $set: {
+                  "metadata.lastAppliedConfiguration": JSON.stringify(waveform),
+                },
+              }
+            );
+          })
+          .then(() => {
+            logger.verbose(`Created Waveform/${waveform.metadata.name}`);
+          })
+          .catch((err) => {
+            failed({
+              action: "create",
+              resource: "Waveform",
+              namespace: waveform.metadata.namespace,
+            });
+            logger.debug(err);
+          }),
+      ])
         .then(() => {
-          logger.info(`Created Track/${track.metadata.name}`, {
-            namespace: track.namespace,
-          });
           res.status(200).json({
             message: "success",
           });
         })
         .catch(() => {
-          failed({
-            action: "create",
-            resource: "Track",
-            namespace: track.metadata.namespace,
-          });
           res.status(500).json({ message: "Interal Server Error" });
         });
     })
@@ -89,7 +132,7 @@ module.exports = function (router) {
      */
     .delete(guard, ({ body }, res) => {
       db.get()
-        .findOne({ path: body.path, type: "Track" })
+        .findOne({ "track.file.path": body.path, type: "Track" })
         .then((track) => {
           if (track) {
             const namespace = track.metadata.namespace;

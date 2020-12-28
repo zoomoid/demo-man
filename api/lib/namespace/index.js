@@ -15,8 +15,8 @@ module.exports = function (router) {
     /**
      * ADD new album to API
      */
-    .post(guard, (req, res) => {
-      const n = dnsName(req.body.namespace);
+    .post(guard, ({ body }, res) => {
+      const n = dnsName(body.namespace);
       const namespace = {
         type: "Namespace",
         metadata: {
@@ -52,7 +52,9 @@ module.exports = function (router) {
               },
               {
                 $set: {
-                  "metadata.last-applied-configuration": JSON.stringify(theme),
+                  "metadata.lastAppliedConfiguration": JSON.stringify(
+                    theme
+                  ),
                 },
               }
             );
@@ -79,7 +81,7 @@ module.exports = function (router) {
               },
               {
                 $set: {
-                  "metadata.last-applied-configuration": JSON.stringify(
+                  "metadata.lastAppliedConfiguration": JSON.stringify(
                     namespace
                   ),
                 },

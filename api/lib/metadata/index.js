@@ -41,15 +41,15 @@ module.exports = function (router) {
             }
           )
           .then((theme) => {
-            if (theme) {
+            if (theme.value) {
               return db.get().findOneAndUpdate(
                 {
-                  _id: theme._id,
+                  _id: theme.value._id,
                 },
                 {
                   $set: {
-                    "metadata.last-applied-configuration": JSON.stringify(
-                      theme
+                    "metadata.lastAppliedConfiguration": JSON.stringify(
+                      theme.value
                     ),
                   },
                 }
@@ -93,15 +93,15 @@ module.exports = function (router) {
             }
           )
           .then((namespace) => {
-            if (namespace) {
+            if (namespace.value) {
               return db.get().findOneAndUpdate(
                 {
-                  _id: namespace._id,
+                  _id: namespace.value._id,
                 },
                 {
                   $set: {
-                    "metadata.last-applied-configuration": JSON.stringify(
-                      namespace
+                    "metadata.lastAppliedConfiguration": JSON.stringify(
+                      namespace.value
                     ),
                   },
                 }
