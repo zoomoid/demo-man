@@ -5,6 +5,7 @@ import Home from "./views/Home.vue";
 import Page from "./views/Page.vue";
 import "./registerServiceWorker";
 import store from "./store";
+import "./assets/css/tailwind.scss";
 
 Vue.use(VueRouter);
 
@@ -26,11 +27,10 @@ const router = new VueRouter({
 
 Vue.config.productionTip = false;
 
-new Vue({
+export default new Vue({
   router,
   render: (h) => h(App),
   store,
-
   data() {
     return {
       version: process.env.VERSION,
@@ -45,12 +45,3 @@ new Vue({
     };
   },
 }).$mount("#app");
-
-export default function humanReadableTimestamp(val) {
-  try {
-    const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
-    return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
-  } catch (e) {
-    return "00:00";
-  }
-}
