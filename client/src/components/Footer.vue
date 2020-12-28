@@ -1,14 +1,14 @@
 <template>
-  <footer>
+  <footer class="mx-auto text-center pt-8">
     <a href="https://github.com/occloxium/demo-man">
       <span class="emoji">🎧</span>
       <span class="text">demo-man</span> </a
-    ><span>&mdash;</span>
+    ><i>&mdash;</i>
     <a href="https://alexander.bartolomey.me/">
       <span class="emoji">👨‍💻</span>
       <span class="text">@zoomoid</span> </a
-    ><span>&mdash;</span>
-    <span class="version"> v{{ $root.version }} </span>
+    ><i>&mdash;</i>
+    <span class="text-sm px-4 opacity-50"> {{ $root.version }} </span>
   </footer>
 </template>
 
@@ -24,34 +24,15 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-footer {
-  padding: 2em 0 0;
-  font-size: 12pt;
-  text-align: center;
-  a {
-    padding: 8px 16px;
-    color: inherit;
-    text-decoration: none;
-    opacity: 0.5;
-    .emoji::after {
-      content: " ";
-    }
-    &:hover,
-    &:active {
-      opacity: 1;
-      .emoji {
-        text-decoration: none;
-      }
-      .text {
-        text-decoration: underline;
-      }
-    }
-  }
-  .version {
-    font-size: 0.8em;
-    padding: 0 16px;
-    opacity: 0.5;
-  }
-}
+<style lang="sass">
+footer
+  a
+    @apply py-2 px-4 opacity-50
+    @apply hover:opacity-100
+    .text
+      @apply hover:underline
+    .emoji
+      @apply pr-2
+  i
+    @apply opacity-50
 </style>
