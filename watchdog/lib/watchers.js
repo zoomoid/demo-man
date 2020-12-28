@@ -63,14 +63,14 @@ const buildWatchers = (volume) => {
         return yaml.safeLoad(c);
       },
     },
-    add: (loader, p) => {
-      const config = loader(p);
-      metadata.change(config, p, path.dirname(p)).catch((err) => {
+    add: async (loader, p) => {
+      const config = await loader(p);
+      metadata.change(config, path.dirname(p)).catch((err) => {
         logger.debug(err);
       });
     },
     remove: (p) => {
-      metadata.change({}, p, path.dirname(p)).catch((err) => {
+      metadata.change({}, path.dirname(p)).catch((err) => {
         logger.debug(err);
       });
     },
