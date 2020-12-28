@@ -1,6 +1,16 @@
 {
   "configurations": [
     {
+      "name": "Launch client in chrome",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:8081",
+      "webRoot": "${workspaceFolder}/client/src",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/*"
+      }
+    },
+    {
       "name": "Attach to api",
       "type": "node",
       "request": "attach",
@@ -19,6 +29,6 @@
       "port": 9230,
       "localRoot": "${workspaceFolder}/watchdog",
       "address": "localhost"
-    }
+    },
   ]
 }
