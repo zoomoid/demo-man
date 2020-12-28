@@ -1,9 +1,13 @@
 module.exports = {
   guard: require("./guard"),
-  waveform: require("./waveman").waveform,
-  wavemanHook: require("./waveman").wavemanHook,
-  picassoHook: require("./picasso").picassoHook,
-  palette: require("./picasso").palette,
+  hooks: {
+    waveman: require("./waveman").waveman,
+    picasso: require("./picasso").picasso,
+    _: {
+      waveman: require("./waveman").hook,
+      picasso: require("./picasso").hook,
+    },
+  },
   db: require("./db"),
   validator: require("./validator"),
   logger: require("./logger").logger,

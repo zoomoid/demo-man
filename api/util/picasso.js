@@ -2,7 +2,7 @@ const { logger, failedAssociated } = require("./logger");
 const axios = require("axios").default;
 const db = require("./db");
 
-/** 
+/**
  * Given the color as a 3-element array, invert the color tuple
  * @param {Array} color List of 8-bit RGB color components
  */
@@ -21,7 +21,7 @@ const invert = (color) => {
  * @param {string} path cover filename
  * @param {string} url picasso endpoint
  */
-const picassoHook = async (path, url) => {
+const hook = async (path, url) => {
   logger.verbose("Requesting color palette from picasso", {
     url,
     path,
@@ -44,19 +44,21 @@ const picassoHook = async (path, url) => {
  * @param {Object} track track data
  * @param {String} url picasso API endpoint
  */
-const palette = (track, url) => {
+const picasso = (track, url) => {
   const path = `${track.metadata.namespace}/${track.data.cover.filename}`;
-  return picassoHook(path, url)
+  return hook(path, url)
     .then((theme) => {
       return db.get().findOneAndUpdate(
         {
           type: "Theme",
           "metadata.namespace": track.metadata.namespace,
           "metadata.name": track.metadata.namespace + "-theme",
-          "metadata.updatedAt": new Date().toUTCString(),
         },
         {
-          $set: { "data.computedTheme": theme },
+          $set: {
+            "data.computedTheme": theme,
+            "metadata.updatedAt": new Date().toUTCString(),
+          },
           $inc: {
             "metadata.revision": 1,
           },
@@ -67,16 +69,18 @@ const palette = (track, url) => {
       );
     })
     .then((theme) => {
-      db.get().findOneAndUpdate(
-        {
-          _id: theme._id,
-        },
-        {
-          $set: {
-            "metadata.last-applied-configuration": JSON.stringify(theme),
+      if (theme.value) {
+        db.get().findOneAndUpdate(
+          {
+            _id: theme.value._id,
           },
-        }
-      );
+          {
+            $set: {
+              "metadata.lastAppliedConfiguration": JSON.stringify(theme.value),
+            },
+          }
+        );
+      }
     })
     .then(() => {
       logger.verbose(`Updated Theme/${track.metadata.namespace}-theme`);
@@ -92,7 +96,7 @@ const palette = (track, url) => {
 };
 
 module.exports = {
-  palette,
-  picassoHook,
+  picasso,
+  hook,
   invert,
 };

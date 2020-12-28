@@ -7,7 +7,7 @@ const axios = require("axios").default;
  * @param {string} path filename path for waveman
  * @param {string} url waveman endpoint
  */
-const wavemanHook = async (path, url) => {
+const hook = async (path, url) => {
   logger.verbose("Requesting waveform from waveman", {
     url,
     path,
@@ -30,42 +30,48 @@ const wavemanHook = async (path, url) => {
  * @param {Object} track namespace of the track
  * @param {string} url waveman API endpoint
  */
-const waveform = (track, url) => {
+const waveman = (waveform, track, url) => {
   const path = `${track.metadata.namespace}/${track.data.file.name}`;
-  const waveform = {
-    type: "Waveform",
-    metadata: {
-      name: track.metadata.name + "-waveform",
-      namespace: track.metadata.namespace,
-      track_id: track._id,
-      createdAt: new Date().toUTCString(),
-      updatedAt: new Date().toUTCString(),
-      revision: 1,
-    },
-    data: {}, // empty data object to be filled in the promise resolve function
-  };
-  return wavemanHook(path, url)
+  return hook(path, url)
     .then((svg) => {
-      waveform.data = {
+      const data = {
         full: svg.full,
         small: svg.small,
       };
-      return db.get().insertOne(waveform);
-    })
-    .then((waveform) => {
       return db.get().findOneAndUpdate(
         {
-          _id: waveform._id,
+          type: "Waveform",
+          "metadata.track_id": track._id,
         },
         {
           $set: {
-            "metadata.last-applied-configuration": JSON.stringify(waveform),
+            data,
           },
+          $inc: {
+            "metadata.revision": 1,
+          },
+        },
+        {
+          returnOriginal: false,
         }
       );
     })
+    .then((waveform) => {
+      if(waveform.value){
+        return db.get().findOneAndUpdate(
+          {
+            _id: waveform.value._id,
+          },
+          {
+            $set: {
+              "metadata.lastAppliedConfiguration": JSON.stringify(waveform.value),
+            },
+          }
+        );
+      }
+    })
     .then(() => {
-      logger.verbose(`Added Waveform/${waveform.metadata.name}`);
+      logger.verbose(`Updated Waveform/${waveform.metadata.name}`);
     })
     .catch((err) => {
       failedAssociated({
@@ -78,6 +84,6 @@ const waveform = (track, url) => {
 };
 
 module.exports = {
-  waveform: waveform,
-  wavemanHook: wavemanHook,
+  waveman,
+  hook,
 };
