@@ -1,4 +1,5 @@
 import Vue from "vue";
+
 import VueRouter from "vue-router";
 import App from "./App.vue";
 import Home from "./views/Home.vue";
@@ -7,41 +8,44 @@ import "./registerServiceWorker";
 import store from "./store";
 import "./assets/css/tailwind.scss";
 
+
+declare module "vue/types/options" {
+  interface ComponentOptions<V extends Vue> {
+    apiEP?: string;
+    publicEP?: string;
+    version?: string;
+  }
+}
+
+
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    component: Home,
+    component: Home
   },
   {
     path: "/:id",
-    component: Page,
-  },
+    component: Page
+  }
 ];
 
 const router = new VueRouter({
   mode: "history",
-  routes,
+  routes
 });
 
 Vue.config.productionTip = false;
 
 export default new Vue({
   router,
-  render: (h) => h(App),
+  render: h => h(App),
   store,
-  data() {
-    return {
-      version: process.env.VERSION,
-      apiEP:
-        process.env.NODE_ENV === "development"
-          ? "http://localhost:8080/api/v1/demo"
-          : "https://demo.zoomoid.de/api/v1/demo",
-      publicEP:
-        process.env.NODE_ENV === "development"
-          ? "http://localhost:8081"
-          : "https://demo.zoomoid.de",
-    };
-  },
+  version: process.env.VERSION,
+  publicEP: process.env.BASE_URL,
+  apiEP:  process.env.API_URL,
+  created() {
+    console.log(`Currently running version ${this.$version}`);
+  }
 }).$mount("#app");
