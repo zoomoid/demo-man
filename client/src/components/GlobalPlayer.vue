@@ -78,11 +78,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { mapGetters } from "vuex";
 import humanReadableTimestamp from "../main";
 
-export default {
+export default Vue.extend({
   data: () => ({
     volumeOverlay: false,
     localVolume: 100,
@@ -246,7 +246,7 @@ export default {
       },
     });
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>

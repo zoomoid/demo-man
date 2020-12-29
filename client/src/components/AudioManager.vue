@@ -1,5 +1,11 @@
 <template>
-  <div :style="`--accent: ${this.accent}; --primary: ${this.primary}`">
+  <div
+    :style="{
+      '--accent': theme.accent,
+      '--color': theme.color,
+      '--textColor': theme.textColor,
+    }"
+  >
     <div class="manager" v-if="!queue">
       <span>No tracks added yet...</span>
     </div>
@@ -9,53 +15,52 @@
           <label
             for="autoplay"
             @click="autoplayControl"
-            :class="[
-              this.autoplay ? 'is-active autoplay__label' : 'autoplay__label',
-            ]"
+            class="autoplay__label"
+            :class="{
+              'is-active': autoplay,
+            }"
           >
-            <span class="material-icons-sharp">
-              playlist_play
-            </span>
-            <span class="label">
-              Autoplay
-            </span>
+            <span class="material-icons-sharp"> playlist_play </span>
+            <span class="label"> Autoplay </span>
           </label>
         </div>
         <div class="loop">
           <label
             for="loop"
             @click="loopControl"
-            :class="[this.loop ? 'is-active loop__label' : 'loop__label']"
+            class="loop__label"
+            :class="{
+              'is-active': loop,
+            }"
           >
-            <span class="material-icons-sharp">
-              repeat
-            </span>
-            <span class="label">
-              Loop
-            </span>
+            <span class="material-icons-sharp"> repeat </span>
+            <span class="label"> Loop </span>
           </label>
         </div>
         <div class="spacer"></div>
         <div
           class="play-all"
-          :class="[this.globalPlayState === 'playing' ? 'is-disabled' : '']"
+          :class="{
+            'is-disabled': false,
+          }"
           @click="playAll"
         >
-          <span class="material-icons-sharp">
-            play_arrow
-          </span>
-          <span>
-            Play all
-          </span>
+          <span class="material-icons-sharp"> play_arrow </span>
+          <span> Play all </span>
         </div>
       </header>
       <div v-for="(track, index) in queue" v-bind:key="track._id">
         <AudioPlayer
           :track="track"
           :index="index + 1"
-          :accent="accent"
+          :theme="{
+            color: theme.color,
+            textColor: theme.textColor,
+            accent: theme.accent,
+          }"
           :highlighted="`${selected}` === `${index + 1}`"
           v-on:update:select="select"
+          v-on:play="pushQueue"
         ></AudioPlayer>
       </div>
       <div class="footer">
@@ -70,83 +75,65 @@ import { mapGetters } from "vuex";
 import AudioPlayer from "./AudioPlayer.vue";
 import Footer from "./Footer.vue";
 
+function makeQueue(queue = [], namespace) {
+  return queue.map((track, i) => ({
+    url: `${namespace}#${i + 1}`, // intentional off-by-one, to stay convergent with URL links to track
+  }));
+}
+
 export default {
   components: {
     AudioPlayer,
-    Footer,
+    Footer
   },
   props: {
     queue: {
       type: Array,
-      default: () => [],
+      default: () => []
     },
-    accent: {
-      type: String,
-      default: "#F58B44",
-    },
-    primary: {
-      type: String,
-      default: "#1a1a1a",
+    theme: {
+      type: Object,
+      default: () => ({
+        accent: null,
+        color: null,
+        textColor: null
+      })
     },
     namespace: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
       playIndex: -1,
       selected: -1,
       autoplay: true,
-      loop: false,
+      loop: false
     };
   },
   computed: {
-    playing() {
-      return this.queue.find(
-        (t, i) => `${this.namespace}/#${i + 1}` === this.url,
-      );
+    isPlaying() {
+      return `${this.nowPlaying}`.includes(this.namespace) === true;
     },
-    ...mapGetters(["globalPlayState", "url", "progress"]),
+    ...mapGetters({
+      nowPlaying: "nowPlaying",
+      globalAutoplay: "autoplay",
+      globalLoop: "loop",
+    })
   },
   watch: {
     url(n) {
       this.playIndex = this.queue.findIndex(
-        (t, i) => `${this.namespace}/#${i + 1}` === n,
+        (t, i) => `${this.namespace}/#${i + 1}` === n
       );
     },
-    globalPlayState(n) {
-      if (n === "finished") {
-        if (this.autoplay) {
-          let nextIndex;
-          if (this.loop) {
-            nextIndex = (this.playIndex + 1) % this.queue.length;
-          } else {
-            nextIndex = this.playIndex + 1 < this.queue.length ? this.playIndex + 1 : -1;
-          }
-          if (nextIndex >= 0) {
-            const {
-              mp3, artist, title, duration,
-            } = this.queue[nextIndex];
-            const url = `${this.namespace}/#${nextIndex + 1}`;
-            const progress = this.progress[url] || 0;
-            this.$store.dispatch({
-              type: "changeTrack",
-              mp3,
-              url,
-              artist,
-              title,
-              duration,
-              progress,
-            });
-          } else {
-            this.playIndex = -1;
-          }
-        } else {
-          this.playIndex = -1;
-        }
-      }
-    },
+    autoplay(){
+      this.$store.commit("updatePlaybackSettings", {
+        autoplay: this.autoplay,
+        loop: this.loop,
+      })
+    }
   },
   methods: {
     select(no) {
@@ -158,21 +145,25 @@ export default {
     autoplayControl() {
       this.autoplay = !this.autoplay;
     },
+    pushQueue() {
+      this.$store.dispatch("pushQueue", {
+        queue: makeQueue(this.queue),
+      });
+    },
     playAll() {
-      const {
-        mp3, artist, title, duration,
-      } = this.queue[0];
+      const { mp3, artist, title, duration } = this.queue[0];
       const url = `${this.namespace}/#1`;
-      this.$store.dispatch({
-        type: "changeTrack",
+      this.$store.dispatch("pushQueue", {
+        queue: makeQueue(this.queue),
+      });
+      this.$store.dispatch("changeTrack", {
         mp3,
         url,
         artist,
         title,
-        duration,
-        progress: this.progress[url],
+        duration
       });
-    },
+    }
   },
   mounted() {
     this.select(window.location.hash.replace("#", ""));
@@ -180,105 +171,55 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.manager {
-  .settings {
-    background: var(--primary);
-    border-top-left-radius: 16pt;
-    border-top-right-radius: 16pt;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
-    padding: 1em 2em 3em;
-    margin-bottom: -28pt;
-    display: flex;
-    align-items: center;
-    .autoplay,
-    .loop {
-      padding: 1em 1em 0 0;
-      label {
-        user-select: none;
-        cursor: pointer;
-        align-items: center;
-        &.is-active {
-          color: var(--accent);
-        }
-        span:first-child {
-          margin-right: 4px;
-          display: block;
-          text-align: center;
-        }
-        span:last-child {
-          opacity: 0;
-          text-align: center;
-          transform: translateY(6px);
-          display: block;
-          transition: opacity 0.1s ease, transform 0.1s ease;
-        }
-        &:hover,
-        &:active {
-          span:last-child {
-            opacity: 1;
-            width: auto;
-            transform: translateY(0);
-          }
-        }
-      }
-    }
-    &.loop label {
-      padding-left: 12px;
-    }
-    .spacer {
-      flex-grow: 1;
-    }
-    .play-all {
-      border-radius: 32px;
-      border: none;
-      outline: none;
-      color: var(--accent);
-      font-size: 0.8em;
-      text-transform: uppercase;
-      font-weight: bold;
-      padding: 1em 1em 0 0;
-      text-align: center;
-      transition: background-color 0.1s ease;
-      span:last-child {
-        opacity: 0;
-        text-align: center;
-        transform: translateY(6px);
-        display: block;
-        transition: opacity 0.1s ease, transform 0.1s ease;
-      }
-      &:hover,
-      &:active {
-        span:last-child {
-          opacity: 1;
-          width: auto;
-          transform: translateY(0);
-        }
-      }
-      cursor: pointer;
-      &.is-disabled {
-        cursor: initial;
-        color: rgba(128, 128, 128, 0.5);
-      }
-    }
-  }
-}
+<style lang="sass" scoped>
+=settings-controls
+  user-select: none
+  cursor: pointer
+  align-items: center
+  color: rgba(var(--textColor), 0.33)
+  @apply pt-4 px-4 text-center
+  span:last-child
+    opacity: 0
+    text-align: center
+    transform: translateY(6px)
+    display: block
+    transition: opacity 0.1s ease, transform 0.1s ease
+  &:hover,
+  &:active
+    span:last-child
+      opacity: 1
+      width: auto
+      transform: translateY(0)
 
-.player {
-  &:last-child {
-    .player-wrapper.loaded {
-      margin-bottom: 16px;
-      border-bottom-left-radius: 16pt;
-      border-bottom-right-radius: 16pt;
-    }
-  }
-}
-.footer {
-  background: var(--primary);
-  border-top-left-radius: 16pt;
-  border-top-right-radius: 16pt;
-  border-top: solid 1px rgba(0, 0, 0, 0.33);
-  padding: 3em 0;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
-}
+.manager
+  color: rgba(var(--textColor), 1)
+  .settings
+    @apply pt-4 flex items-center
+    .autoplay,
+    .loop
+      label
+        +settings-controls
+        &.is-active
+          color: rgba(var(--textColor), 1)
+        span:first-child
+          @apply mr-1 block text-center
+
+    &.loop label
+      @apply pl-3
+
+    .spacer
+      @apply flex-grow
+
+    .play-all
+      color: rgba(var(--accent), 1)
+      transition: background-color 0.1s ease
+      @apply text-center font-bold uppercase text-sm
+      @apply outline-none border-none rounded-3xl
+      +settings-controls
+      &.is-disabled
+        cursor: initial
+        color: rgba(128, 128, 128, 0.5)
+
+.footer
+  @apply py-12
 </style>

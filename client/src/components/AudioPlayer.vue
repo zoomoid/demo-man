@@ -1,50 +1,54 @@
 <template>
-  <div :id="track.no" class="player-wrapper" ref="player" :class="this.css">
+  <div
+    :id="general.no"
+    class="player-wrapper"
+    ref="player"
+    :class="{
+      'is-highlighted': highlighted,
+      'is-playing': playing,
+    }"
+  >
     <div class="title-wrapper">
       <div class="title-line">
         <div class="title">
-          {{ track.title }}
+          {{ general.title }}
         </div>
       </div>
       <div class="metadata">
-        <div class="no" v-if="track.no">
+        <div class="no" v-if="general.no">
           <span>
-            {{ track.no }}
+            {{ general.no }}
           </span>
         </div>
-        <div class="comments" v-if="track.comment">
+        <div class="comments" v-if="general.comment">
           <span
             class="comment"
-            v-for="comment in track.comment"
+            v-for="comment in general.comment"
             v-bind:key="comment"
           >
             {{ comment }}
           </span>
         </div>
-        <div class="genre" v-if="track.genre">
-          <span v-for="genre in track.genre" v-bind:key="genre">
+        <div class="genre" v-if="general.genre">
+          <span v-for="genre in general.genre" v-bind:key="genre">
             {{ genre }}
           </span>
         </div>
-        <div class="bpm" v-if="track.bpm">
+        <div class="bpm" v-if="general.bpm">
           <span>
-            {{ track.bpm }}
+            {{ general.bpm }}
           </span>
         </div>
         <div class="hfill"></div>
         <div class="actions">
           <div class="share">
             <a v-on:click.stop.prevent="share" target="_blank">
-              <i class="material-icons-sharp">
-                share
-              </i>
+              <i class="material-icons-sharp"> share </i>
             </a>
           </div>
           <div class="download">
-            <a :href="`${track.mp3}?download`" target="_blank">
-              <i class="material-icons-sharp">
-                get_app
-              </i>
+            <a :href="`${file.mp3}?download`" target="_blank">
+              <i class="material-icons-sharp"> get_app </i>
             </a>
           </div>
         </div>
@@ -54,21 +58,21 @@
       <div class="play-state">
         <i
           @click="pause"
-          v-if="this.localPlayState === 'playing'"
+          v-if="playState === 'playing'"
           class="material-icons-sharp"
         >
           pause
         </i>
         <i
           @click="play"
-          v-else-if="this.localPlayState === 'paused'"
+          v-else-if="playState === 'paused'"
           class="material-icons-sharp paused"
         >
           play_arrow
         </i>
         <i
           @click="replay"
-          v-else-if="this.localPlayState === 'finished'"
+          v-else-if="playState === 'stopped'"
           class="material-icons-sharp"
         >
           replay
@@ -77,153 +81,175 @@
       <div class="playback-time-wrapper">
         <div class="playback-time-bar">
           <div class="playback-time-scrobble-bar" @click="setPosition"></div>
+          <div class="bg bg--full">
+            <img :src="waveforms.full" />
+          </div>
           <div
-            class="bg bg--full"
-            v-bind:style="{
-              backgroundImage: `url('${waveforms.full}')`,
+            class="fg fg--full"
+            :style="{
+              'clip-path': `polygon(0% 0%, 0% 100%, ${visualProgress}% 100%, ${visualProgress}% 0%`,
             }"
-          ></div>
+          >
+            <img :src="waveforms.full" />
+          </div>
+          <div class="bg bg--small">
+            <img :src="waveforms.small" />
+          </div>
           <div
-            class="bg bg--small"
-            v-bind:style="{
-              backgroundImage: `url('${waveforms.small}')`,
+            class="fg fg--small"
+            :style="{
+              'clip-path': `polygon(0% 0%, 0% 100%, ${visualProgress}% 100%, ${visualProgress}% 0%`,
             }"
-          ></div>
-          <div
-            class="fg"
-            v-bind:style="{ width: `${100 - this.visualProgress}%` }"
-          ></div>
+          >
+            <img :src="waveforms.small" />
+          </div>
         </div>
       </div>
       <div class="playback-time-marks">
-        <span class="playback-time-current">{{ this.currentTime }}</span>
+        <span class="playback-time-current">{{ currentTime }}</span>
         <span class="playback-time-separator"></span>
-        <span class="playback-time-total">{{ this.totalDuration }}</span>
+        <span class="playback-time-total">{{ totalDuration }}</span>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { mapGetters } from "vuex";
-import humanReadableTimestamp from "../main";
+import Vue, { PropType } from "vue";
+import { General, Metadata, TrackAPIResource, File } from "@/models/Track";
+import { Theme } from "@/models/Theme";
 
-export default {
+function humanReadableTimestamp(val: number) {
+  try {
+    const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
+    return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
+  } catch (e) {
+    return "00:00";
+  }
+}
+
+const rgbToHex = (color: string) => {
+  return color
+    .split(", ")
+    .map((c) => parseInt(c, 10).toString(16))
+    .reduce((p, c) => p + c);
+};
+
+export default Vue.extend({
   name: "AudioPlayer",
   data: () => ({}),
   computed: {
-    localPlayState() {
-      return this.playState[this.url] || "paused";
+    file(): File {
+      return this.track?.data.file;
     },
-    totalDuration() {
-      return humanReadableTimestamp(this.track.duration);
-    },
-    currentTime() {
-      return humanReadableTimestamp(this.progress[this.url]);
-    },
-    waveforms() {
+    metadata(): Metadata {
       return {
-        full: `${this.track.waveform}?mode=full&color=efefef`,
-        small: `${this.track.waveform}?mode=small&color=efefef`,
+        name: this.track?.metadata.name,
+        namespace: this.track?.metadata.namespace,
       };
     },
-    localProgress() {
-      return this.progress[this.url] || 0;
+    general(): General {
+      return this.track?.data.general;
     },
-    visualProgress() {
-      return (this.progress[this.url] / this.track.duration) * 100;
+    playing(): boolean {
+      return this.trackState(this.url).type === "playing";
     },
-    url() {
-      return `${this.track.namespace}/#${this.index}`;
+    totalDuration(): string {
+      return humanReadableTimestamp(this.general.duration);
     },
-    inAction() {
-      return this.url === this.playingTrackUrl;
+    currentTime(): string {
+      return humanReadableTimestamp(this.progress(this.url));
     },
-    css() {
-      const classes = [];
-      if (this.highlighted) {
-        classes.push("is-highlighted");
-      }
-      if (this.inAction) {
-        classes.push("is-playing");
-      }
-      return classes.reduce((p, c) => `${p} ${c}`, "");
+    waveforms(): { full: string; small: string } {
+      return {
+        full: `${this.track?.links.waveform}/full?color=${rgbToHex(
+          this.theme.accent || ""
+        )}`,
+        small: `${this.track?.links.waveform}/small?color=${rgbToHex(
+          this.theme.accent || ""
+        )}`,
+      };
+    },
+    localProgress(): number {
+      return this.trackState(this.url).progress;
+    },
+    visualProgress(): number {
+      return (this.localProgress / this.general?.duration) * 100;
+    },
+    url(): string {
+      return `${this.metadata?.name}/#${this.index}`;
+    },
+    inAction(): boolean {
+      return this.url === this.$store.getters.currentTrack;
+    },
+    playState(): TrackState {
+      return this.trackState(this.url);
     },
     ...mapGetters({
+      trackState: "trackState",
+      tracks: "tracks",
       progress: "progress",
-      duration: "duration",
-      playState: "playState",
-      playingTrackUrl: "url",
-      seek: "seek",
     }),
   },
   props: {
     track: {
-      type: Object,
-      default: () => ({
-        url: "",
-        name: "",
-        _id: "",
-        no: -1,
-        tags: [],
-        namespace: "",
-        waveformUrl: {
-          full: "",
-          small: "",
-        },
-        duration: 0,
-      }),
+      type: Object as PropType<TrackAPIResource>,
+      required: true,
     },
     index: {
       type: Number,
       default: -1,
     },
-    accent: {
-      type: String,
-      default: "#F58B44",
+    theme: {
+      type: Object as PropType<Theme>,
+      default: (): Theme =>
+        ({
+          accent: "255, 180, 0",
+          color: "0, 0, 0",
+          textColor: "255, 255, 255",
+        } as Theme),
     },
     highlighted: {
       type: Boolean,
       default: false,
     },
   },
+  mounted() {
+    this.$store.dispatch("addTrack", {
+      url: this.url,
+      mp3: this.file?.mp3,
+      title: this.general?.title,
+      artist: this.general?.artist,
+      album: this.general?.album,
+      duration: this.general?.duration,
+    });
+  },
   methods: {
-    setPosition(e) {
-      const pos = e.target.getBoundingClientRect();
+    setPosition(e: MouseEvent) {
+      const t = e.target as Element;
+      const pos = t?.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
-      const seekTarget = this.track.duration * seekPos;
-      this.$store.commit({
-        type: "seek",
+      const seekTarget = this.general?.duration * seekPos;
+      this.$store.commit("seek", {
         seek: seekTarget,
         url: this.url,
       });
     },
     play() {
-      this.$store.dispatch({
-        type: "changeTrack",
-        mp3: this.track.mp3,
-        url: `${this.track.namespace}/#${this.index}`,
-        title: this.track.title,
-        artist: this.track.artist,
-        progress: this.localProgress,
-        duration: this.track.duration,
-      });
+      // if queue exists
+      // present user with modal
+      // else
+      // dispatch("play", this);
     },
     replay() {
-      this.$store.commit({
-        type: "updateProgress",
-        url: this.url,
-        progress: 0,
+      this.$store.dispatch({
+        type: "replay",
       });
-      this.play();
     },
     pause() {
-      if (this.localPlayState === "playing") {
-        this.$store.commit({
-          type: "updatePlayState",
-          playState: "paused",
-          url: this.url,
-        });
+      if (this.playing) {
+        this.$store.dispatch("pause");
       }
     },
     share() {
@@ -231,7 +257,7 @@ export default {
       window.location.hash = "";
       navigator.clipboard
         .writeText(
-          `${this.$root.publicEP}/${this.track.namespace}/#${this.index}`
+          `${Vue.$apiEP}/${this.metadata?.namespace}/#${this.index}`
         )
         .then(
           () => {
@@ -244,318 +270,156 @@ export default {
         );
     },
   },
-  mounted() {
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        this.$store.commit({
-          type: "intersecting",
-          intersecting: entries[0].isIntersecting,
-        });
-      },
-      {
-        threshold: 0.5,
-      }
-    );
-    this.observer.observe(this.$refs.player);
-  },
-  beforeDestroy() {
-    this.$store.commit({
-      type: "intersecting",
-      intersecting: false,
-    });
-  },
-};
+});
 </script>
 
-<style lang="scss" scoped>
-// @import '@/assets/app.sass';
-@use "sass:color";
+<style lang="sass">
+@use "sass:color"
 
-@keyframes loading {
-  0% {
-    background-position-x: 0%;
-  }
-  100% {
-    background-position-x: 200%;
-  }
-}
+@keyframes slide-in
+  0%
+    transform: translateY(100%)
 
-$color1: #000000;
-$color2: #161616;
-$loading-fade: linear-gradient(
-  135deg,
-  $color1 0%,
-  $color1 10%,
-  $color2 30%,
-  $color1 50%,
-  $color2 70%,
-  $color1 90%,
-  $color1 100%
-);
-$share: desaturate(#00c853, 33%);
+  100%
+    transform: translateY(0%)
 
-.player-wrapper {
-  display: block;
-  background: var(--primary);
-  border-top-left-radius: 16pt;
-  border-top-right-radius: 16pt;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
-  padding: 2em 2em 4em;
-  margin-bottom: -16pt;
+@keyframes slide-out
+  0%
+    transform: translateY(0%)
 
-  &.is-playing {
-    background: var(--accent);
-    div.fg {
-      background: var(--accent) !important;
-    }
+  100%
+    transform: translateY(100%)
+
+@keyframes loading
+  0%
+    background-position-x: 0%
+  100%
+    background-position-x: 200%
+
+.slide-enter-active
+  animation: slide-in ease 0.2s
+  animation-fill-mode: forwards
+
+.slide-leave-active
+  animation: slide-out ease 0.2s
+  animation-fill-mode: forwards
+
+  $color1: #000000
+  $color2: #161616
+  $loading-fade: linear-gradient(135deg,$color1 0%,$color1 10%,$color2 30%,$color1 50%,$color2 70%,$color1 90%,$color1 100%)
+  $share: desaturate(#00c853, 33%)
+
+.player-wrapper
+  @apply my-4 p-6
+  // box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05)
+  // margin-bottom: -16pt
+
+  &.is-playing
+    @apply bg-gray-200
+    .player .playback-time-wrapper .playback-time-bar .fg
+      @apply bg-gray-200
     a:hover,
     a:active,
     .play-state:active,
-    .play-state:hover {
-      color: var(--primary) !important;
-    }
-  }
-  &.is-highlighted {
-    background: $share;
-    div.fg {
-      background: $share !important;
-    }
+    .play-state:hover
+      color: rgba(var(--color),1) !important
+
+  &.is-highlighted
+    // background: rgba(var(--color),1)
+    backdrop-filter: blur(25px)
+    border: solid 1px rgba(255, 255, 255, 0.18)
+    @apply shadow-xl rounded-xl
+    .player .playback-time-wrapper .playback-time-bar .fg
+      // @apply bg-orange-300
+
     a:hover,
     a:active,
     .play-state:active,
-    .play-state:hover {
-      color: var(--primary) !important;
-    }
-  }
-  .title-wrapper {
-    padding-bottom: 16px;
-    .title-line {
-      display: flex;
-      align-items: center;
-      flex-wrap: nowrap;
-      .title {
-        font-weight: 500;
-        font-size: 150%;
-      }
-    }
-    .metadata {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      & > div {
-        display: block;
-        padding-right: 1em;
-        &:last-child {
-          padding-right: 0;
-        }
-      }
-      .no::before {
-        opacity: 0.5;
-        content: "Track \2116";
-        // @media screen and (max-width: 768px) {
-        //   content: "\2116";
-        // }
-      }
-      .comments::before {
-        opacity: 0.5;
-        content: "Comment:";
-        @media screen and (max-width: 768px) {
-          content: "";
-        }
-      }
-      .bpm::before {
-        opacity: 0.5;
-        content: "BPM:";
-      }
-      .genre::before {
-        opacity: 0.5;
-        content: "Genre:";
-      }
-      .hfill {
-        flex-grow: 1;
-      }
-      @media screen and (max-width: 768px) {
-        .hfill {
-          display: none;
-        }
-      }
-      .actions {
-        display: flex;
+    .play-state:hover
+      color: var(--primary) !important
+
+  .title-wrapper
+    @apply pb-4
+    .title-line
+      @apply flex items-center flex-wrap
+      .title
+        @apply font-medium text-2xl
+
+    .metadata
+      @apply flex flex-wrap items-center
+      & > div
+        @apply block pr-4
+        &:last-child
+          @apply pr-4
+
+      .no::before
+        content: "Track \2116"
+        @apply opacity-50
+
+      .comments::before
+        content: "Comment:"
+        @apply hidden md:inline-block opacity-50
+
+      .bpm::before
+        content: "BPM:"
+        @apply opacity-50
+
+      .genre::before
+        content: "Genre:"
+        @apply opacity-50
+
+      .hfill
+        @apply flex-grow hidden md:block
+
+      .actions
+        @apply flex
         .download,
-        .share {
-          width: 32px;
-          height: 32px;
-          cursor: pointer;
-          .material-icons-sharp {
-            line-height: 32px;
-            width: 32px;
-            height: 32px;
-            text-align: center;
-            font-size: 150%;
-          }
-          a,
-          i {
-            color: inherit;
-          }
+        .share
+          @apply w-8 h-8 cursor-pointer
+          .material-icons-sharp
+            @apply w-8 h-8 text-center text-2xl leading-8
           &:hover,
-          &:active {
-            color: var(--accent);
-          }
-        }
-      }
-    }
-  }
-  .player {
-    display: flex;
-    align-items: center;
-    position: relative;
-    .play-state {
-      margin-right: 8px;
-      width: 32px;
-      height: 32px;
-      font-size: 32px;
-      @media screen and (min-width: 768px) {
-        width: 48px;
-        height: 48px;
-        font-size: 48px;
-      }
-      cursor: pointer;
-      display: inline-block;
-      .material-icons-sharp {
-        line-height: 1;
-        // width: 48px;
-        // height: 48px;
-        text-align: center;
-        font-size: 1em;
-      }
-      a,
-      i {
-        color: inherit;
-      }
+          &:active
+            color: rgba(var(--accent), 1)
+
+  .player
+    @apply flex flex-wrap items-center relative
+    .play-state
+      @apply md:inline-block md:cursor-pointer leading-none mr-2 py-4
+      .material-icons-sharp
+        @apply leading-none text-center
       &:hover,
-      &:active {
-        color: var(--accent);
-      }
-    }
-    .playback-time-wrapper {
-      flex-grow: 1;
-      .playback-time-bar {
-        flex-grow: 1;
-        position: relative;
-        display: block;
-        min-height: 64px;
-        height: 64px;
-        @media screen and (min-width: 768px) {
-          height: 128px;
-        }
-        border-radius: 4px;
-        width: 100%;
-        cursor: pointer;
-        font-size: 14px;
-        z-index: 0;
-        .playback-time-scrobble-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          right: 0;
-          width: 100%;
-          height: 100%;
-          z-index: 7;
-        }
-        img,
-        div {
-          position: absolute;
-          display: block;
-          height: 100%;
-          width: 100%;
-          &.bg {
-            width: 100%;
-            opacity: 1;
-            z-index: 2;
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            background-position: center center;
-            height: 100%;
-            &.bg--full {
-              display: block;
-            }
-            &.bg--small {
-              display: none;
-            }
-            @media screen and (max-width: 768px) {
-              &.bg--full {
-                display: none;
-              }
-              &.bg--small {
-                display: block;
-              }
-            }
-          }
-          &.fg {
-            z-index: 3;
-            right: 0;
-            background-color: var(--primary);
-            opacity: 0.66;
-            // transition: width linear 1s;
-          }
-        }
-      }
-    }
-    .playback-time-marks {
-      display: flex;
-      flex-wrap: nowrap;
-      padding-left: 8px;
-      margin-right: 24px;
-      width: 3.5em;
-      text-align: right;
-      @media screen and (max-width: 768px) {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        margin-bottom: -2em;
-      }
-      span {
-        font-weight: 500;
-        display: inline-block;
-        vertical-align: middle;
-        line-height: 2rem;
-        font-size: 0.7rem;
-        text-align: center;
-        &.playback-time-separator::after {
-          padding-left: 0.5ex;
-          padding-right: 0.5ex;
-          content: ":";
-        }
-      }
-    }
-  }
-}
+      &:active
+        color: rgba(var(--accent), 1)
 
-@keyframes slide-in {
-  0% {
-    transform: translateY(100%);
-  }
-  100% {
-    transform: translateY(0%);
-  }
-}
+    .playback-time-wrapper
+      @apply flex-grow
+      .playback-time-bar
+        @apply flex-grow relative block h-28 md:h-32 rounded-md w-full cursor-pointer text-lg z-0
 
-@keyframes slide-out {
-  0% {
-    transform: translateY(0%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
+        .playback-time-scrobble-bar
+          @apply absolute top-0 left-0 bottom-0 right-0 w-full h-full z-50
 
-.slide-enter-active {
-  animation: slide-in ease 0.2s;
-  animation-fill-mode: forwards;
-}
-.slide-leave-active {
-  animation: slide-out ease 0.2s;
-  animation-fill-mode: forwards;
-}
+        div
+          @apply absolute block w-full h-full
+          &.bg
+            @apply w-full opacity-30 z-10 bg-no-repeat bg-center h-full
+            &.bg--full
+              @apply hidden md:block
+            &.bg--small
+              @apply block md:hidden
+          &.fg
+            @apply z-20 right-0 opacity-100
+            &.fg--full
+              @apply hidden md:block
+            &.fg--small
+              @apply block md:hidden
+
+    .playback-time-marks
+      @apply flex flex-nowrap pl-2 mr-6 w-14 text-right md:static absolute right-0 md:right-auto bottom-0 md:bottom-auto
+      span
+        @apply font-medium inline-block align-middle leading-loose text-xs text-center
+        &.playback-time-separator::after
+          content: ":"
+          @apply px-1
 </style>
