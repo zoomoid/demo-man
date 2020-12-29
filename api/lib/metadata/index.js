@@ -145,6 +145,14 @@ module.exports = function (router) {
               self: `${api.url}/namespaces/${params.namespace}/metadata`,
               namespace: `${api.url}/namespaces/${params.namespace}`,
             },
+            id: namespace._id,
+            type: "Metadata",
+            metadata: {
+              ...namespace.metadata,
+              namespace: namespace.metadata.name,
+              name: namespace.metadata.name + "-metadata",
+              isPseudoResource: true,
+            },
             data: namespace.data,
           });
         } else {
