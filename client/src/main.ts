@@ -1,5 +1,15 @@
 import Vue from "vue";
 
+declare module "vue/types/vue" {
+  // Global properties can be declared
+  // on the `VueConstructor` interface
+  interface VueConstructor {
+    $version?: string;
+    $publicEP?: string;
+    $apiEP?: string;
+  }
+}
+
 import VueRouter from "vue-router";
 import App from "./App.vue";
 import Home from "./views/Home.vue";
@@ -7,16 +17,6 @@ import Page from "./views/Page.vue";
 import "./registerServiceWorker";
 import store from "./store";
 import "./assets/css/tailwind.scss";
-
-
-declare module "vue/types/options" {
-  interface ComponentOptions<V extends Vue> {
-    apiEP?: string;
-    publicEP?: string;
-    version?: string;
-  }
-}
-
 
 Vue.use(VueRouter);
 
@@ -38,14 +38,15 @@ const router = new VueRouter({
 
 Vue.config.productionTip = false;
 
+Vue.$version = process.env.VERSION;
+Vue.$apiEP = process.env.API_URL;
+Vue.$publicEP = process.env.BASE_URL;
+
 export default new Vue({
   router,
   render: h => h(App),
   store,
-  version: process.env.VERSION,
-  publicEP: process.env.BASE_URL,
-  apiEP:  process.env.API_URL,
   created() {
-    console.log(`Currently running version ${this.$version}`);
+    console.log(`Currently running version ${Vue.$version}`);
   }
 }).$mount("#app");
