@@ -147,11 +147,11 @@ module.exports = function (router) {
             },
             id: namespace._id,
             type: "Metadata",
+            isPseudoResource: true,
             metadata: {
               ...namespace.metadata,
               namespace: namespace.metadata.name,
               name: namespace.metadata.name + "-metadata",
-              isPseudoResource: true,
             },
             data: namespace.data,
           });
