@@ -145,7 +145,7 @@ module.exports = function (router) {
               self: `${api.url}/namespaces/${params.namespace}/metadata`,
               namespace: `${api.url}/namespaces/${params.namespace}`,
             },
-            ...namespace.data,
+            data: namespace.data,
           });
         } else {
           logger.warn(`Could not find Namespace/${params.namespace}`);

@@ -104,8 +104,8 @@ module.exports = function (router) {
           },
           waveforms: waveform.map((waveform) => ({
             links: {
-              full: `${api.url}/waveforms/by_track/${waveform.track_id}/full`,
-              small: `${api.url}/waveforms/by_track/${waveform.track_id}/small`,
+              full: `${api.url}/waveforms/by_track/${waveform.metadata.track_id}/full`,
+              small: `${api.url}/waveforms/by_track/${waveform.metadata.track_id}/small`,
             },
             ...waveform,
           })),
