@@ -1,5 +1,17 @@
-import type { Link } from "./Namespace";
+import { Link } from "./Namespace";
 
+/**
+ * Metadata interface for containing metadata client-side
+ */
+interface Metadata {
+  title: string;
+  description: string;
+  links: Link[];
+}
+
+/**
+ * API Model of the metadata resource
+ */
 interface MetadataAPIResource {
   links: {
     self: string;
@@ -23,4 +35,12 @@ interface MetadataAPIResource {
   };
 }
 
-export { MetadataAPIResource };
+const fromAPIResource = (m: MetadataAPIResource): Metadata => {
+  return {
+    title: m.data.title,
+    description: m.data.description,
+    links: m.data.links
+  }
+}
+
+export { MetadataAPIResource, Metadata, fromAPIResource };

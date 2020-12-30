@@ -1,9 +1,19 @@
+/**
+ * Interface for holding theme data
+ */
 interface Theme {
-  color: string;
-  textColor: string;
-  accent: string;
+  color: number[];
+  textColor: number[];
+  accent: number[];
 }
 
+interface ComputedTheme extends Theme {
+  palette?: number[][];
+}
+
+/**
+ * API Resource of the theme resource
+ */
 interface ThemeAPIResource {
   links: {
     self: string;
@@ -20,18 +30,17 @@ interface ThemeAPIResource {
     lastAppliedConfiguration: string;
   };
   data: {
-    theme?: {
-      accent: string | number[];
-      color: string | number[];
-      textColor: string | number[];
-    };
-    computedTheme?: {
-      accent: number[];
-      color: number[];
-      textColor: number[];
-      palette: number[][];
-    };
+    theme?: Theme;
+    computedTheme?: ComputedTheme;
   };
 }
 
-export { Theme, ThemeAPIResource };
+const fromAPIResource = (t: ThemeAPIResource, key: "computed" | "theme"): Theme => {
+  if (key === "computed") {
+    return t.data.computedTheme;
+  } else {
+    return t.data.theme;
+  }
+};
+
+export { Theme, ComputedTheme, ThemeAPIResource, fromAPIResource };

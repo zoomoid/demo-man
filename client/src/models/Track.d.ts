@@ -1,3 +1,6 @@
+/**
+ * General track information from the mp3
+ */
 interface General {
   title: string;
   artist: string;
@@ -12,6 +15,9 @@ interface General {
   bpm: number;
 }
 
+/**
+ * File-related information
+ */
 interface File {
   sr: number;
   bitrate: number;
@@ -21,11 +27,17 @@ interface File {
   mp3: string;
 }
 
+/**
+ * Abbreviated Resource metadata
+ */
 interface Metadata {
   name: string;
   namespace: string;
 }
 
+/**
+ * Cover-related information
+ */
 interface Cover {
   mimeType: string;
   publicUrl: string;
@@ -33,6 +45,9 @@ interface Cover {
   filename: string;
 }
 
+/**
+ * Composed Track resource
+ */
 interface Track {
   general: General;
   file: File;
@@ -40,6 +55,9 @@ interface Track {
   cover: Cover;
 }
 
+/**
+ * API Model of the track resource
+ */
 interface TrackAPIResource {
   links: {
     self: string;
@@ -63,4 +81,16 @@ interface TrackAPIResource {
   };
 }
 
-export { Track, General, File, Metadata, Cover, TrackAPIResource };
+const fromAPIResource = (t: TrackAPIResource): Track => {
+  return {
+    general: t.data.general,
+    cover: t.data.cover,
+    file: t.data.file,
+    metadata: {
+      name: t.metadata.name,
+      namespace: t.metadata.namespace
+    }
+  };
+};
+
+export { Track, General, File, Metadata, Cover, TrackAPIResource, fromAPIResource };

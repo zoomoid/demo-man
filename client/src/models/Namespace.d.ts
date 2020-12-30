@@ -1,8 +1,16 @@
+import { Metadata } from "./Metadata";
+
+/**
+ * Link interface for links created from metadata files
+ */
 interface Link {
   label: string;
   link: string;
 }
 
+/**
+ * Namespace holding interface, contains all descriptive features of a namespace
+ */
 interface Namespace {
   name: string;
   description: string;
@@ -10,6 +18,9 @@ interface Namespace {
   title: string;
 }
 
+/**
+ * API Model of the namespace resource
+ */
 interface NamespaceAPIResource {
   links: {
     self: string;
@@ -28,11 +39,16 @@ interface NamespaceAPIResource {
     revision: number;
     lastAppliedConfiguration: string;
   };
-  data: {
-    description: string;
-    links: Link[];
-    title: string;
-  };
+  data: Metadata;
 }
 
-export { Namespace, NamespaceAPIResource, Link };
+const fromAPIResource = (n: NamespaceAPIResource): Namespace => {
+  return {
+    name: n.metadata.name,
+    description: n.data.description,
+    title: n.data.description,
+    links: n.data.links
+  };
+};
+
+export { Namespace, NamespaceAPIResource, Link, fromAPIResource };

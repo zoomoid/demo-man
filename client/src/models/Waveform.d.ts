@@ -1,3 +1,6 @@
+/**
+ * API Model of the waveform resource
+ */
 interface WaveformAPIResource {
   links: {
     self: string;
