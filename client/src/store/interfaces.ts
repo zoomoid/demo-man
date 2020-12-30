@@ -67,8 +67,8 @@ export interface ActionsTypes {
     payload: { url: string }
   ): void;
   [ATypes.start]({ commit, getters, state }: AugmentedActionContext): void;
-  [ATypes.append]({ commit }: AugmentedActionContext, payload: { url: string }): void;
-  [ATypes.prepend]({ commit }: AugmentedActionContext, payload: { url: string }): void;
+  [ATypes.append]({ commit }: AugmentedActionContext, payload: { url?: string }): void;
+  [ATypes.prepend]({ commit }: AugmentedActionContext, payload: { url?: string }): void;
   [ATypes.dequeue]({ commit, state }: AugmentedActionContext): Promise<string>;
   [ATypes.consume](
     { commit, state }: AugmentedActionContext,
