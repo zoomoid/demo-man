@@ -7,6 +7,13 @@ interface Theme {
   accent: number[];
 }
 
+interface ThemeProp {
+  color: string;
+  textColor: string;
+  accent: string;
+  palette?: string[];
+}
+
 interface ComputedTheme extends Theme {
   palette?: number[][];
 }
@@ -43,4 +50,4 @@ const fromAPIResource = (t: ThemeAPIResource, key: "computed" | "theme"): Theme 
   }
 };
 
-export { Theme, ComputedTheme, ThemeAPIResource, fromAPIResource };
+export { Theme, ComputedTheme, ThemeAPIResource, ThemeProp, fromAPIResource };
