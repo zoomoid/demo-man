@@ -22,11 +22,13 @@
         ></div>
       </div>
       <div class="frontface">
-        <Breadcrump :theme="{
-          color,
-          textColor,
-          accent
-        }"></Breadcrump>
+        <Breadcrump
+          :theme="{
+            color,
+            textColor,
+            accent,
+          }"
+        ></Breadcrump>
         <section
           class="top mx-auto py-4"
           :style="{
@@ -40,7 +42,7 @@
             <img
               class="cover"
               :class="[placeholder ? 'hidden' : 'flex']"
-              :src="`${$root.apiEP}/namespaces/${namespace}/cover`"
+              :src="`${apiUrl}/namespaces/${namespace}/cover`"
               @error="placeholder = true"
             />
           </div>
@@ -84,92 +86,121 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import axios from "axios";
-import marked from "marked";
 import AudioManager from "../components/AudioManager.vue";
 import Breadcrump from "../components/Breadcrump.vue";
+import { defineComponent, ref, reactive, computed, inject } from "vue";
+import { useRoute } from "vue-router";
+import {
+  MetadataAPIResource,
+  Metadata,
+  fromAPIResource as toMetadata,
+} from "@/models/Metadata";
+import {
+  TrackAPIResource,
+  Track,
+  fromAPIResource as toTrack,
+} from "@/models/Track";
+import {
+  ThemeAPIResource,
+  Theme,
+  ComputedTheme,
+  fromAPIResource as toTheme,
+} from "@/models/Theme";
 
-const color = a => {
-  if (a) {
-    return `${a[0]}, ${a[1]}, ${a[2]}`;
+const toCSSColorString = (theme?: number[], computed?: number[], defaultValue?: string): string => {
+  if (theme) {
+    return `${theme[0]}, ${theme[1]}, ${theme[2]}`;
   } else {
-    return "";
+    if(computed) {
+      return `${computed[0]}, ${computed[1]}, ${computed[2]}`;
+    } else {
+      if (defaultValue) {
+        return defaultValue;
+      } else {
+        return "";
+      }
+    }
   }
 };
 
-export default {
+export default defineComponent({
   components: {
     AudioManager,
-    Breadcrump
+    Breadcrump,
   },
-  data() {
+  setup() {
+    const route = useRoute();
+
+    const metadata = reactive<Metadata>({
+      title: "",
+      description: "",
+      links: [],
+    });
+    const theme = reactive<Theme>({ textColor: [], accent: [], color: [] });
+    const computedTheme = reactive<ComputedTheme>({
+      textColor: [],
+      accent: [],
+      color: [],
+    });
+
+    const accent = computed((): string => {
+      return toCSSColorString(theme.accent, computedTheme.accent, "255, 180, 0");
+    });
+    const textColor = computed((): string => {
+      return toCSSColorString(theme.textColor, computedTheme.textColor, "0, 0, 0");
+    });
+    const color = computed((): string => {
+      return toCSSColorString(theme.color, computedTheme.color, "255, 255, 255");
+    });
+
     return {
-      error: null,
-      queue: [],
-      metadata: {
-        title: null,
-        description: null,
-        links: []
-      },
-      theme: null,
-      computedTheme: null,
-      placeholder: false
+      metadata,
+      theme,
+      computedTheme,
+      placeholder: ref(false),
+      queue: ref<Track[]>([]),
+      error: ref({}),
+      namespace: computed((): string => route.params.id as string),
+      description: computed((): string => metadata.description || ""),
+      accent,
+      textColor,
+      color,
+      apiUrl: inject("apiUrl"),
     };
   },
-  computed: {
-    namespace() {
-      return `${this.$route.params.id}`;
-    },
-    description() {
-      return marked(this.metadata.description || "");
-    },
-    accent() {
-      return (
-        color(this.theme?.accent) ||
-        color(this.computedTheme?.accent) ||
-        "#242424"
-      );
-    },
-    color() {
-      return (
-        color(this.theme?.color) ||
-        color(this.computedTheme?.color) ||
-        "#242424"
-      );
-    },
-    textColor() {
-      return (
-        color(this.theme?.textColor) ||
-        color(this.computedTheme?.textColor) ||
-        "#242424"
-      );
-    }
-  },
   mounted() {
-    const vm = this;
     Promise.all([
       axios
-        .get(`${this.$root.apiEP}/namespaces/${this.namespace}/tracks`)
-        .then(({ data }) => {
-          vm.queue = data.tracks.sort((a, b) => a.no - b.no);
+        .get(`${this.apiUrl}/namespaces/${this.namespace}/tracks`)
+        .then(
+          ({
+            data,
+          }: {
+            data: { links: Record<string, string>; tracks: TrackAPIResource[] };
+          }) => {
+            this.queue = data.tracks
+              .sort((a, b) => a.data.general.no - b.data.general.no)
+              .map((t) => toTrack(t));
+          }
+        ),
+      axios
+        .get(`${this.apiUrl}/namespaces/${this.namespace}/metadata`)
+        .then(({ data }: { data: MetadataAPIResource }) => {
+          this.metadata = toMetadata(data);
         }),
       axios
-        .get(`${this.$root.apiEP}/namespaces/${this.namespace}/metadata`)
-        .then(({ data }) => {
-          vm.metadata = data;
+        .get(`${this.apiUrl}/namespaces/${this.namespace}/theme`)
+        .then(({ data }: { data: ThemeAPIResource }) => {
+          this.theme = toTheme(data, "theme");
+          this.computedTheme = toTheme(data, "computed");
         }),
-      axios
-        .get(`${this.$root.apiEP}/namespaces/${this.namespace}/theme`)
-        .then(({ data }) => {
-          vm.theme = data.data.theme;
-          vm.computedTheme = data.data.computedTheme;
-        })
-    ]).catch(err => {
-      vm.error = err;
+    ]).catch((err) => {
+      this.error = err;
     });
-  }
-};
+  },
+});
 </script>
 
 <style lang="sass" scoped>

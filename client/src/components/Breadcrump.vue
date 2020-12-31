@@ -13,19 +13,22 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue"
+import { ThemeProp } from "@/models/Theme";
+
+export default defineComponent({
   props: {
     theme: {
-      type: Object,
-      default: () => ({
-        textColor: null,
-        color: null,
-        accent: null
+      type: Object as PropType<ThemeProp>,
+      default: (): ThemeProp => ({
+        textColor: "",
+        color: "",
+        accent: ""
       })
     }
   }
-};
+});
 </script>
 
 <style lang="sass" scoped>

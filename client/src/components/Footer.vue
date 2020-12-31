@@ -8,20 +8,21 @@
       <span class="emoji">👨‍💻</span>
       <span class="text">@zoomoid</span> </a
     ><i>&mdash;</i>
-    <span class="text-sm px-4 opacity-50"> {{ $root.version }} </span>
+    <span class="text-sm px-4 opacity-50"> {{ version }} </span>
   </footer>
 </template>
 
 <script>
-export default {
+import { defineComponent, inject } from "vue";
+
+export default defineComponent({
   name: "Footer",
-  props: {
-    "is-empty": {
-      type: Boolean,
-      default: false,
-    },
-  },
-};
+  setup() {
+    return {
+      version: inject("version", "0.0.0-dev")
+    };
+  }
+});
 </script>
 
 <style lang="sass">

@@ -41,6 +41,11 @@
         </div>
         <div class="hfill"></div>
         <div class="actions">
+          <div class="queue">
+            <a v-on:click.stop.prevent="addToQueue" target="_blank">
+              <i class="material-icons-sharp"> queue </i>
+            </a>
+          </div>
           <div class="share">
             <a v-on:click.stop.prevent="share" target="_blank">
               <i class="material-icons-sharp"> share </i>
@@ -58,21 +63,21 @@
       <div class="play-state">
         <i
           @click="pause"
-          v-if="playState === 'playing'"
+          v-if="trackState.type === 'playing'"
           class="material-icons-sharp"
         >
           pause
         </i>
         <i
           @click="play"
-          v-else-if="playState === 'paused'"
+          v-else-if="trackState.type === 'paused'"
           class="material-icons-sharp paused"
         >
           play_arrow
         </i>
         <i
           @click="replay"
-          v-else-if="playState === 'stopped'"
+          v-else-if="trackState.type === 'stopped' && trackState.finished"
           class="material-icons-sharp"
         >
           replay
@@ -115,82 +120,59 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from "vuex";
-import Vue, { PropType } from "vue";
+import { useStore } from "@/store";
+import { computed, defineComponent, inject, PropType, ref } from "vue";
 import { General, Metadata, TrackAPIResource, File } from "@/models/Track";
-import { Theme } from "@/models/Theme";
+import { ThemeProp } from "@/models/Theme";
+import { Track, TrackState } from "@/store/Track";
+import { ActionsTypes } from "@/store/actions";
+import { MutationsTypes } from "@/store/mutations";
+import { rgbToHex, toTime } from "@/main";
 
-function humanReadableTimestamp(val: number) {
-  try {
-    const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
-    return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
-  } catch (e) {
-    return "00:00";
-  }
-}
-
-const rgbToHex = (color: string) => {
-  return color
-    .split(", ")
-    .map((c) => parseInt(c, 10).toString(16))
-    .reduce((p, c) => p + c);
-};
-
-export default Vue.extend({
+export default defineComponent({
   name: "AudioPlayer",
-  data: () => ({}),
-  computed: {
-    file(): File {
-      return this.track?.data.file;
-    },
-    metadata(): Metadata {
-      return {
-        name: this.track?.metadata.name,
-        namespace: this.track?.metadata.namespace,
-      };
-    },
-    general(): General {
-      return this.track?.data.general;
-    },
-    playing(): boolean {
-      return this.trackState(this.url).type === "playing";
-    },
-    totalDuration(): string {
-      return humanReadableTimestamp(this.general.duration);
-    },
-    currentTime(): string {
-      return humanReadableTimestamp(this.progress(this.url));
-    },
-    waveforms(): { full: string; small: string } {
-      return {
-        full: `${this.track?.links.waveform}/full?color=${rgbToHex(
-          this.theme.accent || ""
-        )}`,
-        small: `${this.track?.links.waveform}/small?color=${rgbToHex(
-          this.theme.accent || ""
-        )}`,
-      };
-    },
-    localProgress(): number {
-      return this.trackState(this.url).progress;
-    },
-    visualProgress(): number {
-      return (this.localProgress / this.general?.duration) * 100;
-    },
-    url(): string {
-      return `${this.metadata?.name}/#${this.index}`;
-    },
-    inAction(): boolean {
-      return this.url === this.$store.getters.currentTrack;
-    },
-    playState(): TrackState {
-      return this.trackState(this.url);
-    },
-    ...mapGetters({
-      trackState: "trackState",
-      tracks: "tracks",
-      progress: "progress",
-    }),
+  setup(props) {
+    const store = useStore();
+
+    const url = `${props.track.metadata.namespace}/#${props.index}`;
+
+    return {
+      store,
+      file: computed<File>(() => props.track?.data.file),
+      metadata: computed<Metadata>(() => ({
+        name: props.track?.metadata.name,
+        namespace: props.track?.metadata.namespace,
+      })),
+      general: computed<General>(() => props.track?.data.general),
+      url: ref<string>(url),
+      playing: computed<boolean>(
+        () => store.getters.trackState(url).type === "playing"
+      ),
+      progress: computed<number>(() => store.getters.progress(url)),
+      visualProgress: computed<number>(
+        () =>
+          (store.getters.progress(url) / props.track.data.general.duration) *
+          100
+      ),
+      totalDuration: computed<string>(() =>
+        toTime(props.track.data.general.duration)
+      ),
+      currentTime: computed<string>(() => toTime(store.getters.progress(url))),
+      waveforms: computed<Record<string, string>>(() => {
+        return {
+          full: `${props.track?.links.waveform}/full?color=${rgbToHex(
+            props.theme.accent || ""
+          )}`,
+          small: `${props.track?.links.waveform}/small?color=${rgbToHex(
+            props.theme.accent || ""
+          )}`,
+        };
+      }),
+      trackState: computed<TrackState>(() => store.getters.trackState(url)),
+      tracks: computed<Track[]>(() => store.state.tracks),
+      inAction: computed<boolean>(() => url === store.state.nowPlaying),
+      apiUrl: inject<string>("apiUrl"),
+    };
   },
   props: {
     track: {
@@ -202,13 +184,13 @@ export default Vue.extend({
       default: -1,
     },
     theme: {
-      type: Object as PropType<Theme>,
-      default: (): Theme =>
+      type: Object as PropType<ThemeProp>,
+      default: (): ThemeProp =>
         ({
           accent: "255, 180, 0",
           color: "0, 0, 0",
           textColor: "255, 255, 255",
-        } as Theme),
+        } as ThemeProp),
     },
     highlighted: {
       type: Boolean,
@@ -226,43 +208,41 @@ export default Vue.extend({
     });
   },
   methods: {
-    setPosition(e: MouseEvent) {
+    setPosition(e: MouseEvent): void {
       const t = e.target as Element;
       const pos = t?.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
       const seekTarget = this.general?.duration * seekPos;
-      this.$store.commit("seek", {
+      this.store.commit(MutationsTypes.seek, {
         seek: seekTarget,
         url: this.url,
       });
     },
-    play() {
+    play(): void {
+      // TODO: Implement me
       // if queue exists
       // present user with modal
       // else
       // dispatch("play", this);
     },
-    replay() {
-      this.$store.dispatch({
-        type: "replay",
-      });
+    replay(): void {
+      this.store.dispatch(ActionsTypes.replay);
     },
-    pause() {
-      if (this.playing) {
-        this.$store.dispatch("pause");
-      }
+    pause(): void {
+      this.store.dispatch(ActionsTypes.pause);
     },
-    share() {
+    addToQueue(): void {
+      this.store.dispatch(ActionsTypes.append, { url: this.url });
+    },
+    share(): void {
       const prev = window.location.hash;
       window.location.hash = "";
       navigator.clipboard
-        .writeText(
-          `${Vue.$apiEP}/${this.metadata?.namespace}/#${this.index}`
-        )
+        .writeText(`${this.apiUrl}/${this.metadata?.namespace}/#${this.index}`)
         .then(
           () => {
             window.location.hash = `${this.index}`;
-            this.$emit("update:select", this.index);
+            this.$emit("select", this.index);
           },
           () => {
             window.location.hash = prev; // revert changes to hash

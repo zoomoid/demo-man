@@ -10,35 +10,7 @@
       <span>No tracks added yet...</span>
     </div>
     <div class="manager" v-else>
-      <header class="settings">
-        <div class="autoplay">
-          <label
-            for="autoplay"
-            @click="autoplayControl"
-            class="autoplay__label"
-            :class="{
-              'is-active': autoplay,
-            }"
-          >
-            <span class="material-icons-sharp"> playlist_play </span>
-            <span class="label"> Autoplay </span>
-          </label>
-        </div>
-        <div class="loop">
-          <label
-            for="loop"
-            @click="loopControl"
-            class="loop__label"
-            :class="{
-              'is-active': loop,
-            }"
-          >
-            <span class="material-icons-sharp"> repeat </span>
-            <span class="label"> Loop </span>
-          </label>
-        </div>
-        <div class="spacer"></div>
-        <div
+      <div
           class="play-all"
           :class="{
             'is-disabled': false,
@@ -48,19 +20,14 @@
           <span class="material-icons-sharp"> play_arrow </span>
           <span> Play all </span>
         </div>
-      </header>
-      <div v-for="(track, index) in queue" v-bind:key="track._id">
+
+      <div v-for="(track, index) in queue" :key="track.general.title">
         <AudioPlayer
           :track="track"
           :index="index + 1"
-          :theme="{
-            color: theme.color,
-            textColor: theme.textColor,
-            accent: theme.accent,
-          }"
+          :theme="theme"
           :highlighted="`${selected}` === `${index + 1}`"
-          v-on:update:select="select"
-          v-on:play="pushQueue"
+          v-on:select="select"
         ></AudioPlayer>
       </div>
       <div class="footer">
@@ -70,156 +37,82 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from "vuex";
+<script lang="ts">
+import { defineComponent, computed, ref, PropType } from "vue";
+import { useStore } from "@/store";
+
 import AudioPlayer from "./AudioPlayer.vue";
 import Footer from "./Footer.vue";
+import { ThemeProp } from "@/models/Theme";
+import { ActionsTypes } from "@/store/actions";
+import { Track } from "@/models/Track";
 
-function makeQueue(queue = [], namespace) {
-  return queue.map((track, i) => ({
-    url: `${namespace}#${i + 1}`, // intentional off-by-one, to stay convergent with URL links to track
-  }));
-}
-
-export default {
+export default defineComponent({
   components: {
     AudioPlayer,
-    Footer
+    Footer,
   },
   props: {
     queue: {
-      type: Array,
-      default: () => []
+      type: Object as PropType<Track[]>,
+      default: (): Track[] => [],
     },
     theme: {
-      type: Object,
-      default: () => ({
-        accent: null,
-        color: null,
-        textColor: null
-      })
+      type: Object as PropType<ThemeProp>,
+      default: (): ThemeProp => ({
+        accent: "",
+        color: "",
+        textColor: "",
+      }),
     },
     namespace: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
-  data() {
+  setup(props) {
+    const store = useStore();
+    const selected = ref(-1);
+
+    const isPlaying = computed<boolean>(() => store.state.nowPlaying?.includes(props.namespace) || false);
+
+    const nowPlaying = computed<string | undefined>(() => store.state.nowPlaying);
+
     return {
-      playIndex: -1,
-      selected: -1,
-      autoplay: true,
-      loop: false
-    };
-  },
-  computed: {
-    isPlaying() {
-      return `${this.nowPlaying}`.includes(this.namespace) === true;
-    },
-    ...mapGetters({
-      nowPlaying: "nowPlaying",
-      globalAutoplay: "autoplay",
-      globalLoop: "loop",
-    })
-  },
-  watch: {
-    url(n) {
-      this.playIndex = this.queue.findIndex(
-        (t, i) => `${this.namespace}/#${i + 1}` === n
-      );
-    },
-    autoplay(){
-      this.$store.commit("updatePlaybackSettings", {
-        autoplay: this.autoplay,
-        loop: this.loop,
-      })
+      selected,
+      isPlaying,
+      nowPlaying,
+      store,
     }
   },
   methods: {
-    select(no) {
+    select(no: number): void {
       this.selected = no;
     },
-    loopControl() {
-      this.loop = !this.loop;
-    },
-    autoplayControl() {
-      this.autoplay = !this.autoplay;
-    },
-    pushQueue() {
-      this.$store.dispatch("pushQueue", {
-        queue: makeQueue(this.queue),
+    playAll(): void {
+      this.store.dispatch(ActionsTypes.setQueue, {
+        queue: this.makeQueue(),
       });
+      this.store.dispatch(ActionsTypes.start);
     },
-    playAll() {
-      const { mp3, artist, title, duration } = this.queue[0];
-      const url = `${this.namespace}/#1`;
-      this.$store.dispatch("pushQueue", {
-        queue: makeQueue(this.queue),
-      });
-      this.$store.dispatch("changeTrack", {
-        mp3,
-        url,
-        artist,
-        title,
-        duration
-      });
-    }
+    makeQueue(): string[] {
+      // intentional off-by-one, to stay convergent with URL links to track
+      return this.queue.map((track, i) => `${this.namespace}#${i + 1}`);
+    },
   },
   mounted() {
-    this.select(window.location.hash.replace("#", ""));
+    this.select(+window.location.hash.replace("#", ""));
   },
-};
+});
 </script>
 
 <style lang="sass" scoped>
-=settings-controls
-  user-select: none
-  cursor: pointer
-  align-items: center
-  color: rgba(var(--textColor), 0.33)
-  @apply pt-4 px-4 text-center
-  span:last-child
-    opacity: 0
-    text-align: center
-    transform: translateY(6px)
-    display: block
-    transition: opacity 0.1s ease, transform 0.1s ease
-  &:hover,
-  &:active
-    span:last-child
-      opacity: 1
-      width: auto
-      transform: translateY(0)
-
 .manager
   color: rgba(var(--textColor), 1)
-  .settings
-    @apply pt-4 flex items-center
-    .autoplay,
-    .loop
-      label
-        +settings-controls
-        &.is-active
-          color: rgba(var(--textColor), 1)
-        span:first-child
-          @apply mr-1 block text-center
-
-    &.loop label
-      @apply pl-3
-
-    .spacer
-      @apply flex-grow
-
-    .play-all
-      color: rgba(var(--accent), 1)
-      transition: background-color 0.1s ease
-      @apply text-center font-bold uppercase text-sm
-      @apply outline-none border-none rounded-3xl
-      +settings-controls
-      &.is-disabled
-        cursor: initial
-        color: rgba(128, 128, 128, 0.5)
+  .play-all
+    background: rgba(var(--accent), 1)
 
 .footer
   @apply py-12
+
 </style>

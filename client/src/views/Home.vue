@@ -1,6 +1,9 @@
 <template>
-  <div class="wrapper" :style="{ '--accent': accent, '--primary': primary }">
-    <Header></Header>
+  <div class="wrapper">
+    <img
+      class="logo h-48 max-w-md mx-auto my-4"
+      src="~@/assets/demo-man-primary.svg"
+    />
     <div class="w-2/3 mx-auto" v-if="!namespaces.length">
       <h1 class="text-gray-700 text-5xl font-semibold mb-4">
         There's nothing here...
@@ -29,8 +32,8 @@
             <img
               :style="{ display: placeholder[i] ? 'none' : 'block' }"
               class="cover__preview"
-              :src="`${apiEP}/namespaces/${n.name}/cover`"
-              @error="setPlaceholder(i)"
+              :src="`${apiUrl}/namespaces/${n.name}/cover`"
+              @error="placeholder[i] = true"
             />
             <span class="text-gray-900">{{ n.title }}</span>
           </router-link>
@@ -43,49 +46,53 @@
 
 <script lang="ts">
 import axios, { AxiosResponse } from "axios";
-import Vue from "vue";
-import Namespace from "../models/Namespace";
+import { defineComponent, inject, reactive, ref } from "vue";
+import type { Namespace, NamespaceAPIResource } from "../models/Namespace";
 import Footer from "../components/Footer.vue";
-import Header from "../component/Header.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "Home",
-  data: () => ({
-    namespaces: Namespace[],
-    error: Error,
-    placeholder: boolean[],
-  })
   components: {
     Footer,
-    Header,
   },
-  methods: {
-    setPlaceholder(i) {
-      Vue.set(this.placeholder, i, true);
-    },
+  setup() {
+    return {
+      namespaces: reactive<Namespace[]>([]),
+      apiUrl: inject<string>("apiUrl"),
+      error: ref({}),
+      placeholder: reactive<boolean[]>([]),
+    };
   },
   mounted() {
     axios
-      .get(`${this.apiEP}/namespaces`)
-      .then(({ data }) => {
-        return data.namespaces.map((v) => v?.metadata?.name);
-      })
-      .then((namespaces) =>
+      .get(`${this.apiUrl}/namespaces`)
+      .then(
+        ({
+          data,
+        }: {
+          data: {
+            namespaces: NamespaceAPIResource[];
+            links: Record<string, string>;
+          };
+        }) => {
+          return data.namespaces.map(
+            (v: NamespaceAPIResource): string => v?.metadata?.name
+          );
+        }
+      )
+      .then((namespaces: string[]) =>
         Promise.all(
           namespaces.map((n: string) => {
-            return axios.get(`${this.apiEP}/namespaces/${n}`) as Promise<AxiosResponse>;
+            return axios.get(
+              `${this.apiUrl}/namespaces/${n}`
+            ) as Promise<AxiosResponse>;
           })
         )
       )
       .then((resp) => {
-        return resp.map(
-          ({ data }) => {
-            return {
-              name: data.metadata.name,
-              title: data.data?.title || data.metadata.name,
-            } as Namespace;
-          }
-        );
+        return resp.map(({ data }: { data: Namespace }) => {
+          return data; // unpack response
+        });
       })
       .then((n) => {
         this.namespaces = n;

@@ -2,32 +2,32 @@
   <div>
     <audio ref="audio" autoplay="false"></audio>
     <transition name="slide">
-      <div class="playerbar" v-if="this.url">
+      <div class="playerbar" v-if="this.track?.url">
         <div class="metadata">
-          <span class="artist">{{ artist }}</span>
-          <router-link :to="`/${url}`"
-            ><span class="title">{{ title }}</span></router-link
+          <span class="artist">{{ track?.artist }}</span>
+          <router-link :to="`/${track?.url}`"
+            ><span class="title">{{ track?.title }}</span></router-link
           >
         </div>
         <div class="action">
           <div class="play-state">
             <i
               @click="pause"
-              v-if="globalPlayState === 'playing'"
+              v-if="trackState?.type === 'playing'"
               class="material-icons-sharp"
             >
               pause
             </i>
             <i
               @click="play"
-              v-else-if="globalPlayState === 'paused'"
+              v-else-if="trackState?.type === 'paused'"
               class="material-icons-sharp paused"
             >
               play_arrow
             </i>
             <i
               @click="replay"
-              v-else-if="globalPlayState === 'finished'"
+              v-else-if="trackState?.type === 'stopped' && trackState?.finished"
               class="material-icons-sharp"
             >
               replay
@@ -44,7 +44,7 @@
               <input
                 type="range"
                 class="volume__input"
-                v-model="localVolume"
+                v-model="volume"
                 min="0"
                 max="100"
                 steps="1"
@@ -79,172 +79,125 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from "vuex";
-import humanReadableTimestamp from "../main";
+import { useStore } from "@/store";
+import { ActionsTypes } from "@/store/actions";
+import { MutationsTypes } from "@/store/mutations";
+import { Track, TrackState } from "@/store/Track";
+import { defineComponent, computed, ref, inject, reactive } from "vue";
+import { toTime } from "../main";
 
-export default Vue.extend({
-  data: () => ({
-    volumeOverlay: false,
-    localVolume: 100,
-  }),
-  computed: {
-    currentTime() {
-      return humanReadableTimestamp(this.localProgress);
-    },
-    totalDuration() {
-      return humanReadableTimestamp(this.localDuration);
-    },
-    visualProgress() {
-      return (this.localProgress / this.localDuration) * 100;
-    },
-    localProgress() {
-      return this.progress[this.url];
-    },
-    localDuration() {
-      return this.duration[this.url];
-    },
-    ...mapGetters([
-      "mp3",
-      "url",
-      "title",
-      "artist",
-      "progress",
-      "duration",
-      "volume",
-      "playState",
-      "globalPlayState",
-      "intersecting",
-      "seek",
-    ]),
+export default defineComponent({
+  setup() {
+    const store = useStore();
+    const volumeOverlay = ref(false);
+    const volume = computed<number>(() => store.getters.volume);
+    const totalDuration = computed<string>(() =>
+      toTime(store.getters.currentTrack?.duration || 0)
+    );
+    const currentTime = computed<string>(() =>
+      toTime(store.getters.currentTrack?.state.progress || 0)
+    );
+
+    const visualProgress = computed<number>(
+      () =>
+        ((store.getters.currentTrack?.state.progress || 0) /
+          (store.getters.currentTrack?.duration || 1)) *
+        100
+    );
+    const track = computed<Track | undefined>(() => store.getters.currentTrack);
+    const trackState = computed<TrackState | undefined>(() => store.getters.currentTrack?.state);
+    const audio = ref<HTMLAudioElement>();
+    const seeked = computed<boolean>(() => store.state.seeked);
+
+    return {
+      store,
+      volumeOverlay,
+      volume,
+      totalDuration,
+      currentTime,
+      visualProgress,
+      track,
+      trackState,
+      audio,
+      seeked,
+    };
   },
   watch: {
-    seek(t) {
-      const s = this.handleAudioElement(t);
-      this.$refs.audio.currentTime = s;
+    seeked(): void {
+      const progress = this.handleAudioElement(this.track?.state.progress || 0);
+      if (this.audio) {
+        this.audio.currentTime = progress;
+        this.store.commit(MutationsTypes.consumeSeeked);
+      }
     },
-    volume(v) {
-      this.$refs.audio.volume = v;
+    volume(v): void {
+      if (this.audio) {
+        this.audio.volume = v * 100;
+      }
     },
-    localVolume(n) {
-      this.$store.commit({
-        type: "updateVolume",
-        volume: n / 100,
-      });
-    },
-    globalPlayState(s) {
-      switch (s) {
-        case "playing":
-          this.$refs.audio.play().then(() => {});
-          break;
-        case "paused":
-          this.$refs.audio.pause();
-          break;
-        case "finished":
-        default:
-          break;
+    trackState(state: TrackState): void {
+      if (this.audio) {
+        switch (state.type) {
+          case "playing":
+            this.audio.play();
+            break;
+          case "paused":
+            this.audio.pause();
+            break;
+          case "stopped":
+          default:
+            break;
+        }
       }
     },
   },
   methods: {
-    updateVolume(vol) {
-      this.$store.commit({
-        type: "updateVolume",
-        volume: vol,
-      });
+    updateVolume(volume: number): void {
+      this.store.commit(MutationsTypes.updateVolume, volume);
     },
-    updateProgress() {
-      if (this.globalPlayState === "playing") {
-        const t = parseInt(this.$refs.audio.currentTime, 10);
-        this.$store.commit({
-          type: "updateProgress",
-          progress: t,
-          url: this.url,
-        });
+    updateProgress(): void {
+      if (this.trackState?.type === "playing" && this.audio) {
+        const progress = this.audio.currentTime;
+        this.store.commit(MutationsTypes.updateProgress, progress);
       }
     },
-    handleAudioElement(t) {
-      const { seekable } = this.$refs.audio;
-      let seekTarget = t;
-      if (seekable.start(0) > t) {
-        seekTarget = seekable.start(0);
-      } else if (seekable.end(0) < t) {
-        seekTarget = seekable.end(0);
+    handleAudioElement(progress: number): number {
+      if (this.audio) {
+        const { seekable } = this.audio;
+        let seekTarget = progress;
+        if (seekable.start(0) > progress) {
+          seekTarget = seekable.start(0);
+        } else if (seekable.end(0) < progress) {
+          seekTarget = seekable.end(0);
+        }
+        return seekTarget;
+      } else {
+        return 0;
       }
-      return seekTarget;
     },
-    handleFinished() {
-      this.$store.commit({
-        type: "updatePlayState",
-        playState: "finished",
-        url: this.url,
-      });
-      this.$store.commit({
-        type: "updateProgress",
-        url: this.url,
-        progress: 0,
-      });
+    handleFinished(): void {
+      this.store.dispatch(ActionsTypes.next);
     },
-    setPosition(e) {
-      const pos = e.target.getBoundingClientRect();
+    setPosition(e: MouseEvent): void {
+      const t = e.target as Element;
+      const pos = t.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
-      const seekTarget = this.localDuration * seekPos;
-      this.$store.commit({
-        type: "seek",
-        seek: seekTarget,
-        url: this.url,
-      });
+      const seekTarget = (this.track?.duration || 0) * seekPos;
+      this.store.commit(MutationsTypes.seek, { seek: seekTarget, url: this.track?.url });
     },
-    play() {
-      this.$store.commit({
-        type: "updatePlayState",
-        url: this.url,
-        playState: "playing",
-      });
+    play(): void {
+      this.store.dispatch(ActionsTypes.resume);
     },
-    pause() {
-      this.$store.commit({
-        type: "updatePlayState",
-        url: this.url,
-        playState: "paused",
-      });
+    pause(): void {
+      this.store.dispatch(ActionsTypes.pause);
     },
-    replay() {
-      this.$store.commit({
-        type: "seek",
-        url: this.url,
-        seek: 0,
-      });
-      this.$store.commit({
-        type: "updatePlayState",
-        url: this.url,
-        playState: "playing",
-      });
+    replay(): void {
+      this.store.dispatch(ActionsTypes.replay);
     },
   },
   mounted() {
-    this.$refs.audio.addEventListener("timeupdate", this.updateProgress);
-    this.$refs.audio.addEventListener("ended", this.handleFinished);
-    const vm = this;
-    this.$store.subscribeAction({
-      before: () => {
-        vm.$store.commit({
-          type: "updatePlayState",
-          playState: "paused",
-          url: vm.url,
-        });
-        vm.$refs.audio.pause();
-        vm.$refs.audio.src = "";
-      },
-      after: (_, state) => {
-        vm.$refs.audio.src = encodeURI(state.mp3);
-        vm.$refs.audio.currentTime = state.progress[state.url];
-        vm.$store.commit({
-          type: "updatePlayState",
-          playState: "playing",
-          url: vm.url,
-        });
-      },
-    });
+    this.audio?.addEventListener("timeupdate", this.updateProgress);
+    this.audio?.addEventListener("ended", this.handleFinished);
   },
 });
 </script>
