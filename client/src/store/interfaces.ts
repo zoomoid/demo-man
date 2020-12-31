@@ -1,7 +1,7 @@
 import { PlaybackSettings, StatelessTrack, Track, TrackState } from "./Track";
 import { MutationsTypes as MTypes } from "./mutations";
 import { ActionsTypes as ATypes } from "./actions";
-import { CommitOptions, DispatchOptions, ActionContext } from "vuex";
+import { CommitOptions, DispatchOptions, ActionContext, Store as VuexStore } from "vuex";
 
 export interface StateTypes {
   seeked: boolean;
@@ -82,6 +82,30 @@ export type AugmentedActionContext = Omit<
   "commit" | "getters" | "dispatch"
 > & {
   commit<K extends keyof MutationsTypes, P extends Parameters<MutationsTypes[K]>[1]>(
+    key: K,
+    payload?: P,
+    options?: CommitOptions
+  ): ReturnType<MutationsTypes[K]>;
+} & {
+  getters: {
+    [K in keyof GettersTypes]: ReturnType<GettersTypes[K]>;
+  };
+} & {
+  dispatch<K extends keyof ActionsTypes>(
+    key: K,
+    payload?: Parameters<ActionsTypes[K]>[1],
+    options?: DispatchOptions
+  ): ReturnType<ActionsTypes[K]>;
+};
+
+export type Store<S = StateTypes> = Omit<
+  VuexStore<S>,
+  "commit" | "getters" | "dispatch"
+> & {
+  commit<
+    K extends keyof MutationsTypes,
+    P extends Parameters<MutationsTypes[K]>[1]
+  >(
     key: K,
     payload?: P,
     options?: CommitOptions
