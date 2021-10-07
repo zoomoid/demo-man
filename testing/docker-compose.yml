@@ -1,18 +1,16 @@
 version: "3"
 
 services:
-  client:
-    image: node:lts
-    container_name: demo-client
-    restart: on-failure
-    volumes: 
-    - ../client:/app
-    environment:
-      VERSION: 0.0.0-dev
-    working_dir: /app
-    command: [ "npm", "run", "serve" ]
-    ports: 
-    - "8081:8080"
+  # client:
+  #   image: node:lts
+  #   container_name: demo-client
+  #   restart: on-failure
+  #   volumes: 
+  #   - ../client:/app
+  #   working_dir: /app
+  #   command: [ "npm", "run", "dev" ]
+  #   ports: 
+  #   - "3000:3000"
 
   api:
     image: node:lts
@@ -40,7 +38,6 @@ services:
     ports: 
     - "8080:8080"
     - "9229:9229"
-
 
   watchdog:
     # build: ../watchdog
