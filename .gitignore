@@ -1,3 +1,5 @@
 **/node_modules
 metadata.yaml
 .version
+.vscode/
+legacy/
