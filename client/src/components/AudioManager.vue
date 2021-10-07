@@ -17,18 +17,18 @@
           }"
           @click="playAll"
         >
-          <span class="material-icons-sharp"> play_arrow </span>
+          <span class="material-icons-outlined"> play_arrow </span>
           <span> Play all </span>
         </div>
 
-      <div v-for="(track, index) in queue" :key="track.general.title">
-        <AudioPlayer
+      <div v-for="(track, index) in queue" :key="track.metadata.name">
+        <!-- <audio-player
           :track="track"
           :index="index + 1"
           :theme="theme"
           :highlighted="`${selected}` === `${index + 1}`"
           v-on:select="select"
-        ></AudioPlayer>
+        ></audio-player> -->
       </div>
       <div class="footer">
         <Footer></Footer>
@@ -39,13 +39,13 @@
 
 <script lang="ts">
 import { defineComponent, computed, ref, PropType } from "vue";
-import { useStore } from "@/store";
+import { useStore } from "../store";
 
 import AudioPlayer from "./AudioPlayer.vue";
 import Footer from "./Footer.vue";
-import { ThemeProp } from "@/models/Theme";
-import { ActionsTypes } from "@/store/actions";
-import { Track } from "@/models/Track";
+import { ThemeAPIResource } from "../models/Theme";
+import { ActionsTypes } from "../store/actions";
+import { Track, TrackAPIResource } from "../models/Track";
 
 export default defineComponent({
   components: {
@@ -54,16 +54,12 @@ export default defineComponent({
   },
   props: {
     queue: {
-      type: Object as PropType<Track[]>,
-      default: (): Track[] => [],
+      type: Object as PropType<TrackAPIResource[]>,
+      default: (): TrackAPIResource[] => [],
     },
     theme: {
-      type: Object as PropType<ThemeProp>,
-      default: (): ThemeProp => ({
-        accent: "",
-        color: "",
-        textColor: "",
-      }),
+      type: Object as PropType<ThemeAPIResource>,
+      required: true,
     },
     namespace: {
       type: String,
@@ -101,7 +97,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.select(+window.location.hash.replace("#", ""));
+    this.select(parseInt(window.location.hash.replace("#", "")));
   },
 });
 </script>

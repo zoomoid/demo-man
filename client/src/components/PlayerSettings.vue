@@ -9,7 +9,7 @@
           'is-active': autoplay,
         }"
       >
-        <span class="material-icons-sharp"> playlist_play </span>
+        <span class="material-icons-outlined"> playlist_play </span>
         <span class="label"> Autoplay </span>
       </label>
     </div>
@@ -22,7 +22,7 @@
           'is-active': loop,
         }"
       >
-        <span class="material-icons-sharp"> repeat </span>
+        <span class="material-icons-outlined"> repeat </span>
         <span class="label"> Loop </span>
       </label>
     </div>
@@ -35,7 +35,7 @@
           'is-active': shuffle,
         }"
       >
-        <span class="material-icons-sharp"> shuffle </span>
+        <span class="material-icons-outlined"> shuffle </span>
         <span class="label"> Shuffle </span>
       </label>
     </div>
@@ -43,8 +43,8 @@
 </template>
 
 <script lang="ts">
-import { useStore } from "@/store";
-import { MutationsTypes } from "@/store/mutations";
+import { useStore } from "vuex";
+import { MutationsTypes } from "../store/mutations";
 import { defineComponent, ref } from "vue";
 
 export default defineComponent({

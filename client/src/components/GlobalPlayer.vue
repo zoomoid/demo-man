@@ -2,7 +2,7 @@
   <div>
     <audio ref="audio" autoplay="false"></audio>
     <transition name="slide">
-      <div class="playerbar" v-if="this.track?.url">
+      <div class="playerbar" v-if="track?.url">
         <div class="metadata">
           <span class="artist">{{ track?.artist }}</span>
           <router-link :to="`/${track?.url}`"
@@ -79,12 +79,12 @@
 </template>
 
 <script lang="ts">
-import { useStore } from "@/store";
-import { ActionsTypes } from "@/store/actions";
-import { MutationsTypes } from "@/store/mutations";
-import { Track, TrackState } from "@/store/Track";
-import { defineComponent, computed, ref, inject, reactive } from "vue";
-import { toTime } from "../main";
+import { useStore } from "../store";
+import { ActionsTypes } from "../store/actions";
+import { MutationsTypes } from "../store/mutations";
+import { QueueTrack, TrackState } from "../store/Track";
+import { defineComponent, computed, ref } from "vue";
+import toTime from "../helpers/toTime";
 
 export default defineComponent({
   setup() {
@@ -104,10 +104,12 @@ export default defineComponent({
           (store.getters.currentTrack?.duration || 1)) *
         100
     );
-    const track = computed<Track | undefined>(() => store.getters.currentTrack);
-    const trackState = computed<TrackState | undefined>(() => store.getters.currentTrack?.state);
+    const track = computed<QueueTrack | undefined>(() => store.getters.currentTrack);
+    const trackState = computed<TrackState | undefined>(
+      () => store.getters.currentTrack?.state
+    );
     const audio = ref<HTMLAudioElement>();
-    const seeked = computed<boolean>(() => store.state.seeked);
+    const seeked = computed<boolean>(() => store.getters.seeked);
 
     return {
       store,
@@ -183,7 +185,10 @@ export default defineComponent({
       const pos = t.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
       const seekTarget = (this.track?.duration || 0) * seekPos;
-      this.store.commit(MutationsTypes.seek, { seek: seekTarget, url: this.track?.url });
+      this.store.commit(MutationsTypes.seek, {
+        seek: seekTarget,
+        url: this.track?.url,
+      });
     },
     play(): void {
       this.store.dispatch(ActionsTypes.resume);

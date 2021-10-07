@@ -1,6 +1,6 @@
 <template>
   <div
-    :id="general.no"
+    :id="track.general.no"
     class="player-wrapper"
     ref="player"
     :class="{
@@ -11,49 +11,49 @@
     <div class="title-wrapper">
       <div class="title-line">
         <div class="title">
-          {{ general.title }}
+          {{ track.general.title }}
         </div>
       </div>
       <div class="metadata">
-        <div class="no" v-if="general.no">
+        <div class="no" v-if="track.general.no">
           <span>
-            {{ general.no }}
+            {{ track.general.no }}
           </span>
         </div>
-        <div class="comments" v-if="general.comment">
+        <div class="comments" v-if="track.general.comment">
           <span
             class="comment"
-            v-for="comment in general.comment"
+            v-for="comment in track.general.comment"
             v-bind:key="comment"
           >
             {{ comment }}
           </span>
         </div>
-        <div class="genre" v-if="general.genre">
-          <span v-for="genre in general.genre" v-bind:key="genre">
+        <div class="genre" v-if="track.general.genre">
+          <span v-for="genre in track.general.genre" v-bind:key="genre">
             {{ genre }}
           </span>
         </div>
-        <div class="bpm" v-if="general.bpm">
+        <div class="bpm" v-if="track.general.bpm">
           <span>
-            {{ general.bpm }}
+            {{ track.general.bpm }}
           </span>
         </div>
         <div class="hfill"></div>
         <div class="actions">
           <div class="queue">
             <a v-on:click.stop.prevent="addToQueue" target="_blank">
-              <i class="material-icons-sharp"> queue </i>
+              <i class="material-icons-outlined"> queue </i>
             </a>
           </div>
           <div class="share">
             <a v-on:click.stop.prevent="share" target="_blank">
-              <i class="material-icons-sharp"> share </i>
+              <i class="material-icons-outlined"> share </i>
             </a>
           </div>
           <div class="download">
             <a :href="`${file.mp3}?download`" target="_blank">
-              <i class="material-icons-sharp"> get_app </i>
+              <i class="material-icons-outlined"> get_app </i>
             </a>
           </div>
         </div>
@@ -64,21 +64,21 @@
         <i
           @click="pause"
           v-if="trackState.type === 'playing'"
-          class="material-icons-sharp"
+          class="material-icons-outlined"
         >
           pause
         </i>
         <i
           @click="play"
           v-else-if="trackState.type === 'paused'"
-          class="material-icons-sharp paused"
+          class="material-icons-outlined paused"
         >
           play_arrow
         </i>
         <i
           @click="replay"
           v-else-if="trackState.type === 'stopped' && trackState.finished"
-          class="material-icons-sharp"
+          class="material-icons-outlined"
         >
           replay
         </i>
@@ -95,10 +95,10 @@
               'clip-path': `polygon(0% 0%, 0% 100%, ${visualProgress}% 100%, ${visualProgress}% 0%`,
             }"
           >
-            <img :src="waveforms.full" />
+            <img :src="track.waveforms.full" />
           </div>
           <div class="bg bg--small">
-            <img :src="waveforms.small" />
+            <img :src="track.waveforms.small" />
           </div>
           <div
             class="fg fg--small"
@@ -106,7 +106,7 @@
               'clip-path': `polygon(0% 0%, 0% 100%, ${visualProgress}% 100%, ${visualProgress}% 0%`,
             }"
           >
-            <img :src="waveforms.small" />
+            <img :src="track.waveforms.small" />
           </div>
         </div>
       </div>
@@ -120,14 +120,23 @@
 </template>
 
 <script lang="ts">
-import { useStore } from "@/store";
-import { computed, defineComponent, inject, PropType, ref } from "vue";
-import { General, Metadata, TrackAPIResource, File } from "@/models/Track";
-import { ThemeProp } from "@/models/Theme";
-import { Track, TrackState } from "@/store/Track";
-import { ActionsTypes } from "@/store/actions";
-import { MutationsTypes } from "@/store/mutations";
-import { rgbToHex, toTime } from "@/main";
+import { useStore } from "../store";
+import {
+  computed,
+  defineComponent,
+  inject,
+  PropType,
+  reactive,
+  ref,
+} from "vue";
+import { Track, TrackAPIResource } from "../models/Track";
+import { Theme, ThemeAPIResource, ThemeModel } from "../models/Theme";
+import { QueueTrack, TrackState } from "../store/Track";
+import { ActionsTypes } from "../store/actions";
+import { MutationsTypes } from "../store/mutations";
+import toHexString from "../helpers/toHexString";
+import toTime from "../helpers/toTime";
+import toCSSColorString from "../helpers/toCSSColorString";
 
 export default defineComponent({
   name: "AudioPlayer",
@@ -136,41 +145,44 @@ export default defineComponent({
 
     const url = `${props.track.metadata.namespace}/#${props.index}`;
 
+    // const track = reactive<Track>(new Track(props.track));
+    // const theme = reactive<Theme>(new Theme(props.theme));
+
+    // const playing = computed<boolean>(
+    //   () => store.getters.trackState(url).type === "playing"
+    // );
+    // const progress = computed<number>(() => store.getters.progress(url));
+    // const visualProgress = computed<number>(
+    //   () =>
+    //     (store.getters.progress(url) / props.track.data.general.duration) * 100
+    // );
+    // const totalDuration = computed<string>(() =>
+    //   toTime(track.general?.duration || 0)
+    // );
+    // const currentTime = computed<string>(() =>
+    //   toTime(store.getters.progress(url))
+    // );
+    // const waveforms = {
+    //   full: `${props.track.links.waveform}/full?color=${toHexString(
+    //     toCSSColorString(theme.get().accent)
+    //   )}`,
+    //   small: `${props.track.links.waveform}/small?color=${toHexString(
+    //     toCSSColorString(theme.get().accent)
+    //   )}`,
+    // };
     return {
       store,
-      file: computed<File>(() => props.track?.data.file),
-      metadata: computed<Metadata>(() => ({
-        name: props.track?.metadata.name,
-        namespace: props.track?.metadata.namespace,
-      })),
-      general: computed<General>(() => props.track?.data.general),
+      track,
       url: ref<string>(url),
-      playing: computed<boolean>(
-        () => store.getters.trackState(url).type === "playing"
-      ),
-      progress: computed<number>(() => store.getters.progress(url)),
-      visualProgress: computed<number>(
-        () =>
-          (store.getters.progress(url) / props.track.data.general.duration) *
-          100
-      ),
-      totalDuration: computed<string>(() =>
-        toTime(props.track.data.general.duration)
-      ),
-      currentTime: computed<string>(() => toTime(store.getters.progress(url))),
-      waveforms: computed<Record<string, string>>(() => {
-        return {
-          full: `${props.track?.links.waveform}/full?color=${rgbToHex(
-            props.theme.accent || ""
-          )}`,
-          small: `${props.track?.links.waveform}/small?color=${rgbToHex(
-            props.theme.accent || ""
-          )}`,
-        };
-      }),
-      trackState: computed<TrackState>(() => store.getters.trackState(url)),
-      tracks: computed<Track[]>(() => store.state.tracks),
-      inAction: computed<boolean>(() => url === store.state.nowPlaying),
+      // totalDuration,
+      // currentTime,
+      // visualProgress,
+      // progress,
+      // playing,
+      // waveforms: reactive<Record<string, string>>(waveforms),
+      // trackState: computed<TrackState>(() => store.getters.trackState(url)),
+      // tracks: computed<QueueTrack[]>(() => store.state.tracks),
+      // inAction: computed<boolean>(() => url === store.state.nowPlaying),
       apiUrl: inject<string>("apiUrl"),
     };
   },
@@ -184,13 +196,8 @@ export default defineComponent({
       default: -1,
     },
     theme: {
-      type: Object as PropType<ThemeProp>,
-      default: (): ThemeProp =>
-        ({
-          accent: "255, 180, 0",
-          color: "0, 0, 0",
-          textColor: "255, 255, 255",
-        } as ThemeProp),
+      type: Object as PropType<ThemeAPIResource>,
+      required: true,
     },
     highlighted: {
       type: Boolean,
@@ -198,13 +205,13 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.$store.dispatch("addTrack", {
+    this.store.dispatch(ActionsTypes.addTrack, {
       url: this.url,
-      mp3: this.file?.mp3,
-      title: this.general?.title,
-      artist: this.general?.artist,
-      album: this.general?.album,
-      duration: this.general?.duration,
+      mp3: this.track.file?.mp3,
+      title: this.track.general?.title,
+      artist: this.track.general?.artist,
+      album: this.track.general?.album,
+      duration: this.track.general?.duration,
     });
   },
   methods: {
@@ -212,7 +219,7 @@ export default defineComponent({
       const t = e.target as Element;
       const pos = t?.getBoundingClientRect();
       const seekPos = (e.clientX - pos.left) / pos.width;
-      const seekTarget = this.general?.duration * seekPos;
+      const seekTarget = (this.track.general?.duration || 0) * seekPos;
       this.store.commit(MutationsTypes.seek, {
         seek: seekTarget,
         url: this.url,
@@ -238,7 +245,9 @@ export default defineComponent({
       const prev = window.location.hash;
       window.location.hash = "";
       navigator.clipboard
-        .writeText(`${this.apiUrl}/${this.metadata?.namespace}/#${this.index}`)
+        .writeText(
+          `${this.apiUrl}/${this.track.metadata.namespace}/#${this.index}`
+        )
         .then(
           () => {
             window.location.hash = `${this.index}`;

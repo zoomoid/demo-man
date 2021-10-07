@@ -1,3 +1,6 @@
+import { APIResource } from "./APIResource";
+import { DataModel } from "./DataModel";
+
 /**
  * General track information from the mp3
  */
@@ -46,19 +49,9 @@ interface Cover {
 }
 
 /**
- * Composed Track resource
- */
-interface Track {
-  general: General;
-  file: File;
-  metadata: Metadata;
-  cover: Cover;
-}
-
-/**
  * API Model of the track resource
  */
-interface TrackAPIResource {
+interface TrackAPIResource extends APIResource {
   links: {
     self: string;
     waveform: string;
@@ -81,16 +74,47 @@ interface TrackAPIResource {
   };
 }
 
-const fromAPIResource = (t: TrackAPIResource): Track => {
-  return {
-    general: t.data.general,
-    cover: t.data.cover,
-    file: t.data.file,
-    metadata: {
-      name: t.metadata.name,
-      namespace: t.metadata.namespace
-    }
-  };
-};
+class Track extends DataModel {
+  private _general: General;
+  private _cover: Cover;
+  private _file: File;
+  private _metadata: Metadata;
 
-export { Track, General, File, Metadata, Cover, TrackAPIResource, fromAPIResource };
+  constructor(resource: TrackAPIResource) {
+    super(resource);
+    this._general = resource.data.general;
+    this._cover = resource.data.cover;
+    this._file = resource.data.file;
+    this._metadata = {
+      name: resource.metadata.name,
+      namespace: resource.metadata.namespace,
+    };
+  }
+
+  get() {
+    return {
+      general: this._general,
+      cover: this._cover,
+      file: this._file,
+      metadata: this._metadata,
+    };
+  }
+
+  public get general() {
+    return this._general;
+  }
+
+  public get cover() {
+    return this._cover;
+  }
+
+  public get file() {
+    return this._file;
+  }
+
+  public get metadata() {
+    return this._metadata;
+  }
+}
+
+export { Track, General, File, Metadata, Cover, TrackAPIResource };

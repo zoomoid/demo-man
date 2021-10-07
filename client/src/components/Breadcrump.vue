@@ -8,24 +8,20 @@
     }"
   >
     <router-link to="/">
-      <i class="material-icons-sharp"> arrow_back </i>
+      <i class="material-icons-outlined"> arrow_back </i>
     </router-link>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue"
-import { ThemeProp } from "@/models/Theme";
+import { Theme } from "../models/Theme";
 
 export default defineComponent({
   props: {
     theme: {
-      type: Object as PropType<ThemeProp>,
-      default: (): ThemeProp => ({
-        textColor: "",
-        color: "",
-        accent: ""
-      })
+      type: Object as PropType<Theme>,
+      required: true,
     }
   }
 });

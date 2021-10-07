@@ -1,7 +1,7 @@
 import { ActionTree } from "vuex";
 import { ActionsTypes as ATypes, StateTypes } from "./interfaces";
 import { MutationsTypes as MTypes } from "./mutations";
-import { stateFactory, StatelessTrack, TrackState } from "./Track";
+import { stateFactory, QueueStatelessTrack, TrackState } from "./Track";
 
 export enum ActionsTypes {
   setQueue = "setQueue",
@@ -25,7 +25,7 @@ export const actions: ActionTree<StateTypes, StateTypes> & ATypes = {
     commit(MTypes.setQueueTracks, { tracks: payload.queue });
   },
   // add a fresh track to the store
-  [ActionsTypes.addTrack]({ commit }, payload: StatelessTrack): void {
+  [ActionsTypes.addTrack]({ commit }, payload: QueueStatelessTrack): void {
     commit(MTypes.setTrack, {
       url: payload.url,
       title: payload.title,

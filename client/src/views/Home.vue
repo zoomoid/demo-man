@@ -2,7 +2,7 @@
   <div class="wrapper">
     <img
       class="logo h-48 max-w-md mx-auto my-4"
-      src="~@/assets/demo-man-primary.svg"
+      src="../assets/demo-man-primary.svg"
     />
     <div class="w-2/3 mx-auto" v-if="!namespaces.length">
       <h1 class="text-gray-700 text-5xl font-semibold mb-4">
@@ -46,8 +46,11 @@
 
 <script lang="ts">
 import axios, { AxiosResponse } from "axios";
-import { defineComponent, inject, reactive, ref } from "vue";
-import type { Namespace, NamespaceAPIResource } from "../models/Namespace";
+import { defineComponent, inject, ref } from "vue";
+import {
+  Namespace,
+  NamespaceAPIResource
+} from "../models/Namespace";
 import Footer from "../components/Footer.vue";
 
 export default defineComponent({
@@ -57,10 +60,10 @@ export default defineComponent({
   },
   setup() {
     return {
-      namespaces: reactive<Namespace[]>([]),
+      namespaces: ref<Namespace[]>([]),
       apiUrl: inject<string>("apiUrl"),
-      error: ref({}),
-      placeholder: reactive<boolean[]>([]),
+      error: ref(undefined),
+      placeholder: ref<boolean[]>([]),
     };
   },
   mounted() {
@@ -82,21 +85,23 @@ export default defineComponent({
       )
       .then((namespaces: string[]) =>
         Promise.all(
-          namespaces.map((n: string) => {
+          namespaces.map((namespace: string) => {
             return axios.get(
-              `${this.apiUrl}/namespaces/${n}`
+              `${this.apiUrl}/namespaces/${namespace}`
             ) as Promise<AxiosResponse>;
           })
         )
       )
       .then((resp) => {
-        return resp.map(({ data }: { data: Namespace }) => {
+        return resp.map(({ data }: { data: NamespaceAPIResource }) => {
           return data; // unpack response
         });
       })
-      .then((n) => {
-        this.namespaces = n;
-        this.placeholder = Array(n.length).fill(false);
+      .then((namespaces: NamespaceAPIResource[]) => {
+        this.namespaces = namespaces.map((namespace: NamespaceAPIResource) =>
+          new Namespace(namespace)
+        );
+        this.placeholder = Array(namespaces.length).fill(false);
       })
       .catch((err) => {
         this.error = err;

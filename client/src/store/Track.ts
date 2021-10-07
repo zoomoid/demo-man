@@ -21,7 +21,7 @@ export const stateFactory = {
   })
 };
 
-export interface Track {
+export interface QueueTrack {
   url: string;
   title: string;
   artist: string;
@@ -31,7 +31,7 @@ export interface Track {
   state: TrackState;
 }
 
-export interface StatelessTrack {
+export interface QueueStatelessTrack {
   url: string;
   title: string;
   artist: string;
@@ -60,7 +60,7 @@ export type TrackStatePlaying = {
 export type TrackState = TrackStatePlaying | TrackStatePaused | TrackStateStopped;
 
 export interface PlaybackSettings {
-  loop: boolean = false;
-  autoplay: boolean = true;
-  shuffle: boolean = false;
+  loop: boolean;
+  autoplay: boolean;
+  shuffle: boolean;
 }

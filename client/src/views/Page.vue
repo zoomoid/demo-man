@@ -1,10 +1,10 @@
 <template>
   <div class="page">
-    <template v-if="this.error">
+    <template v-if="error">
       <div class="error">
         <h1>404<br />Not Found</h1>
         <p>The namespace you were looking for could not be found.</p>
-        <router-link to="/">
+        <router-link :to="{ name: 'home' }">
           <i class="material-icons-sharp">arrow_back</i>
           <span>Go back</span>
         </router-link>
@@ -22,13 +22,13 @@
         ></div>
       </div>
       <div class="frontface">
-        <Breadcrump
+        <breadcrump
           :theme="{
             color,
             textColor,
             accent,
           }"
-        ></Breadcrump>
+        ></breadcrump>
         <section
           class="top mx-auto py-4"
           :style="{
@@ -47,13 +47,13 @@
             />
           </div>
           <div class="release-container" v-if="metadata">
-            <h1 class="title">{{ metadata.title }}</h1>
+            <h1 v-if="metadata.title" class="title">{{ metadata.title }}</h1>
             <div
               v-if="metadata.description"
               class="description"
               v-html="description"
             ></div>
-            <div class="links" v-if="metadata.links">
+            <div v-if="metadata.links" class="links">
               <a
                 v-for="l in metadata.links"
                 :key="l.link"
@@ -65,8 +65,8 @@
           </div>
         </section>
         <section class="queue-container">
-          <div class="queue container" v-if="queue.length !== 0">
-            <AudioManager
+          <div class="queue" v-if="queue.length !== 0">
+            <audio-manager
               class="players"
               :queue="queue"
               :namespace="namespace"
@@ -75,7 +75,7 @@
                 color,
                 textColor,
               }"
-            ></AudioManager>
+            ></audio-manager>
           </div>
           <div class="queue" v-else>
             <p class="queue--empty">It's currently really empty here...</p>
@@ -90,40 +90,12 @@
 import axios from "axios";
 import AudioManager from "../components/AudioManager.vue";
 import Breadcrump from "../components/Breadcrump.vue";
-import { defineComponent, ref, reactive, computed, inject } from "vue";
+import { defineComponent, ref, computed, inject } from "vue";
 import { useRoute } from "vue-router";
-import {
-  MetadataAPIResource,
-  Metadata,
-  fromAPIResource as toMetadata,
-} from "@/models/Metadata";
-import {
-  TrackAPIResource,
-  Track,
-  fromAPIResource as toTrack,
-} from "@/models/Track";
-import {
-  ThemeAPIResource,
-  Theme,
-  ComputedTheme,
-  fromAPIResource as toTheme,
-} from "@/models/Theme";
-
-const toCSSColorString = (theme?: number[], computed?: number[], defaultValue?: string): string => {
-  if (theme) {
-    return `${theme[0]}, ${theme[1]}, ${theme[2]}`;
-  } else {
-    if(computed) {
-      return `${computed[0]}, ${computed[1]}, ${computed[2]}`;
-    } else {
-      if (defaultValue) {
-        return defaultValue;
-      } else {
-        return "";
-      }
-    }
-  }
-};
+import { MetadataAPIResource, Metadata } from "../models/Metadata";
+import { TrackAPIResource, Track } from "../models/Track";
+import { ThemeAPIResource, Theme } from "../models/Theme";
+import toCSSColorString from "../helpers/toCSSColorString";
 
 export default defineComponent({
   components: {
@@ -133,72 +105,70 @@ export default defineComponent({
   setup() {
     const route = useRoute();
 
-    const metadata = reactive<Metadata>({
-      title: "",
-      description: "",
-      links: [],
-    });
-    const theme = reactive<Theme>({ textColor: [], accent: [], color: [] });
-    const computedTheme = reactive<ComputedTheme>({
-      textColor: [],
-      accent: [],
-      color: [],
-    });
+    const apiUrl = inject<string>("apiUrl");
+    const namespace = ref<string>(route.params.id as string);
 
-    const accent = computed((): string => {
-      return toCSSColorString(theme.accent, computedTheme.accent, "255, 180, 0");
-    });
-    const textColor = computed((): string => {
-      return toCSSColorString(theme.textColor, computedTheme.textColor, "0, 0, 0");
-    });
-    const color = computed((): string => {
-      return toCSSColorString(theme.color, computedTheme.color, "255, 255, 255");
+    const metadata = ref<Metadata | null>(null);
+    const theme = ref<Theme | null>(null);
+
+    const description = computed(
+      (): string => metadata.value?.get().description || ""
+    );
+
+    const queue = ref<TrackAPIResource[]>([]);
+    const error = ref(undefined);
+
+    const accent = computed((): string =>
+      toCSSColorString(theme.value?.get().accent)
+    );
+    const textColor = computed((): string =>
+      toCSSColorString(theme.value?.get().textColor)
+    );
+    const color = computed((): string =>
+      toCSSColorString(theme.value?.get().color)
+    );
+
+    Promise.all([
+      axios.get(`${apiUrl}/namespaces/${namespace.value}/tracks`).then(
+        ({
+          data,
+        }: {
+          data: {
+            links: Record<string, string>;
+            tracks: Array<TrackAPIResource>,
+          };
+        }) => {
+          queue.value = data.tracks
+            .sort((a, b) => a.data.general.no - b.data.general.no)
+        }
+      ),
+      axios
+        .get(`${apiUrl}/namespaces/${namespace.value}/metadata`)
+        .then(({ data }: { data: MetadataAPIResource }) => {
+          metadata.value = new Metadata(data);
+        }),
+      axios
+        .get(`${apiUrl}/namespaces/${namespace.value}/theme`)
+        .then(({ data }: { data: ThemeAPIResource }) => {
+          theme.value = new Theme(data);
+        }),
+    ]).catch((err) => {
+      error.value = err;
     });
 
     return {
       metadata,
       theme,
-      computedTheme,
       placeholder: ref(false),
-      queue: ref<Track[]>([]),
-      error: ref({}),
-      namespace: computed((): string => route.params.id as string),
-      description: computed((): string => metadata.description || ""),
+      queue,
+      error,
+      namespace,
+      description,
       accent,
       textColor,
       color,
-      apiUrl: inject("apiUrl"),
+      apiUrl,
     };
-  },
-  mounted() {
-    Promise.all([
-      axios
-        .get(`${this.apiUrl}/namespaces/${this.namespace}/tracks`)
-        .then(
-          ({
-            data,
-          }: {
-            data: { links: Record<string, string>; tracks: TrackAPIResource[] };
-          }) => {
-            this.queue = data.tracks
-              .sort((a, b) => a.data.general.no - b.data.general.no)
-              .map((t) => toTrack(t));
-          }
-        ),
-      axios
-        .get(`${this.apiUrl}/namespaces/${this.namespace}/metadata`)
-        .then(({ data }: { data: MetadataAPIResource }) => {
-          this.metadata = toMetadata(data);
-        }),
-      axios
-        .get(`${this.apiUrl}/namespaces/${this.namespace}/theme`)
-        .then(({ data }: { data: ThemeAPIResource }) => {
-          this.theme = toTheme(data, "theme");
-          this.computedTheme = toTheme(data, "computed");
-        }),
-    ]).catch((err) => {
-      this.error = err;
-    });
   },
 });
 </script>

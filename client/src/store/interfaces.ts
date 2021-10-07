@@ -1,4 +1,4 @@
-import { PlaybackSettings, StatelessTrack, Track, TrackState } from "./Track";
+import { PlaybackSettings, QueueStatelessTrack, QueueTrack, TrackState } from "./Track";
 import { MutationsTypes as MTypes } from "./mutations";
 import { ActionsTypes as ATypes } from "./actions";
 import { CommitOptions, DispatchOptions, ActionContext, Store as VuexStore } from "vuex";
@@ -7,7 +7,7 @@ export interface StateTypes {
   seeked: boolean;
   volume: number;
   nowPlaying?: string;
-  tracks: Track[];
+  tracks: QueueTrack[];
   autoplay: boolean;
   loop: boolean;
   shuffle: boolean;
@@ -28,12 +28,13 @@ export interface GettersTypes {
   title(state: StateTypes): string | undefined;
   artist(state: StateTypes): string | undefined;
   album(state: StateTypes): string | undefined;
-  currentTrack(state: StateTypes): Track | undefined;
-  queueTracks(state: StateTypes): (Track | undefined)[];
-  track(state: StateTypes): (url: string) => Track | undefined;
+  currentTrack(state: StateTypes): QueueTrack | undefined;
+  queueTracks(state: StateTypes): (QueueTrack | undefined)[];
+  track(state: StateTypes): (url: string) => QueueTrack | undefined;
   loop(state: StateTypes): boolean;
   autoplay(state: StateTypes): boolean;
   shuffle(state: StateTypes): boolean;
+  seeked(state: StateTypes): boolean;
 }
 
 export type MutationsTypes<S = StateTypes> = {
@@ -45,7 +46,7 @@ export type MutationsTypes<S = StateTypes> = {
   [MTypes.seek](state: S, payload: { url?: string; seek: number }): void;
   [MTypes.consumeSeeked](state: S): void;
   [MTypes.setNowPlaying](state: S, payload: { url: string }): void;
-  [MTypes.setTrack](state: S, payload: Track): void;
+  [MTypes.setTrack](state: S, payload: QueueTrack): void;
   [MTypes.setTrackState](state: S, payload: { url: string; trackState: TrackState }): void;
   [MTypes.setPlaybackSettings](state: S, payload: PlaybackSettings): void;
   [MTypes.setQueueTracks](state: S, payload: { tracks: string[] }): void;
@@ -57,7 +58,7 @@ export type MutationsTypes<S = StateTypes> = {
 
 export interface ActionsTypes {
   [ATypes.setQueue]({ commit }: AugmentedActionContext, payload: { queue: string[] }): void;
-  [ATypes.addTrack]({ commit }: AugmentedActionContext, payload: StatelessTrack): void;
+  [ATypes.addTrack]({ commit }: AugmentedActionContext, payload: QueueStatelessTrack): void;
   [ATypes.replay]({ commit, getters }: AugmentedActionContext): void;
   [ATypes.pause]({ commit, getters }: AugmentedActionContext): void;
   [ATypes.stop]({ commit, getters }: AugmentedActionContext): void;
