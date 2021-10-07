@@ -2,4 +2,4 @@
 metadata.yaml
 .version
 .vscode/
-legacy/
+legacy-*/
