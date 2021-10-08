@@ -1,7 +1,5 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType } from '@nestjs/graphql';
+import { Theme } from '../entities/theme.model';
 
 @InputType()
-export class CreateThemeInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
-}
+export class CreateThemeInput extends Theme {}

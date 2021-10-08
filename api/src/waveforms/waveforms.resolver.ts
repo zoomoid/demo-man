@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { WaveformsService } from './waveforms.service';
-import { Waveform } from './entities/waveform.entity';
+import { Waveform } from './entities/waveform.model';
 import { CreateWaveformInput } from './dto/create-waveform.input';
 import { UpdateWaveformInput } from './dto/update-waveform.input';
 

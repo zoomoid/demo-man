@@ -1,6 +1,6 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { TracksService } from './tracks.service';
-import { Track } from './entities/track.entity';
+import { Track } from './entities/track.model';
 import { CreateTrackInput } from './dto/create-track.input';
 import { UpdateTrackInput } from './dto/update-track.input';
 
@@ -9,7 +9,7 @@ export class TracksResolver {
   constructor(private readonly tracksService: TracksService) {}
 
   @Mutation(() => Track)
-  createTrack(@Args('createTrackInput') createTrackInput: CreateTrackInput) {
+  createTrack(@Args('input') createTrackInput: CreateTrackInput) {
     return this.tracksService.create(createTrackInput);
   }
 
@@ -19,17 +19,35 @@ export class TracksResolver {
   }
 
   @Query(() => Track, { name: 'track' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.tracksService.findOne(id);
+  findOne(
+    @Args('namespace', { type: () => String }) namespace: string,
+    @Args('name', { type: () => String }) name: string,
+  ) {
+    return this.tracksService.findOne({
+      'metadata.namespace': namespace,
+      'metadata.name': name,
+    });
   }
 
   @Mutation(() => Track)
-  updateTrack(@Args('updateTrackInput') updateTrackInput: UpdateTrackInput) {
-    return this.tracksService.update(updateTrackInput.id, updateTrackInput);
+  updateTrack(@Args('input') updateTrackInput: UpdateTrackInput) {
+    return this.tracksService.update(
+      {
+        'metadata.namespace': updateTrackInput.metadata.namespace,
+        'metadata.name': updateTrackInput.metadata.name,
+      },
+      updateTrackInput,
+    );
   }
 
   @Mutation(() => Track)
-  removeTrack(@Args('id', { type: () => Int }) id: number) {
-    return this.tracksService.remove(id);
+  removeTrack(
+    @Args('namespace', { type: () => String }) namespace: string,
+    @Args('name', { type: () => String }) name: string,
+  ) {
+    return this.tracksService.remove({
+      'metadata.namespace': namespace,
+      'metadata.name': name,
+    });
   }
 }

@@ -1,7 +1,5 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType } from '@nestjs/graphql';
+import { Namespace } from '../entities/namespace.model';
 
 @InputType()
-export class CreateNamespaceInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
-}
+export class CreateNamespaceInput extends Namespace {}

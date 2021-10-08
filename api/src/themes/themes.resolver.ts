@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { ThemesService } from './themes.service';
-import { Theme } from './entities/theme.entity';
+import { Theme } from './entities/theme.model';
 import { CreateThemeInput } from './dto/create-theme.input';
 import { UpdateThemeInput } from './dto/update-theme.input';
 

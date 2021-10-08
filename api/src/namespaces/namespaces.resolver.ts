@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { NamespacesService } from './namespaces.service';
-import { Namespace } from './entities/namespace.entity';
+import { Namespace } from './entities/namespace.model';
 import { CreateNamespaceInput } from './dto/create-namespace.input';
 import { UpdateNamespaceInput } from './dto/update-namespace.input';
 

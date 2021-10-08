@@ -1,7 +1,5 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType } from '@nestjs/graphql';
+import { Waveform } from '../entities/waveform.model';
 
 @InputType()
-export class CreateWaveformInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
-}
+export class CreateWaveformInput extends Waveform {}

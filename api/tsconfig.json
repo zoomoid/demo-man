@@ -4,6 +4,9 @@
          "es5",
          "es6"
       ],
+      "types": [
+         "@types/uuid",
+      ],
       "target": "es5",
       "module": "commonjs",
       "moduleResolution": "node",
