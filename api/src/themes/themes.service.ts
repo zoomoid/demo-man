@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { CreateThemeInput } from './dto/create-theme.input';
-import { UpdateThemeInput } from './dto/update-theme.input';
+import { Theme } from './entities/theme.model';
 
 @Injectable()
 export class ThemesService {
-  create(createThemeInput: CreateThemeInput) {
-    return 'This action adds a new theme';
+  constructor(@Inject(Theme.name) private themeModel: Model<Theme>) {}
+
+  async create(input: CreateThemeInput): Promise<Theme> {
+    return this.themeModel.create(input);
   }
 
-  findAll() {
-    return `This action returns all themes`;
+  async findAll(): Promise<Theme[]> {
+    return this.themeModel.find().lean();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} theme`;
+  async findOne(query: FilterQuery<Theme>): Promise<Theme> {
+    return this.themeModel.findOne(query).lean();
   }
 
-  update(id: number, updateThemeInput: UpdateThemeInput) {
-    return `This action updates a #${id} theme`;
+  async update(
+    query: FilterQuery<Theme>,
+    updateThemeInput: UpdateQuery<Theme>,
+  ): Promise<Theme> {
+    return this.themeModel.updateOne(query, updateThemeInput).lean();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} theme`;
+  async remove(query: FilterQuery<Theme>) {
+    return this.themeModel.deleteOne(query);
   }
 }

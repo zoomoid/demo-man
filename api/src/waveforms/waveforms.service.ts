@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { Model, FilterQuery, UpdateQuery } from 'mongoose';
 import { CreateWaveformInput } from './dto/create-waveform.input';
-import { UpdateWaveformInput } from './dto/update-waveform.input';
+import { Waveform } from './entities/waveform.model';
 
 @Injectable()
 export class WaveformsService {
-  create(createWaveformInput: CreateWaveformInput) {
-    return 'This action adds a new waveform';
+  constructor(@Inject(Waveform.name) private themeModel: Model<Waveform>) {}
+
+  async create(input: CreateWaveformInput): Promise<Waveform> {
+    return this.themeModel.create(input);
   }
 
-  findAll() {
-    return `This action returns all waveforms`;
+  async findAll(): Promise<Waveform[]> {
+    return this.themeModel.find().lean();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} waveform`;
+  async findOne(query: FilterQuery<Waveform>): Promise<Waveform> {
+    return this.themeModel.findOne(query).lean();
   }
 
-  update(id: number, updateWaveformInput: UpdateWaveformInput) {
-    return `This action updates a #${id} waveform`;
+  async update(
+    query: FilterQuery<Waveform>,
+    updateWaveformInput: UpdateQuery<Waveform>,
+  ): Promise<Waveform> {
+    return this.themeModel.updateOne(query, updateWaveformInput).lean();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} waveform`;
+  async remove(query: FilterQuery<Waveform>) {
+    return this.themeModel.deleteOne(query);
   }
 }

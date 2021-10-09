@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { Model, FilterQuery, UpdateQuery } from 'mongoose';
 import { CreateNamespaceInput } from './dto/create-namespace.input';
-import { UpdateNamespaceInput } from './dto/update-namespace.input';
+import { Namespace } from './entities/namespace.model';
 
 @Injectable()
 export class NamespacesService {
-  create(createNamespaceInput: CreateNamespaceInput) {
-    return 'This action adds a new namespace';
+  constructor(@Inject(Namespace.name) private themeModel: Model<Namespace>) {}
+
+  async create(input: CreateNamespaceInput): Promise<Namespace> {
+    return this.themeModel.create(input);
   }
 
-  findAll() {
-    return `This action returns all namespaces`;
+  async findAll(): Promise<Namespace[]> {
+    return this.themeModel.find().lean();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} namespace`;
+  async findOne(query: FilterQuery<Namespace>): Promise<Namespace> {
+    return this.themeModel.findOne(query).lean();
   }
 
-  update(id: number, updateNamespaceInput: UpdateNamespaceInput) {
-    return `This action updates a #${id} namespace`;
+  async update(
+    query: FilterQuery<Namespace>,
+    updateNamespaceInput: UpdateQuery<Namespace>,
+  ): Promise<Namespace> {
+    return this.themeModel.updateOne(query, updateNamespaceInput).lean();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} namespace`;
+  async remove(query: FilterQuery<Namespace>) {
+    return this.themeModel.deleteOne(query);
   }
 }
