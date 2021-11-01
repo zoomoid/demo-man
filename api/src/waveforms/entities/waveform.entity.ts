@@ -1,4 +1,4 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -12,9 +12,9 @@ import { Version } from '../../versions/entities/version.entity';
 @ObjectType()
 @Entity()
 export class Waveform {
-  @Field({ description: 'Waveform ID' })
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @Field(() => Int, { description: 'Waveform ID' })
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Field()
   @Column('xml')

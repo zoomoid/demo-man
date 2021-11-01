@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -12,9 +12,9 @@ import { Album } from '../../albums/entities/album.entity';
 @ObjectType()
 @Entity()
 export class Cover {
-  @Field({ description: 'Cover ID' })
-  @PrimaryGeneratedColumn('uuid')
-  id: number;
+  @Field(() => ID, { description: 'Entity ID' })
+  @PrimaryGeneratedColumn()
+  id: string;
 
   @Field({
     nullable: false,

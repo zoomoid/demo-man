@@ -5,4 +5,7 @@ import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 export class UpdateTrackInput extends PartialType(CreateTrackInput) {
   @Field(() => Int)
   id: number;
+
+  @Field()
+  versionIds: string[];
 }

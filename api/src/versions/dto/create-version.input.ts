@@ -1,7 +1,25 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field, Float } from '@nestjs/graphql';
 
 @InputType()
 export class CreateVersionInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field({ description: '' })
+  trackId: string;
+
+  @Field()
+  url: string;
+
+  @Field()
+  comment: string;
+
+  @Field()
+  bpm: string;
+
+  @Field(() => Float)
+  duration: number;
+
+  @Field(() => Float)
+  sr: number;
+
+  @Field(() => Float)
+  bitrate: number;
 }

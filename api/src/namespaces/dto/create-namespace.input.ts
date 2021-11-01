@@ -1,5 +1,10 @@
-import { InputType } from '@nestjs/graphql';
-import { Namespace } from '../entities/namespace.entity';
+import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
-export class CreateNamespaceInput extends Namespace {}
+export class CreateNamespaceInput {
+  @Field()
+  name: string;
+
+  @Field()
+  pathPrefix: string;
+}

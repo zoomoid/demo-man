@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -14,8 +14,8 @@ import { Version } from '../../versions/entities/version.entity';
 @ObjectType()
 @Entity()
 export class Track {
-  @Field({ description: 'Track ID' })
-  @PrimaryGeneratedColumn('uuid')
+  @Field(() => ID, { description: 'Entity ID' })
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Field()
@@ -44,10 +44,6 @@ export class Track {
 
   @Field()
   @Column()
-  bpm: string;
-
-  @Field()
-  @Column()
   genre: string;
 
   @Field(() => Int)
@@ -55,24 +51,8 @@ export class Track {
   no: number;
 
   @Field()
-  @Column('text')
-  comment: string;
-
-  @Field()
   @Column()
   composer: string;
-
-  @Field(() => Float)
-  @Column()
-  duration: number;
-
-  @Field(() => Float)
-  @Column()
-  sr: number;
-
-  @Field(() => Float)
-  @Column()
-  bitrate: number;
 
   @Field()
   @Column()

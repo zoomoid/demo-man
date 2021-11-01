@@ -3,6 +3,6 @@ import { TracksService } from './tracks.service';
 import { TracksResolver } from './tracks.resolver';
 
 @Module({
-  providers: [TracksResolver, TracksService]
+  providers: [TracksResolver, TracksService],
 })
 export class TracksModule {}
