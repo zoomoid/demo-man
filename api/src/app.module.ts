@@ -5,9 +5,13 @@ import { AppService } from './app.service';
 import { GraphQLModule } from '@nestjs/graphql';
 import { NamespacesResolver } from './namespaces/namespaces.resolver';
 import { NamespacesModule } from './namespaces/namespaces.module';
-import { WaveformsModule } from './waveforms/waveforms.module';
 import { ThemesModule } from './themes/themes.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AlbumsModule } from './albums/albums.module';
+import { CoversModule } from './covers/covers.module';
+import { TracksModule } from './tracks/tracks.module';
+import { VersionsModule } from './versions/versions.module';
+import { WaveformsModule } from './waveforms/waveforms.module';
 
 interface EnvironmentVariables {
   TOKEN: string;
@@ -32,6 +36,10 @@ interface EnvironmentVariables {
     NamespacesModule,
     WaveformsModule,
     ThemesModule,
+    AlbumsModule,
+    CoversModule,
+    TracksModule,
+    VersionsModule,
   ],
   controllers: [AppController],
   providers: [AppService, NamespacesResolver],

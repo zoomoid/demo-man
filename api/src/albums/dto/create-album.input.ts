@@ -1,7 +1,7 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 
 @InputType()
-export class CreateWaveformInput {
+export class CreateAlbumInput {
   @Field(() => Int, { description: 'Example field (placeholder)' })
   exampleField: number;
 }

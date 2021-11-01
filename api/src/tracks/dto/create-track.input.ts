@@ -1,5 +1,7 @@
-import { InputType } from '@nestjs/graphql';
-import { Track } from '../entities/track.model';
+import { InputType, Int, Field } from '@nestjs/graphql';
 
 @InputType()
-export class CreateTrackInput extends Track {}
+export class CreateTrackInput {
+  @Field(() => Int, { description: 'Example field (placeholder)' })
+  exampleField: number;
+}

@@ -3,6 +3,6 @@ import { ThemesService } from './themes.service';
 import { ThemesResolver } from './themes.resolver';
 
 @Module({
-  providers: [ThemesResolver, ThemesService],
+  providers: [ThemesResolver, ThemesService]
 })
 export class ThemesModule {}

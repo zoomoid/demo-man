@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Model, FilterQuery, UpdateQuery } from 'mongoose';
 import { CreateNamespaceInput } from './dto/create-namespace.input';
-import { Namespace } from './entities/namespace.model';
+import { Namespace } from './entities/namespace.entity';
 
 @Injectable()
 export class NamespacesService {
