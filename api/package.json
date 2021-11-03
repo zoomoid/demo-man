@@ -14,7 +14,7 @@
     "express": "^4.17.1",
     "mongodb": "^3.6.3",
     "showdown": "^1.9.1",
-    "validator": "^13.5.2",
+    "validator": "^13.7.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {
