@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAlbumInput } from './dto/create-album.input';
 import { UpdateAlbumInput } from './dto/update-album.input';
+import { Album } from './entities/album.entity';
 
 @Injectable()
 export class AlbumsService {
-  create(createAlbumInput: CreateAlbumInput) {
-    return 'This action adds a new album';
+  constructor(
+    @InjectRepository(Album) private albumRepository: Repository<Album>,
+  ) {}
+
+  async create(createAlbumInput: CreateAlbumInput) {
+    return this.albumRepository.create(createAlbumInput);
   }
 
-  findAll() {
-    return `This action returns all albums`;
+  async findAll() {
+    return this.albumRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} album`;
+  async findOne(id: number) {
+    return this.albumRepository.findOne(id);
   }
 
-  update(id: number, updateAlbumInput: UpdateAlbumInput) {
-    return `This action updates a #${id} album`;
+  async update(id: number, updateAlbumInput: UpdateAlbumInput) {
+    return this.albumRepository.update(id, updateAlbumInput);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} album`;
+  async remove(id: number) {
+    return this.albumRepository.delete(id);
   }
 }

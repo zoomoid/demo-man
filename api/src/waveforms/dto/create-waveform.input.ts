@@ -1,9 +1,9 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreateWaveformInput {
-  @Field({ description: '' })
-  versionId: string;
+  @Field(() => Int, { description: '' })
+  versionId: number;
 
   @Field()
   full: string;

@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateVersionInput } from './dto/create-version.input';
 import { UpdateVersionInput } from './dto/update-version.input';
+import { Version } from './entities/version.entity';
 
 @Injectable()
 export class VersionsService {
-  create(createVersionInput: CreateVersionInput) {
-    return 'This action adds a new version';
+  constructor(
+    @InjectRepository(Version) private versionRepository: Repository<Version>,
+  ) {}
+
+  async create(createVersionInput: CreateVersionInput) {
+    return this.versionRepository.create(createVersionInput);
   }
 
-  findAll() {
-    return `This action returns all versions`;
+  async findAll() {
+    return this.versionRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} version`;
+  async findOne(id: number) {
+    return this.versionRepository.findOne(id);
   }
 
-  update(id: number, updateVersionInput: UpdateVersionInput) {
-    return `This action updates a #${id} version`;
+  async update(id: number, updateVersionInput: UpdateVersionInput) {
+    return this.versionRepository.update(id, updateVersionInput);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} version`;
+  async remove(id: number) {
+    return this.versionRepository.delete(id);
   }
 }

@@ -1,32 +1,33 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Model, FilterQuery, UpdateQuery } from 'mongoose';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateNamespaceInput } from './dto/create-namespace.input';
 import { Namespace } from './entities/namespace.entity';
 
+/**
+ * Namespaces are immutable after creation, hence it lacks an update function,
+ * only having create and remove as operations
+ */
 @Injectable()
 export class NamespacesService {
-  constructor(@Inject(Namespace.name) private themeModel: Model<Namespace>) {}
+  constructor(
+    @InjectRepository(Namespace)
+    private namespaceRepository: Repository<Namespace>,
+  ) {}
 
   async create(input: CreateNamespaceInput): Promise<Namespace> {
-    return this.themeModel.create(input);
+    return this.namespaceRepository.create(input);
   }
 
   async findAll(): Promise<Namespace[]> {
-    return this.themeModel.find().lean();
+    return this.namespaceRepository.find();
   }
 
-  async findOne(query: FilterQuery<Namespace>): Promise<Namespace> {
-    return this.themeModel.findOne(query).lean();
+  async findOne(id: number): Promise<Namespace> {
+    return this.namespaceRepository.findOne(id);
   }
 
-  async update(
-    query: FilterQuery<Namespace>,
-    updateNamespaceInput: UpdateQuery<Namespace>,
-  ): Promise<Namespace> {
-    return this.themeModel.updateOne(query, updateNamespaceInput).lean();
-  }
-
-  async remove(query: FilterQuery<Namespace>) {
-    return this.themeModel.deleteOne(query);
+  async remove(id: number) {
+    return this.namespaceRepository.delete(id);
   }
 }

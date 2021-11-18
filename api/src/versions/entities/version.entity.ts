@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { DateScalar } from '../../common/scalars/date.scalar';
 import { Track } from '../../tracks/entities/track.entity';
 import { Waveform } from '../../waveforms/entities/waveform.entity';
 
@@ -54,12 +55,12 @@ export class Version {
   @Column()
   bitrate: number;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @CreateDateColumn()
   created_at: Date;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @UpdateDateColumn()
   updated_at: Date;

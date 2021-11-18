@@ -1,8 +1,8 @@
 import { CreateCoverInput } from './create-cover.input';
-import { InputType, Field, PartialType, ID } from '@nestjs/graphql';
+import { InputType, Field, PartialType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class UpdateCoverInput extends PartialType(CreateCoverInput) {
-  @Field(() => ID)
-  id: string;
+  @Field(() => Int)
+  id: number;
 }

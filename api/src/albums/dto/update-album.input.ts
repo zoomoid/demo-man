@@ -1,14 +1,14 @@
 import { CreateAlbumInput } from './create-album.input';
-import { InputType, Field, PartialType } from '@nestjs/graphql';
+import { InputType, Field, PartialType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class UpdateAlbumInput extends PartialType(CreateAlbumInput) {
-  @Field()
-  id: string;
+  @Field(() => Int)
+  id: number;
 
-  @Field(() => [String])
-  coverIds: string[];
+  @Field(() => [Int])
+  coverIds: number[];
 
-  @Field()
-  themeId: string;
+  @Field(() => Int)
+  themeId: number;
 }

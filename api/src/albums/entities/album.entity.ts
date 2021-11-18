@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { DateScalar } from '../../common/scalars/date.scalar';
 import { Cover } from '../../covers/entities/cover.entity';
 import { Namespace } from '../../namespaces/entities/namespace.entity';
 import { Track } from '../../tracks/entities/track.entity';
@@ -15,9 +16,9 @@ import { Track } from '../../tracks/entities/track.entity';
 @ObjectType()
 @Entity()
 export class Album {
-  @Field(() => ID, { description: 'Entity ID' })
+  @Field(() => Int, { description: 'Entity ID' })
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Field({ nullable: false })
   name: string;
@@ -37,12 +38,12 @@ export class Album {
   @ManyToOne(() => Namespace, (namespace) => namespace.albums)
   namespace: Namespace;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @CreateDateColumn()
   created_at: Date;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @UpdateDateColumn()
   updated_at: Date;

@@ -1,9 +1,9 @@
-import { InputType, Field, Float } from '@nestjs/graphql';
+import { InputType, Field, Float, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreateVersionInput {
-  @Field({ description: '' })
-  trackId: string;
+  @Field(() => Int, { description: '' })
+  trackId: number;
 
   @Field()
   url: string;

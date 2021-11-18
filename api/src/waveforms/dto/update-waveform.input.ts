@@ -1,10 +1,10 @@
 import { CreateWaveformInput } from './create-waveform.input';
-import { InputType, Field, PartialType } from '@nestjs/graphql';
+import { InputType, Field, PartialType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class UpdateWaveformInput extends PartialType(CreateWaveformInput) {
-  @Field()
-  id: string;
+  @Field(() => Int)
+  id: number;
 
   @Field()
   full: string;

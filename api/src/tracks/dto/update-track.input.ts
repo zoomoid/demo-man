@@ -6,6 +6,6 @@ export class UpdateTrackInput extends PartialType(CreateTrackInput) {
   @Field(() => Int)
   id: number;
 
-  @Field()
-  versionIds: string[];
+  @Field(() => [Int])
+  versionIds: number[];
 }

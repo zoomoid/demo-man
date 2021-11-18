@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -9,14 +9,15 @@ import {
   VersionColumn,
 } from 'typeorm';
 import { Album } from '../../albums/entities/album.entity';
+import { DateScalar } from '../../common/scalars/date.scalar';
 import { Version } from '../../versions/entities/version.entity';
 
 @ObjectType()
 @Entity()
 export class Track {
-  @Field(() => ID, { description: 'Entity ID' })
+  @Field(() => Int, { description: 'Entity ID' })
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Field()
   @Column()
@@ -58,12 +59,12 @@ export class Track {
   @Column()
   url: string;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @CreateDateColumn()
   created_at: Date;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @UpdateDateColumn()
   updated_at: Date;

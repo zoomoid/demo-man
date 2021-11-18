@@ -9,7 +9,9 @@ export class VersionsResolver {
   constructor(private readonly versionsService: VersionsService) {}
 
   @Mutation(() => Version)
-  createVersion(@Args('createVersionInput') createVersionInput: CreateVersionInput) {
+  createVersion(
+    @Args('createVersionInput') createVersionInput: CreateVersionInput,
+  ) {
     return this.versionsService.create(createVersionInput);
   }
 
@@ -24,8 +26,13 @@ export class VersionsResolver {
   }
 
   @Mutation(() => Version)
-  updateVersion(@Args('updateVersionInput') updateVersionInput: UpdateVersionInput) {
-    return this.versionsService.update(updateVersionInput.id, updateVersionInput);
+  updateVersion(
+    @Args('updateVersionInput') updateVersionInput: UpdateVersionInput,
+  ) {
+    return this.versionsService.update(
+      updateVersionInput.id,
+      updateVersionInput,
+    );
   }
 
   @Mutation(() => Version)

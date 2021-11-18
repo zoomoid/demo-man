@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateCoverInput } from './dto/create-cover.input';
 import { UpdateCoverInput } from './dto/update-cover.input';
+import { Cover } from './entities/cover.entity';
 
 @Injectable()
 export class CoversService {
-  create(createCoverInput: CreateCoverInput) {
-    return 'This action adds a new cover';
+  constructor(
+    @InjectRepository(Cover) private coverRepository: Repository<Cover>,
+  ) {}
+
+  async create(createCoverInput: CreateCoverInput) {
+    return this.coverRepository.create(createCoverInput);
   }
 
-  findAll() {
-    return `This action returns all covers`;
+  async findAll() {
+    return this.coverRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cover`;
+  async findOne(id: number) {
+    return this.coverRepository.findOne(id);
   }
 
-  update(id: number, updateCoverInput: UpdateCoverInput) {
-    return `This action updates a #${id} cover`;
+  async update(id: number, updateCoverInput: UpdateCoverInput) {
+    return this.coverRepository.update(id, updateCoverInput);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cover`;
+  async remove(id: number) {
+    return this.coverRepository.delete(id);
   }
 }

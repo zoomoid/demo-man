@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -6,16 +6,14 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { DateScalar } from '../../common/scalars/date.scalar';
 
 @ObjectType()
 @Entity()
-/**
- * TODO: theme columns can be normalized into own schemas
- */
 export class Theme {
-  @Field(() => ID, { description: 'Entity ID' })
+  @Field(() => Int, { description: 'Entity ID' })
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Field()
   @Column()
@@ -41,12 +39,12 @@ export class Theme {
   @Column()
   customAccent: string;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @CreateDateColumn()
   created_at: Date;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @UpdateDateColumn()
   updated_at: Date;

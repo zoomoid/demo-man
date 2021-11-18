@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Album } from '../../albums/entities/album.entity';
+import { DateScalar } from '../../common/scalars/date.scalar';
 
 @ObjectType()
 @Entity()
@@ -32,12 +33,12 @@ export class Namespace {
   @Column({ default: '/' })
   pathPrefix: string;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @CreateDateColumn()
   created_at: Date;
 
-  @Field()
+  @Field(() => DateScalar)
   @Column()
   @UpdateDateColumn()
   updated_at: Date;

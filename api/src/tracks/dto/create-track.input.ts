@@ -1,4 +1,4 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreateTrackInput {
@@ -11,8 +11,8 @@ export class CreateTrackInput {
   @Field()
   albumartist: string;
 
-  @Field()
-  albumId: string;
+  @Field(() => Int)
+  albumId: number;
 
   @Field()
   genre: string;
