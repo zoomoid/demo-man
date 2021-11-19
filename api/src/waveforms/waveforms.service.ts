@@ -37,7 +37,7 @@ export class WaveformsService {
     return await this.waveformRepository.find();
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     return await this.waveformRepository.findOne(id);
   }
 

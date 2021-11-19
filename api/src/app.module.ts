@@ -28,7 +28,7 @@ interface EnvironmentVariables {
       useFactory: (configService: ConfigService<EnvironmentVariables>) => ({
         type: 'mongodb',
         url: configService.get('MONGODB_URL'),
-        // entities: ['**/entities/*.model.ts'],
+        entities: ['**/entities/*.entity.ts'],
       }),
       inject: [ConfigService],
     }),

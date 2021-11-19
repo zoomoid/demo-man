@@ -9,7 +9,9 @@ export class WaveformsResolver {
   constructor(private readonly waveformsService: WaveformsService) {}
 
   @Mutation(() => Waveform)
-  createWaveform(@Args('createWaveformInput') createWaveformInput: CreateWaveformInput) {
+  createWaveform(
+    @Args('createWaveformInput') createWaveformInput: CreateWaveformInput,
+  ) {
     return this.waveformsService.create(createWaveformInput);
   }
 
@@ -24,8 +26,13 @@ export class WaveformsResolver {
   }
 
   @Mutation(() => Waveform)
-  updateWaveform(@Args('updateWaveformInput') updateWaveformInput: UpdateWaveformInput) {
-    return this.waveformsService.update(updateWaveformInput.id, updateWaveformInput);
+  updateWaveform(
+    @Args('updateWaveformInput') updateWaveformInput: UpdateWaveformInput,
+  ) {
+    return this.waveformsService.update(
+      updateWaveformInput.id,
+      updateWaveformInput,
+    );
   }
 
   @Mutation(() => Waveform)
