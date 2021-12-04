@@ -3,3 +3,4 @@ metadata.yaml
 .version
 .vscode/
 legacy-*/
+.env
