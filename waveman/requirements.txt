@@ -9,7 +9,7 @@ Jinja2==2.11.3
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
-numpy==1.19.0
+numpy==1.21.0
 pycparser==2.20
 pydub==0.24.1
 pylint==2.5.3
