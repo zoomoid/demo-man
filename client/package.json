@@ -13,7 +13,7 @@
     "vuex": "^4.0.0-rc.2",
     "core-js": "^3.8.1",
     "marked": "^4.0.10",
-    "postcss": "^8.2.13",
+    "postcss": "^8.4.31",
     "register-service-worker": "^1.7.2",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   },
@@ -24,7 +24,7 @@
     "@vuedx/typecheck": "^0.7.6",
     "@vuedx/typescript-plugin-vue": "^0.7.6",
     "autoprefixer": "^10.2.4",
-    "postcss": "^8.2.13",
+    "postcss": "^8.4.31",
     "sass": "^1.32.5",
     "tailwindcss": "^2.0.2",
     "typescript": "^4.1.3",
