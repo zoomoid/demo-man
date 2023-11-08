@@ -1,18 +1,23 @@
 {
-   "compilerOptions": {
-      "lib": [
-         "es5",
-         "es6"
-      ],
-      "types": [
-         "@types/uuid",
-      ],
-      "target": "es5",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "outDir": "./build",
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "sourceMap": true
-   }
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "NodeNext",
+    "lib": ["ESNext"],
+    "strict": true,
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    
+    "baseUrl": "./packages",
+  },
+  "references": [
+    {
+      "path": "./packages/picasso"
+    },
+    {
+      "path": "./packages/proto"
+    }
+  ]
 }
