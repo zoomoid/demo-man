@@ -1,0 +1,111 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - albums
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - albums/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - albums/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - covers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - covers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - covers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - revisions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - revisions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - revisions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - tracks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - tracks/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - tracks/status
+  verbs:
+  - get
+  - patch
+  - update

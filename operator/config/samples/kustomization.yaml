@@ -1,0 +1,7 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- demoman_v1alpha1_revision.yaml
+- demoman_v1alpha1_track.yaml
+- demoman_v1alpha1_album.yaml
+- demoman_v1alpha1_cover.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

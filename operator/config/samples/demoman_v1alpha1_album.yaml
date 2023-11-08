@@ -1,0 +1,12 @@
+apiVersion: demoman.zoomoid.dev/v1alpha1
+kind: Album
+metadata:
+  labels:
+    app.kubernetes.io/name: album
+    app.kubernetes.io/instance: album-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: album-sample
+spec:
+  # TODO(user): Add fields here

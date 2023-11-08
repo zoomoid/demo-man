@@ -1,0 +1,27 @@
+# permissions for end users to view revisions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: revision-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: operator
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+  name: revision-viewer-role
+rules:
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - revisions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - demoman.zoomoid.dev
+  resources:
+  - revisions/status
+  verbs:
+  - get
