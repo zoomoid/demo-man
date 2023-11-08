@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "rootDirs": ["src", "gen"],
+    "outDir": "dist",
+    "paths": {
+      "@v1/*": [
+        "gen/demoman/v1/*",
+      ],
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "gen/**/*.ts"
+  ]
+}
+

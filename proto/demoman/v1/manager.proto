@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+option go_package = "ma.zoomoid.dev/gen/proto/go/flow/v3;flowv3";
+
+package demoman.v1;
+

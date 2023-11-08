@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+option go_package = "ma.zoomoid.dev/gen/proto/go/flow/v3;flowv3";
+
+package demoman.v1;
+
+message Album {
+  string name = 1;
+}
+
+message AlbumSpec {
+  string name = 1;
+
+  int64 cover_id = 2;
+
+  
+}
+
+message AlbumStatus {
+  bool is_published = 1;
+  repeated Track tracks = 2;
+}
+
+message Track {
+  TrackMetadata metadata = 1;
+  TrackSpec spec = 2;
+  TrackStatus status = 3;
+}
+
+message TrackMetadata {
+  string name = 1;
+  string namespace = 2;
+
+  string album = 3;
+  int64 generation = 4;
+}
+
+message TrackSpec {
+  string name = 1;
+
+  TrackTemplate template = 2;
+  Transcode transcode = 3;
+}
+
+message TrackStatus {
+  bool is_published = 1;
+  repeated Revision revision = 2;
+}
+
+message Transcode {
+  Mp3Transcoding mp3 = 1;
+  FlacTranscoding flac = 2;
+  AacTranscoding aac = 3;
+}
+
+enum MetadataPolicy {
+  METADATA_POLICY_UNSPECIFIED = 0;
+  METADATA_POLICY_KEEP = 1;
+  METADATA_POLICY_DROP = 2;
+  METADATA_POLICY_REPLACE = 3;
+}
+
+message Mp3Transcoding {
+  MetadataPolicy metadata_policy = 1;
+  string ext = 2;
+}
+
+message FlacTranscoding {
+  MetadataPolicy metadata_policy = 1;
+  string ext = 2;
+}
+
+message AacTranscoding {
+  MetadataPolicy metadata_policy = 1;
+  string ext = 2;
+}
+
+message TrackTemplate {
+  string album = 1;
+  string album_artist = 2;
+  string artist = 3;
+  string composer = 4;
+  string date = 5;
+  string description = 6;
+  string disc_number = 7;
+  string track = 8;
+  string year = 9;
+  string genre = 10;
+  string title = 11;
+  string comment = 12;
+  string bpm = 13;
+}
+
+message Cover {
+
+}
+
+message Revision {
+
+}
