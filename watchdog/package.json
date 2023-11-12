@@ -10,7 +10,7 @@
     "test": "mocha spec/**/*.spec.js"
   },
   "dependencies": {
-    "axios": "^0.21.2",
+    "axios": "^1.6.0",
     "chokidar": "^3.4.3",
     "js-yaml": "^3.14.1",
     "music-metadata": "^7.5.2",
