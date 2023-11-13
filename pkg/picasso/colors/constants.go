@@ -1,0 +1,21 @@
+package colors
+
+const (
+	DELTA94_DIFF_STATUS_NA      int = 0
+	DELTA94_DIFF_STATUS_PERFECT int = 1
+	DELTA94_DIFF_STATUS_CLOSE   int = 2
+	DELTA94_DIFF_STATUS_GOOD    int = 10
+	DELTA94_DIFF_STATUS_SIMILAR int = 50
+)
+
+const (
+	CIE_LAB_REF_X float64 = 95.047
+	CIE_LAB_REF_Y float64 = 100
+	CIE_LAB_REF_Z float64 = 108.883
+)
+
+const (
+	WEIGHT_L = 1
+	WEIGHT_C = 1
+	WEIGHT_H = 1
+)
