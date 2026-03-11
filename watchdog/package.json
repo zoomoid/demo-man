@@ -13,7 +13,7 @@
     "axios": "^1.13.5",
     "chokidar": "^3.4.3",
     "js-yaml": "^4.1.1",
-    "music-metadata": "^7.5.2",
+    "music-metadata": "^11.12.1",
     "winston": "^3.3.3"
   },
   "devDependencies": {
