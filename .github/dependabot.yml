@@ -6,7 +6,10 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directories:
+      - api/
+      - client/
+      - watchdog/
     schedule:
       interval: "weekly"
     groups:
@@ -24,8 +27,22 @@ updates:
     open-pull-requests-limit: 10
   - package-ecosystem: "pip"
     directories:
-      - waveman/requirements.txt
-      - picasso/requirements.txt
+      - waveman/
+      - picasso/
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
+  - package-ecosystem: docker
+    directories:
+      - api/
+      - client/
+      - watchdog/
+      - waveman/
+      - picasso/
+      - testing/
     schedule:
       interval: "weekly"
     groups:
