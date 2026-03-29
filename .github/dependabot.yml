@@ -22,3 +22,13 @@ updates:
         patterns:
           - "*"
     open-pull-requests-limit: 10
+  - package-ecosystem: "pip"
+    directories:
+      - waveman/requirements.txt
+      - picasso/requirements.txt
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
