@@ -8,24 +8,24 @@
   },
   "dependencies": {
     "axios": "^1.14.0",
-    "vue": "^3.5.31",
+    "vue": "^3.5.32",
     "vue-router": "^5.0.4",
     "vuex": "^4.1.0",
     "core-js": "^3.49.0",
-    "marked": "^17.0.5",
+    "marked": "^17.0.6",
     "postcss": "^8.4.31",
     "register-service-worker": "^1.7.2",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/compiler-sfc": "^3.0.5",
     "@vuedx/typecheck": "^0.7.6",
     "@vuedx/typescript-plugin-vue": "^0.7.6",
     "autoprefixer": "^10.4.27",
     "postcss": "^8.4.31",
-    "sass": "^1.98.0",
+    "sass": "^1.99.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
     "vite": "^8.0.3"

@@ -14,11 +14,11 @@
     "express": "^5.2.1",
     "mongodb": "^7.1.1",
     "showdown": "^2.1.0",
-    "validator": "^13.15.26",
+    "validator": "^13.15.35",
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1"
   }
