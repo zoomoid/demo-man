@@ -18,7 +18,7 @@
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/compiler-sfc": "^3.0.5",
     "@vuedx/typecheck": "^0.7.6",
