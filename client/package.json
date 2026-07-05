@@ -18,7 +18,7 @@
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   },
   "devDependencies": {
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/compiler-sfc": "^3.0.5",
     "@vuedx/typecheck": "^0.7.6",
@@ -26,8 +26,8 @@
     "autoprefixer": "^10.5.2",
     "postcss": "^8.5.16",
     "sass": "^1.101.0",
-    "tailwindcss": "^4.3.1",
+    "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
-    "vite": "^8.1.0"
+    "vite": "^8.1.3"
   }
 }

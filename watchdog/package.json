@@ -12,7 +12,7 @@
   "dependencies": {
     "axios": "^1.18.1",
     "chokidar": "^5.0.0",
-    "js-yaml": "^5.2.0",
+    "js-yaml": "^5.2.1",
     "music-metadata": "^11.13.0",
     "winston": "^3.19.0"
   },
@@ -21,6 +21,6 @@
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "mocha": "^11.7.6",
-    "prettier": "^3.9.1"
+    "prettier": "^3.9.4"
   }
 }
