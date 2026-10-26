@@ -11,9 +11,9 @@
     "vue": "^3.5.44",
     "vue-router": "^5.4.0",
     "vuex": "^4.1.0",
-    "core-js": "^3.50.0",
+    "core-js": "^3.51.0",
     "marked": "^18.1.1",
-    "postcss": "^8.5.30",
+    "postcss": "^8.5.31",
     "register-service-worker": "^1.7.2",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   },
@@ -24,10 +24,10 @@
     "@vuedx/typecheck": "^0.7.6",
     "@vuedx/typescript-plugin-vue": "^0.7.6",
     "autoprefixer": "^10.6.1",
-    "postcss": "^8.5.30",
-    "sass": "^1.105.1",
+    "postcss": "^8.5.31",
+    "sass": "^1.106.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.5"
   }
 }
